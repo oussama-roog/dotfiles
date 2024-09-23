@@ -1,0 +1,20 @@
+# Ignore backup files
+*.bak
+
+# Ignore log files
+*.log
+
+# Ignore the entire nvim undo directory
+.config/nvim/undo/
+
+# Ignore specific config files or directories
+.config/kitty/*.bak
+.config/kitty/tmux-client-*.log
+.config/kitty/tmux-server-*.log
+
+# Ignore all configuration files in the config directory
+.config/hypr/hyprland.conf.bak
+
+# Ignore all other potentially sensitive or unnecessary files
+.config/*/*.bak
+.config/*/*.log
