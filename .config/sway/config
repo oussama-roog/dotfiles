@@ -1,0 +1,183 @@
+# Sway config file combining elements from i3 and Hyprland configs
+
+# Set mod key (Mod4 = Super/Windows key)
+set $mod Mod4
+
+# Font for window titles
+font pango:JetBrainsMono Nerd Font 14
+
+# XDG Autostart
+exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway
+
+# Lock screen before suspend
+exec swayidle -w \
+    timeout 8000 'swaylock -f -c 000000' \
+    timeout 9000 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' \
+    before-sleep 'swaylock -f -c 000000'
+
+# NetworkManager applet (if needed)
+exec nm-applet --indicator
+
+# Audio controls
+# bindsym XF86AudioRaiseVolume exec pactl set-sink-volume @DEFAULT_SINK@ +5%
+# bindsym XF86AudioLowerVolume exec pactl set-sink-volume @DEFAULT_SINK@ -5%
+# bindsym XF86AudioMute exec pactl set-sink-mute @DEFAULT_SINK@ toggle
+# bindsym XF86AudioMicMute exec pactl set-source-mute @DEFAULT_SOURCE@ toggle
+
+# Media controls
+# bindsym XF86AudioPlay exec playerctl play-pause
+# bindsym XF86AudioStop exec playerctl stop
+# bindsym XF86AudioNext exec playerctl next
+# bindsym XF86AudioPrev exec playerctl previous
+
+# Use Mouse+$mod to drag floating windows
+floating_modifier $mod normal
+
+# Start a terminal (using kitty as in Hyprland config)
+bindsym $mod+t exec kitty
+
+# Kill focused window
+bindsym $mod+q kill
+
+# Start your launcher (using rofi as in Hyprland config)
+bindsym $mod+space exec ~/.config/rofi/launcher/launcher.sh
+bindsym $mod+p exec ~/.config/rofi/powermenu/powermenu.sh
+
+# Change focus
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
+
+# Alternatively, you can use the cursor keys:
+bindsym $mod+Left focus left
+bindsym $mod+Down focus down
+bindsym $mod+Up focus up
+bindsym $mod+Right focus right
+
+# Move focused window
+bindsym $mod+Shift+h move left
+bindsym $mod+Shift+j move down
+bindsym $mod+Shift+k move up
+bindsym $mod+Shift+l move right
+
+# Alternatively, you can use the cursor keys:
+bindsym $mod+Shift+Left move left
+bindsym $mod+Shift+Down move down
+bindsym $mod+Shift+Up move up
+bindsym $mod+Shift+Right move right
+
+# Split horizontally/vertically
+bindsym $mod+minus splith
+bindsym $mod+bar splitv
+
+# Enter fullscreen mode
+bindsym $mod+f fullscreen
+
+# Change container layout
+bindsym $mod+s layout stacking
+bindsym $mod+w layout tabbed
+bindsym $mod+e layout toggle split
+
+# Toggle floating
+bindsym $mod+Shift+space floating toggle
+
+# Change focus between tiling / floating windows
+bindsym $mod+v focus mode_toggle
+
+# Focus the parent container
+bindsym $mod+a focus parent
+
+# Define workspace names
+set $ws1 "1"
+set $ws2 "2"
+set $ws3 "3"
+set $ws4 "4"
+set $ws5 "5"
+set $ws6 "6"
+set $ws7 "7"
+set $ws8 "8"
+set $ws9 "9"
+set $ws10 "10"
+
+# Switch to workspace
+bindsym $mod+1 workspace number $ws1
+bindsym $mod+2 workspace number $ws2
+bindsym $mod+3 workspace number $ws3
+bindsym $mod+4 workspace number $ws4
+bindsym $mod+5 workspace number $ws5
+bindsym $mod+6 workspace number $ws6
+bindsym $mod+7 workspace number $ws7
+bindsym $mod+8 workspace number $ws8
+bindsym $mod+9 workspace number $ws9
+bindsym $mod+0 workspace number $ws10
+
+# Move focused container to workspace
+bindsym $mod+Shift+1 move container to workspace number $ws1
+bindsym $mod+Shift+2 move container to workspace number $ws2
+bindsym $mod+Shift+3 move container to workspace number $ws3
+bindsym $mod+Shift+4 move container to workspace number $ws4
+bindsym $mod+Shift+5 move container to workspace number $ws5
+bindsym $mod+Shift+6 move container to workspace number $ws6
+bindsym $mod+Shift+7 move container to workspace number $ws7
+bindsym $mod+Shift+8 move container to workspace number $ws8
+bindsym $mod+Shift+9 move container to workspace number $ws9
+bindsym $mod+Shift+0 move container to workspace number $ws10
+
+# Reload the configuration file
+bindsym $mod+Shift+c reload
+
+# Exit sway
+bindsym $mod+Shift+e exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway?' -B 'Yes, exit sway' 'swaymsg exit'
+
+# Resize mode
+mode "resize" {
+    bindsym h resize shrink width 10px
+    bindsym j resize grow height 10px
+    bindsym k resize shrink height 10px
+    bindsym l resize grow width 10px
+
+    bindsym Left resize shrink width 10px
+    bindsym Down resize grow height 10px
+    bindsym Up resize shrink height 10px
+    bindsym Right resize grow width 10px
+
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+    bindsym $mod+r mode "default"
+}
+bindsym $mod+r mode "resize"
+
+
+# Keyboard layout
+input * {
+    xkb_options ctrl:nocaps
+}
+
+# Set wallpaper (using swaybg instead of feh)
+output * bg ~/Pictures/wall.png fill
+
+# Start status bar (waybar)
+# bar {
+#     swaybar_command waybar
+# }
+
+# Auto start applications
+# exec waybar
+
+# Move workspaces between outputs
+bindsym $mod+Alt+h move workspace to output left
+bindsym $mod+Alt+l move workspace to output right
+
+# Include additional config files
+include /etc/sway/config.d/*
+
+# Window appearance (using values from Hyprland config)
+default_border pixel 2
+gaps inner 2
+gaps outer 2
+
+# Colors (using values from Hyprland config)
+client.focused #33ccffee #33ccffee #ffffff #33ccffee #33ccffee
+client.unfocused #595959aa #595959aa #ffffff #595959aa #595959aa
+

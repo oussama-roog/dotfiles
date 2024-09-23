@@ -1,0 +1,112 @@
+{
+  "layer": "top",
+  // "margin-top": 10,
+  // "margin-bottom": 5,
+  "margin-left": 10,
+  "margin-right": 10,
+  "gtk-layer-shell": true,
+  "reload_style_on_change": true,
+  "fixed-center": true,
+
+  "modules-left": ["sway/workspaces", "custom/spotify"],
+  "modules-center": ["clock"],
+  "modules-right": [
+    "sway/language",
+    "memory",
+    "cpu",
+    "pulseaudio",
+    "custom/power",
+    "tray"
+  ],
+
+  
+  "hyprland/workspaces": {
+    "active-only": false,
+    "all-outputs": true,
+    "disable-scroll": false,
+    "on-scroll-up": "hyprctl dispatch workspace -1",
+    "on-scroll-down": "hyprctl dispatch workspace +1",
+    "format": "{icon}",
+    "on-click": "activate",
+    "format-icons": {
+      "urgent": "",
+      "active": "",
+      "default": "󰧞",
+      "sort-by-number": true
+    }
+  },
+
+  "custom/spotify": {
+    "exec": "~/.config/waybar/scripts/songname.sh",
+    "interval": 1,
+    "format": "{}"
+  },
+  "clock": {
+    "tooltip": true,
+    "interval": 60,
+    "format": "<span font='12'>󰃭</span>  {:%a %d, <span font='12'>󱑆</span>  %I:%M %p}",
+    "format-alt": "<span font='12'>󱑆</span>  {:%I:%M %p}",
+    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+    "calendar": {
+      "mode": "month",
+      "on-scroll": 1,
+      "format": {
+        "today": "<span color='#ff6699'><b><u>{}</u></b></span>"
+      }
+    }
+  },
+
+  "hyprland/language": {
+    "format": "<span font='12'>󰌌</span>  {}",
+    "format-en": "English",
+    "format-ar": "Arabic"
+  },
+
+ "memory": {
+    "interval": 15,
+    "format": "<span> </span> {used} GiB",
+    "max-length": 13,
+    "tooltip-format": "  {used} GiB"
+  },
+
+  "cpu": {
+    "interval": 5,
+    "format": "<span></span>  {usage} %",
+    "tooltip-format": "󰍛  {usage} %",
+    "format-icons": {
+      "default": ""
+    }
+  },
+
+  "pulseaudio": {
+    "format": "{icon}   {volume}%",
+    "rotate": 0,
+    "format-muted": "<span size='large' rise='-1000'>󰖁 </span>",
+    "on-click": "pavucontrol -t 3",
+    "on-click-middle": "$HOME/.config/scripts/volumecontrol.sh -o m",
+    "on-scroll-up": "$HOME/.config/scripts/volumecontrol.sh -o i",
+    "on-scroll-down": "$HOME/.config/scripts/volumecontrol.sh -o d",
+    "tooltip-format": "{icon}   {desc} || {volume}%",
+    "ignored-sinks": ["Easy Effects Sink"],
+    "scroll-step": 5,
+    "format-icons": {
+      "headphone": " ",
+      "hands-free": " ",
+      "headset": " ",
+      "phone": " ",
+      "portable": " ",
+      "car": " ",
+      "default": ["", " ", "  "]
+    }
+  },
+  "custom/power": {
+    "format": "⏻",
+    "on-click": "~/.config/rofi/powermenu/powermenu.sh",
+    "tooltip": false
+  },
+
+  "tray": {
+    "icon-size": 14,
+    "spacing": 10
+  }
+}
