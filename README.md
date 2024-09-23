@@ -10,7 +10,7 @@ git clone https://github.com/oussamahamdaoui/dotfiles.git ~/.dotfiles
 
 ## Usage
 
-To install the dotfiles, you need to install [stow](https://github.com/djui/stow).
+To install the dotfiles, you need to install [stow](https://www.gnu.org/software/stow/).
 
 ```bash
 cd ~/.dotfiles
