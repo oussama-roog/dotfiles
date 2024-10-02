@@ -9,6 +9,10 @@ font pango:JetBrainsMono Nerd Font 14
 # XDG Autostart
 exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway
 
+output eDP-1 {
+    scale 1.2
+}
+
 # Lock screen before suspend
 exec swayidle -w \
     timeout 8000 'swaylock -f -c 000000' \
