@@ -13,6 +13,11 @@ return {
 		local action_state = require("telescope.actions.state")
 
 		telescope.setup({
+			pickers = {
+				find_files = {
+					hidden = true,
+				},
+			},
 			defaults = {
 				path_display = { "smart" },
 				mappings = {
@@ -25,7 +30,7 @@ return {
 			},
 		})
 
-		-- telescope.load_extension("fzf")
+		telescope.load_extension("fzf")
 		telescope.load_extension("noice")
 		telescope.load_extension("neoclip")
 		telescope.load_extension("lazygit")
@@ -34,6 +39,7 @@ return {
 		local keymap = vim.keymap -- for conciseness
 
 		keymap.set("n", "<leader>ff", "<cmd>Telescope find_files<cr>", { desc = "Fuzzy find files in cwd" })
+		keymap.set("n", "<leader>fg", "<cmd>Telescope git_files<cr>", { desc = "Fuzzy find git files in cwd" })
 		keymap.set("n", "<leader>fr", "<cmd>Telescope oldfiles<cr>", { desc = "Fuzzy find recent files" })
 		keymap.set("n", "<leader>fs", "<cmd>Telescope live_grep<cr>", { desc = "Find string in cwd" })
 		keymap.set("n", "<leader>fc", "<cmd>Telescope grep_string<cr>", { desc = "Find string under cursor in cwd" })
