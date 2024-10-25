@@ -11,7 +11,7 @@ exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DE
 
 output eDP-1 {
     resolution 1920x1080
-    scale 1.2
+    scale 1.1
 }
 
 # Lock screen before suspend

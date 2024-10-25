@@ -9,8 +9,8 @@
 {
   "assistant": {
     "default_model": {
-      "provider": "zed.dev",
-      "model": "claude-3-5-sonnet-20240620"
+      "provider": "google",
+      "model": "gemini-1.5-flash"
     },
     "version": "2"
   },
