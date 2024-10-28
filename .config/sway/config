@@ -159,8 +159,6 @@ input * {
     xkb_options ctrl:nocaps
 }
 
-# Set wallpaper (using swaybg instead of feh)
-output * bg ~/Pictures/wall.png fill
 
 # Start status bar (waybar)
 # bar {
@@ -185,4 +183,7 @@ gaps outer 2
 # Colors (using values from Hyprland config)
 client.focused #33ccffee #33ccffee #ffffff #33ccffee #33ccffee
 client.unfocused #595959aa #595959aa #ffffff #595959aa #595959aa
+
+# Set wallpaper (using swaybg instead of feh)
+output * bg ~/Pictures/wall.png fill
 

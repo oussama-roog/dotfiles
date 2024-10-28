@@ -7,8 +7,9 @@ else
   configs=$(find ~/.config -mindepth 0 -maxdepth 1 -type d)
   download=$(find ~/Downloads -mindepth 0 -maxdepth 1 -type d)
   dotfiles=$(find ~/dotfiles -mindepth 0 -maxdepth 1 -type d)
+  home=$(find ~/ -mindepth 0 -maxdepth 0 -type d)
 
-  selected=$(echo -e "${projects}\n${configs}\n${download}\n${dotfiles}" | fzf )
+  selected=$(echo -e "${projects}\n${configs}\n${download}\n${dotfiles}\n${home}" | fzf )
 fi
 
 if [[ -z $selected ]]; then
