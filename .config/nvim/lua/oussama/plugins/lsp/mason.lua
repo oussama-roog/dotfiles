@@ -34,6 +34,7 @@ return {
 				"angularls",
 				"lua_ls",
 				"pyright",
+				"clangd",
 			},
 		})
 
@@ -43,6 +44,7 @@ return {
 				"stylua", -- lua formatter
 				"eslint_d", -- eslint formatter
 				"ruff", -- python formatter
+				"clang-format", -- c/c++ formatter
 			},
 		})
 	end,

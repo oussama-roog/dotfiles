@@ -95,6 +95,11 @@ return {
 			capabilities = capabilities,
 		})
 
+		lspconfig.clangd.setup({
+			on_attach = on_attach,
+			capabilities = capabilities,
+		})
+
 		lspconfig.angularls.setup({
 			on_attach = on_attach,
 			capabilities = capabilities,
