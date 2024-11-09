@@ -2,20 +2,12 @@ return {
 	"epwalsh/obsidian.nvim",
 	version = "*", -- recommended, use latest release instead of latest commit
 	lazy = true,
-	-- ft = "markdown",
-	-- Replace the above line with this if you only want to load obsidian.nvim for markdown files in your vault:
 	event = {
-		-- If you want to use the home shortcut '~' here you need to call 'vim.fn.expand'.
-		-- E.g. "BufReadPre " .. vim.fn.expand "~" .. "/my-vault/*.md"
-		-- refer to `:h file-pattern` for more examples
 		"BufReadPre /home/oussama/projects/Notes/*.md",
 		"BufNewFile /home/oussama/projects/Notes/*.md",
 	},
 	dependencies = {
-		-- Required.
 		"nvim-lua/plenary.nvim",
-
-		-- see below for full list of optional dependencies 👇
 	},
 	opts = {
 		workspaces = {
@@ -24,7 +16,21 @@ return {
 				path = "/home/oussama/projects/Notes",
 			},
 		},
+		-- Disable UI if not needed
+		ui = {
+			enable = false,
+		},
 
-		-- see below for full list of options 👇
+		-- Use the title exactly as the note ID (file name).
+		note_id_func = function(title)
+			-- Just return the title as it is
+			return title
+		end,
+
+		-- Use the title exactly as the file name.
+		note_path_func = function(spec)
+			-- Simply return the directory and the title (no modification).
+			return tostring(spec.dir) .. "/" .. spec.title .. ".md"
+		end,
 	},
 }
