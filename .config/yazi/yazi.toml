@@ -7,6 +7,7 @@ rules = [
     { mime = "image/*", use = "view_image" },
     { mime = "text/*", use = "edit" },
     { mime = "inode/directory", use = "change_dir" },  # Directory rule
+    { mime = "application/pdf", use = "view_pdf" },  # Add this line to open PDF with default viewer
     { name = "*", use = "edit" }  # Fallback rule
 ]
 
@@ -19,4 +20,7 @@ view_image = [
 ]
 change_dir = [
     { run = 'cd "$@" && exec bash', block = true, for = "unix" }
+]
+view_pdf = [
+    { run = 'xdg-open "$@"', orphan = true, for = "unix" }  # This will open the PDF with the default viewer
 ]

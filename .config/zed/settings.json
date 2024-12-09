@@ -14,9 +14,6 @@
     },
     "version": "2"
   },
-  "features": {
-    "inline_completion_provider": "supermaven"
-  },
   "vim_mode": true,
   "relative_line_numbers": true,
   "buffer_font_family": "JetBrainsMono Nerd Font",
