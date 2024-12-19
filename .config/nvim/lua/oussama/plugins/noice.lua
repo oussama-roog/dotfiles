@@ -7,6 +7,12 @@ return {
 			"rcarriga/nvim-notify",
 		},
 		config = function()
+			-- Configure nvim-notify directly
+			require("notify").setup({
+				background_colour = "#1e1e1e", -- Set the background colour for nvim-notify
+			})
+
+			-- Configure noice.nvim
 			require("noice").setup({
 				-- you can enable a preset for easier configuration
 				presets = {
@@ -24,7 +30,12 @@ return {
 						filter = { event = "msg_showmode" },
 					},
 				},
+				notify = {
+					background_colour = "#1e1e1e", -- This is now redundant but can still be used for other notifications
+				},
 			})
+
+			-- Keymap for dismissing Noice
 			vim.keymap.set("n", "<leader>nu", ":NoiceDismiss<CR>", { desc = "Dismiss Noice" })
 		end,
 	},

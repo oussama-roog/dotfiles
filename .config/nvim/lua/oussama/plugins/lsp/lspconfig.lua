@@ -114,7 +114,23 @@ return {
 			on_attach = on_attach,
 			capabilities = capabilities,
 		})
-
+		lspconfig.gopls.setup({
+			on_attach = on_attach,
+			cmd = { "gopls" }, -- Command to start the language server
+			filetypes = { "go", "gomod", "gowork", "gotmpl" }, -- File types to activate gopls
+			root_dir = lspconfig.util.root_pattern("go.work", "go.mod", ".git"),
+			settings = {
+				gopls = {
+					analyses = {
+						unusedparams = true,
+						nilness = true,
+						unusedwrite = true,
+						useany = true,
+					},
+					staticcheck = true,
+				},
+			},
+		})
 		lspconfig.pyright.setup({
 			on_attach = on_attach,
 			capabilities = capabilities,
