@@ -45,6 +45,7 @@ return {
 				"stylua", -- lua formatter
 				"eslint_d", -- eslint formatter
 				"ruff", -- python formatter
+				"black", -- python formatter
 				"clang-format", -- c/c++ formatter
 			},
 		})
