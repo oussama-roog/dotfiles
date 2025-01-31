@@ -1,0 +1,48 @@
+# Sample .bashrc for SUSE Linux
+# Copyright (c) SUSE Software Solutions Germany GmbH
+
+# There are 3 different types of shells in bash: the login shell, normal shell
+# and interactive shell. Login shells read ~/.profile and interactive shells
+# read ~/.bashrc; in our setup, /etc/profile sources ~/.bashrc - thus all
+# settings made here will also take effect in a login shell.
+#
+# NOTE: It is recommended to make language settings in ~/.profile rather than
+# here, since multilingual X sessions would not work properly if LANG is over-
+# ridden in every subshell.
+
+
+eval "$(starship init bash)"
+test -s ~/.alias && . ~/.alias || true
+
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+eval "$(zoxide init bash)"
+# eval "$(ssh-agent -s)"
+# ssh-add ~/.ssh/id_ed25519
+# silently load ssh-agent
+eval "$(ssh-agent -s)" > /dev/null 2>&1
+ssh-add ~/.ssh/id_ed25519 > /dev/null 2>&1
+alias git-test='ssh -T git@github.com'
+
+alias v="nvim"
+
+# Load Angular CLI autocompletion.
+source <(ng completion script)
+
+alias op='~/.tmux-sessionizer'
+export PATH=$HOME/.local/bin:$PATH
+
+# Add this to your .bashrc file
+if [ -z "$TMUX" ]; then
+    if ! tmux has-session -t oussama 2>/dev/null; then
+        tmux new-session -s oussama
+    else
+        tmux attach-session -t oussama
+    fi
+# else
+#     # Inside an existing tmux session, you can choose to do nothing or notify
+#     # echo "Already inside a tmux session."
+fi
+
+
+export PATH=$PATH:/usr/lib64/mpi/gcc/mpich/bin
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib64/mpi/gcc/mpich/lib64
