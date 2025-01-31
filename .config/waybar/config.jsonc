@@ -11,8 +11,7 @@
   "modules-left": ["sway/workspaces", "hyprland/workspaces", "custom/spotify"],
   "modules-center": ["clock"],
   "modules-right": [
-    "sway/language",
-    "hyprland/language",
+    "network",
     "memory",
     "cpu",
     "pulseaudio",
@@ -57,10 +56,13 @@
     }
   },
 
-  "hyprland/language": {
-    "format": "<span font='12'>󰌌</span>  {}",
-    "format-en": "English",
-    "format-ar": "Arabic"
+  "network": {
+    "interval": 5,
+    "format-wifi": "  {essid} ({signalStrength}%)",
+    "format-ethernet": "󰈀  {ifname}",
+    "format-disconnected": "󰖪  Disconnected",
+    "tooltip-format": "{ifname}: {ipaddr}/{cidr}",
+    "on-click": "nm-connection-editor"
   },
 
  "memory": {
