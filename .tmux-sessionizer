@@ -3,13 +3,16 @@
 if [[ $# -eq 1 ]]; then
   selected=$1
 else
-  projects=$(find ~/projects -mindepth 0 -maxdepth 2 -type d)
-  configs=$(find ~/.config -mindepth 0 -maxdepth 1 -type d)
-  download=$(find ~/Downloads -mindepth 0 -maxdepth 1 -type d)
-  dotfiles=$(find ~/dotfiles -mindepth 0 -maxdepth 1 -type d)
   home=$(find ~/ -mindepth 0 -maxdepth 0 -type d)
+  download=$(find ~/Downloads -mindepth 0 -maxdepth 1 -type d)
+  configs=$(find ~/.config -mindepth 0 -maxdepth 1 -type d)
+  dotfiles=$(find ~/dotfiles -mindepth 0 -maxdepth 1 -type d)
+  projects=$(find /mnt/data/Projects -mindepth 0 -maxdepth 2 -type d)
+  notes=$(find /mnt/data/Notes -mindepth 0 -maxdepth 1 -type d)
 
-  selected=$(echo -e "${projects}\n${configs}\n${download}\n${dotfiles}\n${home}" | fzf )
+
+  # selected=$(echo -e "${projects}\n${notes}\n${configs}\n${download}\n${dotfiles}\n${home}" | fzf )
+  selected=$(echo -e "${home}\n${download}\n${configs}\n${dotfiles}\n${projects}\n${notes}" | fzf)
 fi
 
 if [[ -z $selected ]]; then

@@ -3,8 +3,8 @@ return {
 	version = "*", -- recommended, use latest release instead of latest commit
 	lazy = true,
 	event = {
-		"BufReadPre /home/oussama/projects/Notes/*.md",
-		"BufNewFile /home/oussama/projects/Notes/*.md",
+		"BufReadPre /mnt/data/Notes/*.md",
+		"BufNewFile /mnt/data/Notes/*.md",
 	},
 	dependencies = {
 		"nvim-lua/plenary.nvim",
@@ -13,7 +13,7 @@ return {
 		workspaces = {
 			{
 				name = "Notes",
-				path = "/home/oussama/projects/Notes",
+				path = "/mnt/data/Notes",
 			},
 		},
 		-- Disable UI if not needed

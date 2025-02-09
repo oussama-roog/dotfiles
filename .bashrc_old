@@ -10,11 +10,9 @@
 # here, since multilingual X sessions would not work properly if LANG is over-
 # ridden in every subshell.
 
-
 eval "$(starship init bash)"
 test -s ~/.alias && . ~/.alias || true
 
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 eval "$(zoxide init bash)"
 # eval "$(ssh-agent -s)"
 # ssh-add ~/.ssh/id_ed25519
@@ -24,9 +22,12 @@ ssh-add ~/.ssh/id_ed25519 > /dev/null 2>&1
 alias git-test='ssh -T git@github.com'
 
 alias v="nvim"
+alias y="yazi"
+alias ta="tmux attach"
+alias lg="lazygit"
 
-# Load Angular CLI autocompletion.
-source <(ng completion script)
+# # Load Angular CLI autocompletion.
+# source <(ng completion script)
 
 alias op='~/.tmux-sessionizer'
 export PATH=$HOME/.local/bin:$PATH
@@ -43,6 +44,9 @@ if [ -z "$TMUX" ]; then
 #     # echo "Already inside a tmux session."
 fi
 
+alias data="sudo mount -t ntfs-3g /dev/nvme0n1p8 /mnt/data"
+alias udata="sudo umount /mnt/data"
 
-export PATH=$PATH:/usr/lib64/mpi/gcc/mpich/bin
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib64/mpi/gcc/mpich/lib64
+
+# export PATH=$PATH:/usr/lib64/mpi/gcc/mpich/bin
+# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib64/mpi/gcc/mpich/lib64
