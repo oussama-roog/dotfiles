@@ -3,3 +3,5 @@
 [user]
 	name = oussama-roog
 	email = oussamaroog@gmail.com
+[safe]
+	directory = /mnt/data/Notes
