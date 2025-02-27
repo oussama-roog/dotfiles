@@ -11,8 +11,7 @@ return {
 				},
 			})
 
-			-- vim.cmd("colorscheme github_dark_default")
-			vim.cmd("colorscheme github_dark_dimmed")
+			-- vim.cmd("colorscheme github_dark_dimmed")
 		end,
 	},
 
@@ -48,6 +47,34 @@ return {
 				style = "dark",
 				transparent = true, -- Enable this to disable setting the background color
 			})
+		end,
+	},
+	{
+		"vague2k/vague.nvim",
+		config = function()
+			-- NOTE: you do not need to call setup if you don't want to.
+			require("vague").setup({
+				-- optional configuration here
+			})
+
+			vim.cmd("colorscheme vague")
+		end,
+	},
+
+	{
+		"bluz71/vim-moonfly-colors",
+		name = "moonfly",
+		lazy = false,
+		priority = 1000,
+		config = function()
+			-- vim.cmd("colorscheme moonfly")
+		end,
+	},
+	{
+		"rose-pine/neovim",
+		name = "rose-pine",
+		config = function()
+			-- vim.cmd("colorscheme rose-pine-main")
 		end,
 	},
 }

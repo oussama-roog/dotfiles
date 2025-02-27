@@ -1,0 +1,22 @@
+gui:
+  theme:
+    activeBorderColor:
+      - "#AEC6CF"
+    inactiveBorderColor:
+      - "#A0A0A0"
+    optionsTextColor:
+      - "#FFFFFF"
+    textColor:
+      - "#CDCDCD"
+    selectedLineBgColor:
+      - "#506075" # A much lighter, more distinct color
+    selectedRangeBgColor:
+      - "#607085" # Slightly lighter than the line background
+    commitAuthorColor:
+      - "#BB9DBD"
+    commitShaColor:
+      - "#AEAED1"
+    commitTitleColor:
+      - "#FFFFFF"
+    unstagedChangesColor:
+      - "#F3BE7C"

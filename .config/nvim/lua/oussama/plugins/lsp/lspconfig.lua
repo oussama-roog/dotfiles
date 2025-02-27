@@ -17,43 +17,13 @@ return {
 			local opts = { buffer = bufnr, silent = true }
 
 			-- Buffer local mappings
-			keymap.set("n", "gR", "<cmd>Telescope lsp_references<CR>", { desc = "Show LSP references", buffer = bufnr })
-			keymap.set("n", "gD", vim.lsp.buf.declaration, { desc = "Go to declaration", buffer = bufnr })
 			keymap.set(
-				"n",
-				"gd",
-				"<cmd>Telescope lsp_definitions<CR>",
-				{ desc = "Show LSP definitions", buffer = bufnr }
+				{ "n", "v" },
+				"<leader>ca",
+				vim.lsp.buf.code_action,
+				{ desc = "See available code actions", buffer = bufnr }
 			)
-			keymap.set(
-				"n",
-				"gi",
-				"<cmd>Telescope lsp_implementations<CR>",
-				{ desc = "Show LSP implementations", buffer = bufnr }
-			)
-			keymap.set(
-				"n",
-				"gt",
-				"<cmd>Telescope lsp_type_definitions<CR>",
-				{ desc = "Show LSP type definitions", buffer = bufnr }
-			)
-			-- keymap.set(
-			-- 	{ "n", "v" },
-			-- 	"<leader>ca",
-			-- 	vim.lsp.buf.code_action,
-			-- 	{ desc = "See available code actions", buffer = bufnr }
-			-- )
 			keymap.set("n", "<leader>rn", vim.lsp.buf.rename, { desc = "Smart rename", buffer = bufnr })
-			keymap.set(
-				"n",
-				"<leader>D",
-				"<cmd>Telescope diagnostics bufnr=0<CR>",
-				{ desc = "Show buffer diagnostics", buffer = bufnr }
-			)
-			keymap.set("n", "<leader>d", vim.diagnostic.open_float, { desc = "Show line diagnostics", buffer = bufnr })
-			keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Go to previous diagnostic", buffer = bufnr })
-			keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Go to next diagnostic", buffer = bufnr })
-			keymap.set("n", "K", vim.lsp.buf.hover, { desc = "Show documentation for cursor", buffer = bufnr })
 			keymap.set("n", "<leader>rs", ":LspRestart<CR>", { desc = "Restart LSP", buffer = bufnr })
 		end
 
@@ -114,6 +84,7 @@ return {
 			on_attach = on_attach,
 			capabilities = capabilities,
 		})
+
 		lspconfig.gopls.setup({
 			on_attach = on_attach,
 			cmd = { "gopls" }, -- Command to start the language server

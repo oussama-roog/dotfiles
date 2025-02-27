@@ -1,0 +1,64 @@
+[manager]
+cwd = { fg = "#cdcdcd" }
+hovered = { bg = "#333738" } #visual color from neovim theme.
+find_keyword = { fg = "#f3be7c", bold = true } #warning color with bold.
+marker_copied = { bg = "#8cb66d" } #plus color.
+marker_cut = { bg = "#f3be7c" } #delta color.
+tab_active = { fg = "#cdcdcd", bold = true }
+tab_inactive = { fg = "#878787" }
+border_style = { fg = "#878787" }
+
+[mode]
+normal_main = { fg = "#cdcdcd", bg = "#141415" }
+select_main = { fg = "#cdcdcd", bg = "#333738" }
+
+[status]
+overall = { fg = "#cdcdcd", bg = "#141415" }
+perm_type = { fg = "#9bb4bc" } #type color
+perm_read = { fg = "#8cb66d" } #plus color
+perm_write = { fg = "#f3be7c" } #delta color
+perm_exec = { fg = "#c48282" } #func color
+progress_normal = { fg = "#cdcdcd", bg = "#252530" } #fg and line color.
+progress_error = { fg = "#df6882" } #error color.
+
+[pick]
+border = { fg = "#878787" }
+active = { fg = "#cdcdcd", bg = "#333738" }
+inactive = { fg = "#cdcdcd" }
+
+[input]
+border = { fg = "#878787" }
+value = { fg = "#cdcdcd" }
+selected = { bg = "#333738" }
+
+[cmp]
+border = { fg = "#878787" }
+active = { fg = "#cdcdcd", bg = "#333738" }
+inactive = { fg = "#cdcdcd" }
+
+[tasks]
+border = { fg = "#878787" }
+hovered = { bg = "#333738" }
+
+[help]
+on = { fg = "#6e94b2" } #keyword color
+desc = { fg = "#cdcdcd" }
+hovered = { bg = "#333738" }
+
+[notify]
+title_info = { fg = "#7e98e8" } #hint color
+title_warn = { fg = "#f3be7c" } #warning color
+title_error = { fg = "#df6882" } #error color
+
+[filetype]
+rules = [
+        { name = "*/", fg = "#9bb4bc" }, #type color for folders.
+        { name = "*", fg = "#cdcdcd" } #default file color.
+]
+
+[icon]
+prepend_conds = [
+    { if = "dir", text = "", fg = "#9bb4bc" }, #type color, directory icon
+    { if = "link", text = "", fg = "#aeaed1" }, #constant color, link icon
+    { if = "exec", text = "", fg = "#c48282" } #func color, executable icon.
+]
