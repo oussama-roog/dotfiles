@@ -104,6 +104,11 @@ configuration {
     }
 
 	/*---------- Keybindings ----------*/
+    kb-row-down: "Down,Control+n,Control+j"; // Add Ctrl+j
+    kb-row-up: "Up,Control+p,Control+k";     // Add Ctrl+k
+    kb-accept-entry: "Control+m,Return,KP_Enter";
+    kb-remove-to-eol: "Control+Alt+k";
+
 /*
 	kb-primary-paste: "Control+V,Shift+Insert";
 	kb-secondary-paste: "Control+v,Insert";

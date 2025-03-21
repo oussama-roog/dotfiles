@@ -4,8 +4,13 @@
  * Github : @adi1090x
  * 
  * Colors
- **/
+**/
 
+
+
+
+/**
+/* OneDark theme */
 * {
     background:     #1E2127FF;
     background-alt: #282B31FF;
@@ -13,4 +18,15 @@
     selected:       #61AFEFFF;
     active:         #98C379FF;
     urgent:         #E06C75FF;
+}
+**/
+
+/* Black theme */
+* {
+    background:     #000000FF;
+    background-alt: #101010FF;
+    foreground:     #FFFFFFFF;
+    selected:       #62AEEFFF;
+    active:         #98C379FF;
+    urgent:         #E06B74FF;
 }
