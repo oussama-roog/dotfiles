@@ -37,6 +37,24 @@ return {
 		-- Capabilities for autocompletion
 		local capabilities = cmp_nvim_lsp.default_capabilities()
 
+		local common_servers = {
+			"ts_ls",
+			"clangd",
+			"angularls",
+			"cssls",
+			"html",
+			"bashls",
+			"jsonls",
+			"tailwindcss",
+		}
+
+		for _, server in ipairs(common_servers) do
+			lspconfig[server].setup({
+				on_attach = on_attach,
+				capabilities = capabilities,
+			})
+		end
+
 		-- LSP server configurations
 		lspconfig.lua_ls.setup({
 			on_attach = on_attach,
@@ -58,31 +76,6 @@ return {
 					},
 				},
 			},
-		})
-
-		lspconfig.ts_ls.setup({
-			on_attach = on_attach,
-			capabilities = capabilities,
-		})
-
-		lspconfig.clangd.setup({
-			on_attach = on_attach,
-			capabilities = capabilities,
-		})
-
-		lspconfig.angularls.setup({
-			on_attach = on_attach,
-			capabilities = capabilities,
-		})
-
-		lspconfig.cssls.setup({
-			on_attach = on_attach,
-			capabilities = capabilities,
-		})
-
-		lspconfig.html.setup({
-			on_attach = on_attach,
-			capabilities = capabilities,
 		})
 
 		lspconfig.gopls.setup({

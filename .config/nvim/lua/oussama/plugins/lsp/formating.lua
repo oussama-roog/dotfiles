@@ -18,6 +18,7 @@ return {
 					json = { "prettier" },
 					yaml = { "prettier" },
 					markdown = { "prettier" },
+					tailwindcss = { "prettier" },
 					graphql = { "prettier" },
 					liquid = { "prettier" },
 					lua = { "stylua" },

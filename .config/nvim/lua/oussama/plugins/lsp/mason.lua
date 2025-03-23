@@ -36,6 +36,7 @@ return {
 				"lua_ls",
 				"pyright",
 				"clangd",
+				"bashls",
 			},
 		})
 
