@@ -37,6 +37,7 @@ return {
 				"pyright",
 				"clangd",
 				"bashls",
+				"jsonls",
 			},
 		})
 
@@ -48,6 +49,13 @@ return {
 				"ruff", -- python formatter
 				"black", -- python formatter
 				"clang-format", -- c/c++ formatter
+				"shfmt", -- bash formatter
+				"jsonlint",
+				"htmlhint",
+				"stylelint",
+				"yamllint",
+				"markdownlint",
+				"luacheck",
 			},
 		})
 	end,

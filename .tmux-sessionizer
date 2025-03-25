@@ -10,7 +10,6 @@ else
   projects=$(find /mnt/data/Projects -mindepth 0 -maxdepth 2 -type d)
   notes=$(find /mnt/data/Notes -mindepth 0 -maxdepth 1 -type d)
 
-
   # selected=$(echo -e "${projects}\n${notes}\n${configs}\n${download}\n${dotfiles}\n${home}" | fzf )
   selected=$(echo -e "${home}\n${download}\n${configs}\n${dotfiles}\n${projects}\n${notes}" | fzf)
 fi
@@ -27,7 +26,7 @@ if [[ -z $TMUX ]] && [[ -z $tmux_running ]]; then
   exit 0
 fi
 
-if ! tmux has-session -t=$selected_name 2> /dev/null; then
+if ! tmux has-session -t=$selected_name 2>/dev/null; then
   tmux new-session -ds $selected_name -c $selected
 fi
 
