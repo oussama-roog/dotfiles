@@ -2,112 +2,82 @@ return {
 	"neovim/nvim-lspconfig",
 	event = { "BufReadPre", "BufNewFile" },
 	dependencies = {
-		"hrsh7th/cmp-nvim-lsp",
+		"saghen/blink.cmp",
 		{ "antosha417/nvim-lsp-file-operations", config = true },
 		{ "folke/neodev.nvim", opts = {} },
 	},
 	config = function()
 		local lspconfig = require("lspconfig")
-		local cmp_nvim_lsp = require("cmp_nvim_lsp")
+		local blink_cmp = require("blink.cmp")
 		local util = require("lspconfig.util")
-		local keymap = vim.keymap
 
-		-- Custom on_attach function
-		local on_attach = function(client, bufnr)
+		local capabilities = blink_cmp.get_lsp_capabilities()
+
+		local on_attach = function(_, bufnr)
+			local keymap = vim.keymap.set
 			local opts = { buffer = bufnr, silent = true }
 
-			-- Buffer local mappings
-			keymap.set(
-				{ "n", "v" },
-				"<leader>ca",
-				vim.lsp.buf.code_action,
-				{ desc = "See available code actions", buffer = bufnr }
-			)
-			keymap.set("n", "<leader>rn", vim.lsp.buf.rename, { desc = "Smart rename", buffer = bufnr })
-			keymap.set("n", "<leader>rs", ":LspRestart<CR>", { desc = "Restart LSP", buffer = bufnr })
+			keymap({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, { desc = "Code Action", unpack(opts) })
+			keymap("n", "<leader>rn", vim.lsp.buf.rename, { desc = "Rename Symbol", unpack(opts) })
+			keymap("n", "<leader>rs", ":LspRestart<CR>", { desc = "Restart LSP", unpack(opts) })
 		end
 
-		-- Configure diagnostic signs
-		local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
-		for type, icon in pairs(signs) do
-			local hl = "DiagnosticSign" .. type
-			vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
-		end
-
-		-- Capabilities for autocompletion
-		local capabilities = cmp_nvim_lsp.default_capabilities()
-
-		local common_servers = {
-			"ts_ls",
-			"clangd",
-			"angularls",
-			"cssls",
-			"html",
-			"bashls",
-			"jsonls",
-			"tailwindcss",
+		local servers = {
+			ts_ls = {},
+			clangd = {},
+			angularls = {},
+			cssls = {},
+			html = {},
+			bashls = {},
+			jsonls = {},
+			tailwindcss = {},
+			lua_ls = {
+				settings = {
+					Lua = {
+						runtime = { version = "LuaJIT" },
+						diagnostics = { globals = { "vim" } },
+						workspace = {
+							library = vim.api.nvim_get_runtime_file("", true),
+							checkThirdParty = false,
+						},
+						telemetry = { enable = false },
+					},
+				},
+			},
+			gopls = {
+				cmd = { "gopls" },
+				filetypes = { "go", "gomod", "gowork", "gotmpl" },
+				root_dir = util.root_pattern("go.work", "go.mod", ".git"),
+				settings = {
+					gopls = {
+						analyses = {
+							unusedparams = true,
+							nilness = true,
+							unusedwrite = true,
+							useany = true,
+						},
+						staticcheck = true,
+					},
+				},
+			},
+			pyright = {
+				settings = {
+					python = {
+						analysis = {
+							autoSearchPaths = true,
+							useLibraryCodeForTypes = true,
+							diagnosticMode = "workspace",
+						},
+					},
+				},
+			},
 		}
 
-		for _, server in ipairs(common_servers) do
-			lspconfig[server].setup({
-				on_attach = on_attach,
+		for server, config in pairs(servers) do
+			lspconfig[server].setup(vim.tbl_deep_extend("force", {
 				capabilities = capabilities,
-			})
+				on_attach = on_attach,
+			}, config))
 		end
-
-		-- LSP server configurations
-		lspconfig.lua_ls.setup({
-			on_attach = on_attach,
-			capabilities = capabilities,
-			settings = {
-				Lua = {
-					runtime = {
-						version = "LuaJIT",
-					},
-					diagnostics = {
-						globals = { "vim" },
-					},
-					workspace = {
-						library = vim.api.nvim_get_runtime_file("", true),
-						checkThirdParty = false,
-					},
-					telemetry = {
-						enable = false,
-					},
-				},
-			},
-		})
-
-		lspconfig.gopls.setup({
-			on_attach = on_attach,
-			cmd = { "gopls" }, -- Command to start the language server
-			filetypes = { "go", "gomod", "gowork", "gotmpl" }, -- File types to activate gopls
-			root_dir = lspconfig.util.root_pattern("go.work", "go.mod", ".git"),
-			settings = {
-				gopls = {
-					analyses = {
-						unusedparams = true,
-						nilness = true,
-						unusedwrite = true,
-						useany = true,
-					},
-					staticcheck = true,
-				},
-			},
-		})
-
-		lspconfig.pyright.setup({
-			on_attach = on_attach,
-			capabilities = capabilities,
-			settings = {
-				python = {
-					analysis = {
-						autoSearchPaths = true,
-						useLibraryCodeForTypes = true,
-						diagnosticMode = "workspace",
-					},
-				},
-			},
-		})
 	end,
 }
