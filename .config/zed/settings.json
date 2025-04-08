@@ -8,7 +8,7 @@
 // command palette
 {
   "features": {
-    "inline_completion_provider": "zed"
+    "edit_prediction_provider": "zed"
   },
   "assistant": {
     "default_model": {
@@ -26,7 +26,7 @@
   "theme": {
     "mode": "system",
     "light": "One Light",
-    "dark": "Github Dark"
+    "dark": "Rosé Pine"
   },
   "prettier": {
     "tabWidth": 2
