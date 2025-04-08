@@ -7,19 +7,23 @@
   "gtk-layer-shell": true,
   "reload_style_on_change": true,
   "fixed-center": true,
-
-  "modules-left": ["sway/workspaces", "hyprland/workspaces", "custom/spotify"],
-  "modules-center": ["clock"],
+  "modules-left": [
+    "sway/workspaces",
+    "hyprland/workspaces",
+    "custom/spotify"
+  ],
+  "modules-center": [
+    "clock"
+  ],
   "modules-right": [
     "network",
     "memory",
     "cpu",
     "pulseaudio",
+    "battery",
     "custom/power",
     "tray"
   ],
-
-  
   "hyprland/workspaces": {
     "active-only": false,
     "all-outputs": true,
@@ -35,7 +39,6 @@
       "sort-by-number": true
     }
   },
-
   "custom/spotify": {
     "exec": "~/.config/waybar/scripts/songname.sh",
     "interval": 1,
@@ -55,7 +58,6 @@
       }
     }
   },
-
   "network": {
     "interval": 5,
     "format-wifi": "  {essid} ({signalStrength}%)",
@@ -64,14 +66,12 @@
     "tooltip-format": "{ifname}: {ipaddr}/{cidr}",
     "on-click": "nm-connection-editor"
   },
-
- "memory": {
+  "memory": {
     "interval": 15,
     "format": "<span> </span> {used} GiB",
     "max-length": 13,
     "tooltip-format": "  {used} GiB"
   },
-
   "cpu": {
     "interval": 5,
     "format": "<span></span>  {usage} %",
@@ -80,7 +80,6 @@
       "default": ""
     }
   },
-
   "pulseaudio": {
     "format": "{icon}   {volume}%",
     "rotate": 0,
@@ -90,7 +89,9 @@
     "on-scroll-up": "$HOME/.config/scripts/volumecontrol.sh -o i",
     "on-scroll-down": "$HOME/.config/scripts/volumecontrol.sh -o d",
     "tooltip-format": "{icon}   {desc} || {volume}%",
-    "ignored-sinks": ["Easy Effects Sink"],
+    "ignored-sinks": [
+      "Easy Effects Sink"
+    ],
     "scroll-step": 5,
     "format-icons": {
       "headphone": " ",
@@ -99,7 +100,11 @@
       "phone": " ",
       "portable": " ",
       "car": " ",
-      "default": ["", " ", "  "]
+      "default": [
+        "",
+        " ",
+        "  "
+      ]
     }
   },
   "custom/power": {
@@ -107,9 +112,26 @@
     "on-click": "~/.config/rofi/powermenu/powermenu.sh",
     "tooltip": false
   },
-
   "tray": {
     "icon-size": 14,
     "spacing": 10
+  },
+  "battery": {
+    "states": {
+      "good": 95,
+      "warning": 30,
+      "critical": 15
+    },
+    "format": "{icon} {capacity}%",
+    "format-charging": " {capacity}%",
+    "format-plugged": " {capacity}%",
+    "format-alt": "{time}",
+    "format-icons": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
   }
 }

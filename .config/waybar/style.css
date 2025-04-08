@@ -104,6 +104,16 @@ window#waybar {
   background: #d8dee9;
 }
 
+#battery {
+  margin: 6px 0 6px 8px;
+  padding: 0 10px;
+  border-radius: 18px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #2e3440;
+  background: #d8dee9;
+}
+
 #custom-power {
   margin: 6px 10px 6px 15px;
   padding: 0 0px;
