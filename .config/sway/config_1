@@ -3,50 +3,20 @@
 # Set mod key
 set $mod Mod4
 
-# Programs
+### Programs ###
 set $terminal kitty
+set $fileManager nautilus
 
-# Floating modifier
-floating_modifier $mod normal
-
-# Output (Monitor)
+### Output (Monitor) ###
+# Default to preferred resolution and position
 output * bg ~/.config/hypr/wall.png fill
 
-# Input (Keyboard/Touchpad)
-input "type:keyboard" {
-    xkb_layout us
-    xkb_options ctrl:nocaps
-}
-
-input "type:touchpad" {
-    tap enabled           # Enables tap-to-click
-    tap_button_map lrm    # Maps single-finger tap to left-click, two-finger tap to right-click
-    natural_scroll enabled # Optional: Enables natural scrolling
-    dwt enabled           # Disables touchpad while typing
-}
-
-bindgesture swipe:right workspace prev   # Swipe right with three fingers to go to the previous workspace
-bindgesture swipe:left workspace next    # Swipe left with three fingers to go to the next workspace
-
-# Gaps and Borders
-gaps inner 2
-gaps outer 5
-default_border pixel 2
-default_floating_border pixel 2
-
-# Colors (using values from Hyprland config)
-client.focused #33ccffee #33ccffee #ffffff #33ccffee #33ccffee
-client.unfocused #595959aa #595959aa #ffffff #595959aa #595959aa
-
-# Keybindings
-
-## Basics
-bindsym $mod+t exec $terminal
+### Keybindings ###
+# Basics
+bindsym $mod+Return exec $terminal
+bindsym $mod+e exec $fileManager
 bindsym $mod+q kill
 bindsym $mod+shift+e exec "swaymsg exit"
-
-# Reload the configuration file
-bindsym $mod+Shift+c reload
 
 # Launcher and scripts
 bindsym $mod+space exec ~/.config/rofi/launcher/launcher.sh
@@ -65,12 +35,6 @@ bindsym $mod+Left focus left
 bindsym $mod+Down focus down
 bindsym $mod+Up focus up
 bindsym $mod+Right focus right
-
-# Move focused window
-bindsym $mod+Shift+h move left
-bindsym $mod+Shift+j move down
-bindsym $mod+Shift+k move up
-bindsym $mod+Shift+l move right
 
 # Workspaces
 bindsym $mod+1 workspace 1
@@ -96,25 +60,9 @@ bindsym $mod+Shift+8 move container to workspace 8
 bindsym $mod+Shift+9 move container to workspace 9
 bindsym $mod+Shift+0 move container to workspace 10
 
-# Move workspaces between outputs
-bindsym $mod+Alt+h move workspace to output left
-bindsym $mod+Alt+l move workspace to output right
-
 # Scratchpad (Magic workspace equivalent)
 bindsym $mod+s scratchpad show
 bindsym $mod+Shift+s move scratchpad
-
-# Floating window
-bindsym $mod+Shift+space floating toggle
-bindsym $mod+f floating toggle
-
-# Layout
-bindsym $mod+w layout tabbed
-bindsym $mod+e layout toggle split
-
-# Split horizontally/vertically
-bindsym $mod+minus splith
-bindsym $mod+bar splitv
 
 # Resize windows with mouse
 mode "resize" {
@@ -129,7 +77,38 @@ mode "resize" {
 }
 bindsym $mod+r mode "resize"
 
-# Audio and Media Keys
+# Floating toggle
+bindsym $mod+f floating toggle
+
+# Drag floating windows
+floating_modifier $mod
+
+### Autostart ###
+exec_always --no-startup-id waybar
+exec_always --no-startup-id hyprpaper
+exec_always --no-startup-id wl-paste --type text --watch cliphist store
+exec_always --no-startup-id swaymsg seat seat0 cursor set_theme Adwaita 24
+
+### Input (Keyboard/Touchpad) ###
+input "type:keyboard" {
+    xkb_layout us
+    xkb_options ctrl:nocaps
+}
+input "type:touchpad" {
+    natural_scroll enabled
+}
+
+### Gaps and Borders ###
+# Requires sway-gaps
+gaps inner 2
+gaps outer 5
+default_border pixel 2
+default_floating_border pixel 2
+
+### Opacity (via picom or swayfx if desired) ###
+# Sway doesn't support native window opacity, use swayfx or picom (with XWayland apps only)
+
+### Audio and Media Keys ###
 bindsym XF86AudioMute exec pactl set-sink-mute @DEFAULT_SINK@ toggle
 bindsym XF86AudioRaiseVolume exec pactl set-sink-volume @DEFAULT_SINK@ +5%
 bindsym XF86AudioLowerVolume exec pactl set-sink-volume @DEFAULT_SINK@ -5%
@@ -137,13 +116,3 @@ bindsym XF86AudioPlay exec playerctl play-pause
 bindsym XF86AudioStop exec playerctl stop
 bindsym XF86AudioNext exec playerctl next
 bindsym XF86AudioPrev exec playerctl previous
-
-# Autostart
-exec_always --no-startup-id waybar
-exec_always --no-startup-id hyprpaper
-exec_always --no-startup-id wl-paste --type text --watch cliphist store
-# exec_always --no-startup-id swaymsg seat seat0 cursor set_theme Adwaita 24
-
-# XDG Autostart
-exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway
-
