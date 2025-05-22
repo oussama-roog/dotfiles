@@ -35,3 +35,33 @@ keymap.set("n", "<leader>sv", "<C-w>v", { desc = "Split window vertically" }) --
 keymap.set("n", "<leader>sh", "<C-w>s", { desc = "Split window horizontally" }) -- split window horizontally
 keymap.set("n", "<leader>se", "<C-w>=", { desc = "Make splits equal size" }) -- make split windows equal width & height
 keymap.set("n", "<leader>sx", "<cmd>close<CR>", { desc = "Close current split" }) -- close current split window
+
+-- Simple clipboard functions for Wayland
+vim.keymap.set("x", "<leader><leader>y", function()
+	-- Yank the selection to the unnamed register
+	vim.cmd("normal! y")
+
+	-- Get the yanked text
+	local yanked_text = vim.fn.getreg('"')
+
+	-- Get current clipboard content
+	local current_clipboard = vim.fn.system('wl-paste 2>/dev/null || echo ""')
+
+	-- Append with newline
+	local new_content = current_clipboard
+	if new_content ~= "" then
+		new_content = new_content .. "\n"
+	end
+	new_content = new_content .. yanked_text
+
+	-- Update clipboard
+	vim.fn.system("wl-copy", new_content)
+
+	vim.notify("Text appended to clipboard")
+end, { noremap = true, desc = "Append selection to clipboard" })
+
+-- Clear clipboard function
+vim.keymap.set({ "n", "x" }, "<leader><leader>p", function()
+	vim.fn.system("wl-copy", "")
+	vim.notify("Clipboard cleared")
+end, { noremap = true, desc = "Clear clipboard" })
