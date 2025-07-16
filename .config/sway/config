@@ -4,7 +4,7 @@
 set $mod Mod4
 
 # Programs
-set $terminal kitty
+set $terminal ghostty
 
 # Floating modifier
 floating_modifier $mod normal

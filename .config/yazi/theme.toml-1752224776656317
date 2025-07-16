@@ -1,4 +1,4 @@
-[mgr]
+[manager]
 cwd = { fg = "#cdcdcd" }
 hovered = { bg = "#333738" } #visual color from neovim theme.
 find_keyword = { fg = "#f3be7c", bold = true } #warning color with bold.

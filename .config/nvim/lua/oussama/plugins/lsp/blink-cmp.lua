@@ -30,6 +30,7 @@ return {
 		keymap = {
 			preset = "default",
 
+			["<CR>"] = { "accept", "fallback" },
 			["<C-k>"] = { "select_prev", "fallback" }, -- Previous suggestion
 			["<C-j>"] = { "select_next", "fallback" }, -- Next suggestion
 		},
@@ -46,7 +47,13 @@ return {
 		-- Default list of enabled providers defined so that you can extend it
 		-- elsewhere in your config, without redefining it, due to `opts_extend`
 		sources = {
-			default = { "avante", "lsp", "path", "snippets", "buffer" },
+			default = {
+				"avante",
+				"lsp",
+				"path",
+				"snippets",
+				"buffer",
+			},
 			providers = {
 				avante = {
 					module = "blink-cmp-avante",

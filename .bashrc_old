@@ -17,8 +17,8 @@ eval "$(zoxide init bash)"
 # eval "$(ssh-agent -s)"
 # ssh-add ~/.ssh/id_ed25519
 # silently load ssh-agent
-eval "$(ssh-agent -s)" > /dev/null 2>&1
-ssh-add ~/.ssh/id_ed25519 > /dev/null 2>&1
+eval "$(ssh-agent -s)" >/dev/null 2>&1
+ssh-add ~/.ssh/id_ed25519 >/dev/null 2>&1
 alias git-test='ssh -T git@github.com'
 
 alias v="nvim"
@@ -34,19 +34,22 @@ export PATH=$HOME/.local/bin:$PATH
 
 # Add this to your .bashrc file
 if [ -z "$TMUX" ]; then
-    if ! tmux has-session -t oussama 2>/dev/null; then
-        tmux new-session -s oussama
-    else
-        tmux attach-session -t oussama
-    fi
+  if ! tmux has-session -t oussama 2>/dev/null; then
+    tmux new-session -s oussama
+  else
+    tmux attach-session -t oussama
+  fi
 # else
 #     # Inside an existing tmux session, you can choose to do nothing or notify
 #     # echo "Already inside a tmux session."
 fi
 
-alias data="sudo mount -t ntfs-3g /dev/nvme0n1p8 /mnt/data"
+alias data="sudo mount -t ntfs-3g /dev/nvme0n1p5 /mnt/data"
 alias udata="sudo umount /mnt/data"
-
 
 # export PATH=$PATH:/usr/lib64/mpi/gcc/mpich/bin
 # export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib64/mpi/gcc/mpich/lib64
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
