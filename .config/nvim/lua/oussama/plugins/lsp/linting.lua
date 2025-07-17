@@ -33,8 +33,13 @@ return {
 			end,
 		})
 
-		vim.keymap.set("n", "<leader>l", function()
+		vim.keymap.set("n", "<leader>ll", function()
 			lint.try_lint()
 		end, { desc = "Trigger linting for current file" })
+
+		vim.keymap.set("n", "<leader>lh", function()
+			local bufnr = vim.api.nvim_get_current_buf()
+			vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }), { bufnr = bufnr })
+		end, { desc = "Toggle Inlay Hints" })
 	end,
 }

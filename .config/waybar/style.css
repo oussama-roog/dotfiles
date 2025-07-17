@@ -1,17 +1,17 @@
 * {
   border: none;
   border-radius: 18px;
-  font-family: "jetbrainsmono nerd font";
+  font-family: "JetBrainsMono Nerd Font";
   font-size: 14px;
 }
 
 window#waybar {
-  /* background: rgba(46, 52, 64, 0.9); */
   background: transparent;
   border-radius: 20px;
   margin-top: 6px;
 }
 
+/* Workspaces styling */
 #workspaces {
   margin: 10px;
   padding: 0px 5px 0px 5px;
@@ -19,6 +19,7 @@ window#waybar {
   border: solid 0px #f4d9e1;
   font-weight: bold;
 }
+
 #workspaces button {
   padding: 0px 5px;
   border-radius: 16px;
@@ -32,103 +33,26 @@ window#waybar {
 }
 
 #workspaces button:hover {
-  background-color: #e6b9c6;
   color: black;
   border-radius: 16px;
 }
-#custom-spotify {
-  margin: 6px 10px 5px 10px;
-  padding: 0 10px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: bold;
-  background-color: #d8dee9;
-  color: #2e3440;
-}
 
-#clock {
-  margin: 6px 8px 6px 8px;
-  padding: 0 10px;
-  border-radius: 18px;
-  font-weight: bold;
-  color: #2e3440;
-  background: #d8dee9;
-}
-
-#language {
-  margin: 6px 0 6px 8px;
-  padding: 0 10px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: bold;
-  color: #2e3440;
-  background: #d8dee9;
-}
-
-#network {
-  margin: 6px 0 6px 8px;
-  padding: 0 10px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: bold;
-  color: #2e3440;
-  background: #d8dee9;
-}
-
-#memory {
-  margin: 6px 0 6px 8px;
-  padding: 0 10px;
-  border-radius: 18px;
-  font-weight: bold;
-  color: #2e3440;
-  background: #d8dee9;
-}
-
-#cpu {
-  margin: 6px 0 6px 8px;
-  padding: 0 10px;
-  border-radius: 18px;
-  font-size: 14px;
-  font-weight: bold;
-  color: #2e3440;
-  background: #d8dee9;
-}
-
-#pulseaudio {
-  margin: 6px 0 6px 8px;
-  padding: 0 10px;
-  border-radius: 18px;
-  font-size: 14px;
-  font-weight: bold;
-  color: #2e3440;
-  background: #d8dee9;
-}
-
-#battery {
-  margin: 6px 0 6px 8px;
-  padding: 0 10px;
-  border-radius: 18px;
-  font-size: 14px;
-  font-weight: bold;
-  color: #2e3440;
-  background: #d8dee9;
-}
-
-#custom-power {
-  margin: 6px 10px 6px 15px;
-  padding: 0 0px;
-  border-radius: 18px;
-  font-size: 18px;
-  font-weight: bold;
-  /* color: #2e3440; */
-  color: #d8dee9;
-}
-
+/* Grouped widgets with shared styling */
+#clock,
+#language,
+#network,
+#memory,
+#cpu,
+#pulseaudio,
+#battery,
+#custom-spotify,
+#custom-power,
 #tray {
-  margin: 6px 10px 6px 8px;
-  padding: 0 10px;
-  border-radius: 20px;
+  margin: 6px;
+  padding: 5px 15px;
   font-size: 14px;
   font-weight: bold;
-  background: transparent;
+  color: #2e3440;
+  background: #d8dee9;
+  border-radius: 10px;
 }

@@ -13,13 +13,14 @@ return {
 
 		local capabilities = blink_cmp.get_lsp_capabilities()
 
-		local on_attach = function(_, bufnr)
+		local on_attach = function(client, bufnr)
 			local keymap = vim.keymap.set
 			local opts = { buffer = bufnr, silent = true }
 
 			keymap({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, { desc = "Code Action", unpack(opts) })
 			keymap("n", "<leader>rn", vim.lsp.buf.rename, { desc = "Rename Symbol", unpack(opts) })
 			keymap("n", "<leader>rs", ":LspRestart<CR>", { desc = "Restart LSP", unpack(opts) })
+			keymap("n", "<leader>xx", vim.diagnostic.open_float, { desc = "Show line diagnostics" })
 		end
 
 		local servers = {
@@ -41,6 +42,9 @@ return {
 							checkThirdParty = false,
 						},
 						telemetry = { enable = false },
+						hint = {
+							enable = true, -- This is required!
+						},
 					},
 				},
 			},
@@ -79,5 +83,21 @@ return {
 				on_attach = on_attach,
 			}, config))
 		end
+
+		vim.diagnostic.config({
+			virtual_lines = true,
+			-- virtual_text = true,
+			signs = true,
+			underline = true,
+			update_in_insert = false,
+			severity_sort = true,
+		})
+
+		vim.api.nvim_create_autocmd("FileType", {
+			pattern = "markdown",
+			callback = function(args)
+				vim.diagnostic.disable(args.buf)
+			end,
+		})
 	end,
 }
