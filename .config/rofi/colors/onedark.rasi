@@ -6,27 +6,24 @@
  * Colors
 **/
 
-
-
-
 /**
 /* OneDark theme */
-* {
-    background:     #1E2127FF;
-    background-alt: #282B31FF;
-    foreground:     #FFFFFFFF;
-    selected:       #61AFEFFF;
-    active:         #98C379FF;
-    urgent:         #E06C75FF;
-}
-**/
+// * {
+//     background:     #1E2127FF;
+//     background-alt: #282B31FF;
+//     foreground:     #FFFFFFFF;
+//     selected:       #61AFEFFF;
+//     active:         #98C379FF;
+//     urgent:         #E06C75FF;
+// }
+// **/
 
 /* Black theme */
 * {
-    background:     #000000FF;
+    background:     rgba(0, 0, 0, 0.9);
     background-alt: #101010FF;
     foreground:     #FFFFFFFF;
-    selected:       #62AEEFFF;
+    selected:       #212121FF;
     active:         #98C379FF;
     urgent:         #E06B74FF;
 }
