@@ -17,8 +17,6 @@ return {
 			svelte = { "eslint_d" },
 			graphql = { "eslint_d" },
 			yaml = { "yamllint" },
-			c = { "clang-tidy" },
-			cpp = { "clang-tidy" },
 			go = { "golangci-lint" },
 			bash = { "shellcheck" },
 			markdown = { "markdownlint" },

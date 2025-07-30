@@ -9,9 +9,10 @@
 {
   "icon_theme": "Material Icon Theme",
   "agent": {
+    "default_profile": "ask",
     "default_model": {
-      "provider": "google",
-      "model": "gemini-2.5-flash"
+      "provider": "copilot_chat",
+      "model": "claude-sonnet-4"
     }
   },
   "features": {
