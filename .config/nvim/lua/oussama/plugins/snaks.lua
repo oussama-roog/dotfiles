@@ -35,13 +35,6 @@ return {
 			end,
 			desc = "Smart Find Files",
 		},
-		-- {
-		-- 	"<leader>n",
-		-- 	function()
-		-- 		Snacks.picker.notifications()
-		-- 	end,
-		-- 	desc = "Notification History",
-		-- },
 		{
 			"<leader>e",
 			function()
@@ -100,13 +93,61 @@ return {
 			desc = "Notification History",
 		},
 		{
+			"<leader>fN",
+			function()
+				Snacks.picker.notifications()
+			end,
+			desc = "Notification History",
+		},
+		{
 			"<leader>fc",
 			function()
 				Snacks.picker.colorschemes()
 			end,
 			desc = "Colorschemes",
 		},
-
+		{
+			"<leader>fl",
+			function()
+				Snacks.picker.lsp_symbols()
+			end,
+			desc = "LSP Symbols",
+		},
+		{
+			"<leader>fL",
+			function()
+				Snacks.picker.lsp_workspace_symbols()
+			end,
+			desc = "LSP Workspace Symbols",
+		},
+		{
+			"<leader>fq",
+			function()
+				Snacks.picker.qflist()
+			end,
+			desc = "Quickfix List",
+		},
+		{
+			"<leader>fd",
+			function()
+				Snacks.picker.diagnostics()
+			end,
+			desc = "Diagnostics",
+		},
+		{
+			"<leader>fD",
+			function()
+				Snacks.picker.diagnostics_buffer()
+			end,
+			desc = "Buffer Diagnostics",
+		},
+		{
+			"<leader>fk",
+			function()
+				Snacks.picker.keymaps()
+			end,
+			desc = "Keymaps",
+		},
 		-- LSP
 		{
 			"gd",
@@ -144,57 +185,7 @@ return {
 			end,
 			desc = "Goto T[y]pe Definition",
 		},
-		{
-			"<leader>ss",
-			function()
-				Snacks.picker.lsp_symbols()
-			end,
-			desc = "LSP Symbols",
-		},
-		{
-			"<leader>sS",
-			function()
-				Snacks.picker.lsp_workspace_symbols()
-			end,
-			desc = "LSP Workspace Symbols",
-		},
-
 		-- Other
-		{
-			"<leader>sq",
-			function()
-				Snacks.picker.qflist()
-			end,
-			desc = "Quickfix List",
-		},
-		{
-			"<leader>sd",
-			function()
-				Snacks.picker.diagnostics()
-			end,
-			desc = "Diagnostics",
-		},
-		{
-			"<leader>sD",
-			function()
-				Snacks.picker.diagnostics_buffer()
-			end,
-			desc = "Buffer Diagnostics",
-		},
-		{
-			"<leader>sH",
-			function()
-				Snacks.picker.highlights()
-			end,
-			desc = "Highlights",
-		},
-		{
-			"<leader>sk",
-			function()
-				Snacks.picker.keymaps()
-			end,
-			desc = "Keymaps",
-		},
 		{
 			"<leader>bd",
 			function()
