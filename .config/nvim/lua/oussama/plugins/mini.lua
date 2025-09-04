@@ -24,5 +24,7 @@ return {
 		require("mini.splitjoin").setup()
 		require("mini.surround").setup()
 		require("mini.tabline").setup()
+
+		vim.keymap.set("n", "-", "<CMD>lua MiniFiles.open()<CR>", { desc = "Open parent directory" })
 	end,
 }
