@@ -22,6 +22,34 @@ return {
 			markdown = { "markdownlint" },
 		}
 
+		lint.linters["golangci-lint"] = {
+			cmd = "/home/oussama/.local/share/nvim/mason/bin/golangci-lint",
+			args = { "run", "--out-format", "json" },
+			stdin = false,
+			stream = "stdout",
+			ignore_exitcode = true,
+			parser = function(output, bufnr)
+				local ok, decoded = pcall(vim.json.decode, output)
+				if not ok then
+					return {}
+				end
+				local diagnostics = {}
+				local bufname = vim.api.nvim_buf_get_name(bufnr)
+				for _, issue in ipairs(decoded.Issues or {}) do
+					if issue.Pos.Filename == bufname then
+						table.insert(diagnostics, {
+							lnum = issue.Pos.Line - 1,
+							col = issue.Pos.Column - 1,
+							message = issue.Text,
+							severity = vim.diagnostic.severity.WARN,
+							source = "golangci-lint",
+						})
+					end
+				end
+				return diagnostics
+			end,
+		}
+
 		local lint_augroup = vim.api.nvim_create_augroup("lint", { clear = true })
 
 		vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {

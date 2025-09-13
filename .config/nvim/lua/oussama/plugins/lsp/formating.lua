@@ -33,6 +33,7 @@ return {
 					python = { "black" },
 					c = { "clang-format" },
 					cpp = { "clang-format" },
+					go = { "gofumpt", "goimports-reviser", "golines" },
 				},
 				format_on_save = {
 					lsp_fallback = true,

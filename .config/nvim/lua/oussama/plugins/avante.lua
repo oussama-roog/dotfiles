@@ -29,6 +29,16 @@ return {
 					},
 				},
 			},
+			openrouter = {
+				__inherited_from = "openai",
+				endpoint = "https://openrouter.ai/api/v1",
+				api_key_name = "OPENROUTER_API_KEY",
+				model = "openrouter/sonoma-sky-alpha",
+			},
+		},
+
+		selector = {
+			provider = "snacks",
 		},
 	},
 	-- if you want to build from source then do `make BUILD_FROM_SOURCE=true`

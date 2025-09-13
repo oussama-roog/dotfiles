@@ -9,10 +9,10 @@
 {
   "icon_theme": "Material Icon Theme",
   "agent": {
-    "default_profile": "ask",
+    "default_profile": "write",
     "default_model": {
-      "provider": "copilot_chat",
-      "model": "claude-sonnet-4"
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder:free"
     }
   },
   "features": {
