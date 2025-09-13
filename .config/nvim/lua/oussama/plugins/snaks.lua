@@ -19,6 +19,13 @@ return {
 		statuscolumn = { enabled = true },
 		words = { enabled = true },
 	},
+	config = function(_, opts)
+		require("snacks").setup(opts)
+
+		-- Load cheatsh plugin
+		local cheatsh = require('oussama.core.cheatsh')
+		cheatsh.setup()
+	end,
 	keys = {
 		-- Top Pickers & Explorer
 		{
@@ -27,6 +34,13 @@ return {
 				Snacks.picker.command_history()
 			end,
 			desc = "Command History",
+		},
+		{
+			"<leader>cs",
+			function()
+				require('oussama.core.cheatsh').open_cheatsh_picker()
+			end,
+			desc = "Open cheat.sh query picker",
 		},
 		{
 			"<leader><space>",
