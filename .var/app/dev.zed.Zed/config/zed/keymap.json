@@ -59,7 +59,7 @@
 
       // Diagnostics navigation
       "] d": "editor::GoToDiagnostic",
-      "[ d": "editor::GoToPrevDiagnostic",
+      "[ d": "editor::GoToPreviousDiagnostic",
 
       // Format code (leader + m + p)
       "space m p": "editor::Format",
@@ -96,7 +96,7 @@
     "context": "FileFinder",
     "bindings": {
       "ctrl-j": "menu::SelectNext",
-      "ctrl-k": "menu::SelectPrev"
+      "ctrl-k": "menu::SelectPrevious"
     }
   },
 
@@ -105,7 +105,7 @@
     "context": "CommandPalette",
     "bindings": {
       "ctrl-j": "menu::SelectNext",
-      "ctrl-k": "menu::SelectPrev"
+      "ctrl-k": "menu::SelectPrevious"
     }
   },
 
@@ -132,9 +132,9 @@
     "context": "Menu",
     "bindings": {
       "ctrl-j": "menu::SelectNext",
-      "ctrl-k": "menu::SelectPrev",
+      "ctrl-k": "menu::SelectPrevious",
       "ctrl-d": "menu::SelectNext",
-      "ctrl-u": "menu::SelectPrev"
+      "ctrl-u": "menu::SelectPrevious"
     }
   },
 
