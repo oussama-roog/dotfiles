@@ -49,6 +49,25 @@ return {
 			})
 		end,
 	},
+
+	{
+		"bluz71/vim-moonfly-colors",
+		name = "moonfly",
+		lazy = false,
+		priority = 1000,
+		config = function()
+			-- vim.cmd("colorscheme moonfly")
+		end,
+	},
+
+	{
+		"rose-pine/neovim",
+		name = "rose-pine",
+		config = function()
+			-- vim.cmd("colorscheme rose-pine-main")
+		end,
+	},
+
 	{
 		"vague2k/vague.nvim",
 		config = function()
@@ -62,19 +81,13 @@ return {
 	},
 
 	{
-		"bluz71/vim-moonfly-colors",
-		name = "moonfly",
+		"tahayvr/matteblack.nvim",
 		lazy = false,
 		priority = 1000,
 		config = function()
-			-- vim.cmd("colorscheme moonfly")
+			-- vim.cmd.colorscheme("matteblack")
 		end,
 	},
-	{
-		"rose-pine/neovim",
-		name = "rose-pine",
-		config = function()
-			-- vim.cmd("colorscheme rose-pine-main")
-		end,
-	},
+
+	{ "EdenEast/nightfox.nvim" }, -- lazy
 }
