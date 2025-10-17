@@ -1,131 +1,142 @@
 {
-  "layer": "top",
-  // "margin-top": 10,
-  // "margin-bottom": 5,
-  "margin-left": 10,
-  "margin-right": 10,
-  "gtk-layer-shell": true,
-  "reload_style_on_change": true,
-  "fixed-center": true,
-  "modules-left": [
-    "sway/workspaces",
-    "hyprland/workspaces",
-    "custom/spotify"
-  ],
-  "modules-center": [
-    "clock"
-  ],
-  "modules-right": [
-    "network",
-    "memory",
-    "cpu",
-    "pulseaudio",
-    "battery",
-    "custom/power",
-    "tray"
-  ],
-  "hyprland/workspaces": {
-    "active-only": false,
-    "all-outputs": true,
-    "disable-scroll": false,
-    "on-scroll-up": "hyprctl dispatch workspace -1",
-    "on-scroll-down": "hyprctl dispatch workspace +1",
-    "format": "{name}",
-    "on-click": "activate"
-  },
-  "custom/spotify": {
-    "exec": "~/.config/waybar/scripts/songname.sh",
-    "interval": 1,
-    "format": "{}"
-  },
-  "clock": {
-    "tooltip": true,
-    "interval": 60,
-    "format": "<span font='12'>󰃭</span>  {:%a %d, <span font='12'>󱑆</span>  %I:%M %p}",
-    "format-alt": "<span font='12'>󱑆</span>  {:%I:%M %p}",
-    "tooltip-format": "<tt><small>{calendar}</small></tt>",
-    "calendar": {
-      "mode": "month",
-      "on-scroll": 1,
-      "format": {
-        "today": "<span color='#ff6699'><b><u>{}</u></b></span>"
-      }
-    }
-  },
-  "network": {
-    "interval": 5,
-    "format-wifi": "  {essid} ({signalStrength}%)",
-    "format-ethernet": "󰈀  {ifname}",
-    "format-disconnected": "󰖪  Disconnected",
-    "tooltip-format": "{ifname}: {ipaddr}/{cidr}",
-    "on-click": "nm-connection-editor"
-  },
-  "memory": {
-    "interval": 15,
-    "format": "<span> </span> {used} GiB",
-    "max-length": 13,
-    "tooltip-format": "  {used} GiB"
-  },
-  "cpu": {
-    "interval": 5,
-    "format": "<span></span>  {usage} %",
-    "tooltip-format": "󰍛  {usage} %",
-    "format-icons": {
-      "default": ""
-    }
-  },
-  "pulseaudio": {
-    "format": "{icon}   {volume}%",
-    "rotate": 0,
-    "format-muted": "<span size='large' rise='-1000'>󰖁 </span>",
-    "on-click": "pavucontrol -t 3",
-    "on-click-middle": "$HOME/.config/scripts/volumecontrol.sh -o m",
-    "on-scroll-up": "$HOME/.config/scripts/volumecontrol.sh -o i",
-    "on-scroll-down": "$HOME/.config/scripts/volumecontrol.sh -o d",
-    "tooltip-format": "{icon}   {desc} || {volume}%",
-    "ignored-sinks": [
-      "Easy Effects Sink"
+    "layer": "top",
+    "margin-top": 5,
+    // "margin-bottom": 5,
+    "margin-left": 10,
+    "margin-right": 10,
+    "gtk-layer-shell": true,
+    "reload_style_on_change": true,
+    "fixed-center": true,
+    "modules-left": [
+        "clock",
+        "custom/spotify",
+        "hyprland/language"
     ],
-    "scroll-step": 5,
-    "format-icons": {
-      "headphone": " ",
-      "hands-free": " ",
-      "headset": " ",
-      "phone": " ",
-      "portable": " ",
-      "car": " ",
-      "default": [
-        "",
-        " ",
-        "  "
-      ]
-    }
-  },
-  "custom/power": {
-    "format": "⏻",
-    "on-click": "~/.config/rofi/powermenu/powermenu.sh",
-    "tooltip": false
-  },
-  "tray": {
-    "icon-size": 14,
-    "spacing": 10
-  },
-  "battery": {
-    "states": {
-      "good": 95,
-      "warning": 30,
-      "critical": 15
+    "modules-center": [
+        "sway/workspaces",
+        "hyprland/workspaces"
+    ],
+    "modules-right": [
+        "network",
+        "memory",
+        "cpu",
+        "pulseaudio",
+        "battery",
+        "custom/power",
+        "tray"
+    ],
+    "hyprland/workspaces": {
+        "active-only": false,
+        "all-outputs": true,
+        "disable-scroll": false,
+        "on-scroll-up": "hyprctl dispatch workspace -1",
+        "on-scroll-down": "hyprctl dispatch workspace +1",
+        "format": "{icon}",
+        "format-icons": {
+            "active": "",
+            "default": "",
+            "empty": ""
+        },
+        "on-click": "activate"
     },
-    "format": "{icon} {capacity}%",
-    "format-charging": " {capacity}%",
-    "format-plugged": " {capacity}%",
-    "format-alt": "{time}",
-    "format-icons": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ]
-  }
+    "hyprland/language": {
+        "format": "󰌌  {}",
+        "format-en": "EN",
+        "format-ar": "AR"
+    },
+    "custom/spotify": {
+        "exec": "~/.config/waybar/scripts/songname.sh",
+        "interval": 1,
+        "format": "  {}"
+    },
+    "clock": {
+        "tooltip": true,
+        "interval": 60,
+        "format": "<span font='12'>󰃭</span>  {:%a %d, <span font='12'>󱑆</span>  %I:%M %p}",
+        "format-alt": "<span font='12'>󱑆</span>  {:%I:%M %p}",
+        "tooltip-format": "<tt><small>{calendar}</small></tt>",
+        "calendar": {
+            "mode": "month",
+            "on-scroll": 1,
+            "format": {
+                "today": "<span color='#ff6699'><b><u>{}</u></b></span>"
+            }
+        }
+    },
+    "network": {
+        "interval": 5,
+        "format-wifi": "  {essid} ({signalStrength}%)",
+        "format-ethernet": "󰈀  {ifname}",
+        "format-disconnected": "󰖪  Disconnected",
+        "tooltip-format": "{ifname}: {ipaddr}/{cidr}",
+        "on-click": "nm-connection-editor"
+    },
+    "memory": {
+        "interval": 15,
+        "format": "<span> </span> {used} GiB",
+        "max-length": 13,
+        "tooltip-format": "  {used} GiB"
+    },
+    "cpu": {
+        "interval": 5,
+        "format": "<span></span>  {usage} %",
+        "tooltip-format": "󰍛  {usage} %",
+        "format-icons": {
+            "default": ""
+        }
+    },
+    "pulseaudio": {
+        "format": "{icon}   {volume}%",
+        "rotate": 0,
+        "format-muted": "<span size='large' rise='-1000'>󰖁 </span>",
+        "on-click": "pavucontrol -t 3",
+        "on-click-middle": "$HOME/.config/scripts/volumecontrol.sh -o m",
+        "on-scroll-up": "$HOME/.config/scripts/volumecontrol.sh -o i",
+        "on-scroll-down": "$HOME/.config/scripts/volumecontrol.sh -o d",
+        "tooltip-format": "{icon}   {desc} || {volume}%",
+        "ignored-sinks": [
+            "Easy Effects Sink"
+        ],
+        "scroll-step": 5,
+        "format-icons": {
+            "headphone": " ",
+            "hands-free": " ",
+            "headset": " ",
+            "phone": " ",
+            "portable": " ",
+            "car": " ",
+            "default": [
+                "",
+                " ",
+                "  "
+            ]
+        }
+    },
+    "custom/power": {
+        "format": "⏻",
+        "on-click": "~/.config/rofi/powermenu/powermenu.sh",
+        "tooltip": false
+    },
+    "tray": {
+        "icon-size": 14,
+        "spacing": 10
+    },
+    "battery": {
+        "states": {
+            "good": 95,
+            "warning": 30,
+            "critical": 15
+        },
+        "format": "{icon} {capacity}%",
+        "format-charging": " {capacity}%",
+        "format-plugged": " {capacity}%",
+        "format-alt": "{time}",
+        "format-icons": [
+            "",
+            "",
+            "",
+            "",
+            ""
+        ]
+    }
 }
