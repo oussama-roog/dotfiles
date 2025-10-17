@@ -7,9 +7,7 @@ return {
 		{ "folke/neodev.nvim", opts = {} },
 	},
 	config = function()
-		local lspconfig = require("lspconfig")
 		local blink_cmp = require("blink.cmp")
-		local util = require("lspconfig.util")
 
 		local capabilities = blink_cmp.get_lsp_capabilities()
 
@@ -24,16 +22,94 @@ return {
 		end
 
 		local servers = {
-			ts_ls = {},
-			clangd = {},
-			angularls = {},
-			cssls = {},
-			html = {},
-			bashls = {},
-			jsonls = {},
-			tailwindcss = {},
-			qmlls = {},
+			ts_ls = {
+				cmd = { "typescript-language-server", "--stdio" },
+				filetypes = { "javascript", "typescript", "javascriptreact", "typescriptreact" },
+			},
+			clangd = {
+				cmd = { "clangd" },
+				filetypes = { "c", "cpp", "objc", "objcpp", "cuda", "proto" },
+			},
+			angularls = {
+				cmd = { "ngserver", "--stdio", "--tsProbeLocations", "", "--ngProbeLocations", "" },
+				filetypes = { "typescript", "html", "typescriptreact", "typescript.tsx" },
+			},
+			cssls = {
+				cmd = { "vscode-css-language-server", "--stdio" },
+				filetypes = { "css", "scss", "less" },
+			},
+			html = {
+				cmd = { "vscode-html-language-server", "--stdio" },
+				filetypes = { "html" },
+			},
+			bashls = {
+				cmd = { "bash-language-server", "start" },
+				filetypes = { "sh", "bash" },
+			},
+			jsonls = {
+				cmd = { "vscode-json-language-server", "--stdio" },
+				filetypes = { "json", "jsonc" },
+			},
+			tailwindcss = {
+				cmd = { "tailwindcss-language-server", "--stdio" },
+				filetypes = {
+					"aspnetcorerazor",
+					"astro",
+					"astro-markdown",
+					"blade",
+					"clojure",
+					"django-html",
+					"htmldjango",
+					"edge",
+					"eelixir",
+					"elixir",
+					"ejs",
+					"erb",
+					"eruby",
+					"gohtml",
+					"gohtmltmpl",
+					"haml",
+					"handlebars",
+					"hbs",
+					"html",
+					"html-eex",
+					"heex",
+					"jade",
+					"leaf",
+					"liquid",
+					"markdown",
+					"mdx",
+					"mustache",
+					"njk",
+					"nunjucks",
+					"php",
+					"razor",
+					"slim",
+					"twig",
+					"css",
+					"less",
+					"postcss",
+					"sass",
+					"scss",
+					"stylus",
+					"sugarss",
+					"javascript",
+					"javascriptreact",
+					"reason",
+					"rescript",
+					"typescript",
+					"typescriptreact",
+					"vue",
+					"svelte",
+				},
+			},
+			qmlls = {
+				cmd = { "qmlls" },
+				filetypes = { "qml" },
+			},
 			lua_ls = {
+				cmd = { "lua-language-server" },
+				filetypes = { "lua" },
 				settings = {
 					Lua = {
 						runtime = { version = "LuaJIT" },
@@ -44,7 +120,7 @@ return {
 						},
 						telemetry = { enable = false },
 						hint = {
-							enable = true, -- This is required!
+							enable = true,
 						},
 					},
 				},
@@ -52,7 +128,10 @@ return {
 			gopls = {
 				cmd = { "gopls" },
 				filetypes = { "go", "gomod", "gowork", "gotmpl" },
-				root_dir = util.root_pattern("go.work", "go.mod", ".git"),
+				root_dir = function(fname)
+					local util = require("lspconfig.util")
+					return util.root_pattern("go.work", "go.mod", ".git")(fname)
+				end,
 				settings = {
 					gopls = {
 						analyses = {
@@ -66,6 +145,8 @@ return {
 				},
 			},
 			pyright = {
+				cmd = { "pyright-langserver", "--stdio" },
+				filetypes = { "python" },
 				settings = {
 					python = {
 						analysis = {
@@ -79,11 +160,34 @@ return {
 		}
 
 		for server, config in pairs(servers) do
-			lspconfig[server].setup(vim.tbl_deep_extend("force", {
-				capabilities = capabilities,
-				on_attach = on_attach,
-			}, config))
+			vim.lsp.config(
+				server,
+				vim.tbl_deep_extend("force", {
+					capabilities = capabilities,
+					on_attach = on_attach,
+				}, config)
+			)
 		end
+
+		-- Auto-start LSP servers based on filetype
+		vim.api.nvim_create_autocmd("FileType", {
+			callback = function(args)
+				local ft = vim.bo[args.buf].filetype
+
+				-- Start appropriate LSP servers for this filetype
+				for server_name, config in pairs(servers) do
+					if config.filetypes and vim.tbl_contains(config.filetypes, ft) then
+						-- Get the full config including capabilities and on_attach
+						local full_config = vim.tbl_deep_extend("force", {
+							capabilities = capabilities,
+							on_attach = on_attach,
+						}, config)
+
+						vim.lsp.start(full_config, { bufnr = args.buf })
+					end
+				end
+			end,
+		})
 
 		vim.diagnostic.config({
 			-- virtual_lines = true,
