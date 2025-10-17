@@ -37,6 +37,7 @@ return {
 				"clangd",
 				"bashls",
 				"jsonls",
+				"qmlls",
 
 				-- Other stuff
 				"prettier",

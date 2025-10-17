@@ -49,6 +49,7 @@ return {
 				"vimdoc",
 				"c",
 				"cpp",
+				"qmljs",
 			},
 			incremental_selection = {
 				enable = true,

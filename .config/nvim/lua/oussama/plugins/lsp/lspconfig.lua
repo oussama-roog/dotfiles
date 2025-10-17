@@ -32,6 +32,7 @@ return {
 			bashls = {},
 			jsonls = {},
 			tailwindcss = {},
+			qmlls = {},
 			lua_ls = {
 				settings = {
 					Lua = {
