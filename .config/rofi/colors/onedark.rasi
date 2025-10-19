@@ -19,7 +19,7 @@
 // **/
 
 * {
-    background:     #1a1a1aF5;
+    background:     #141415FF;
     background-alt: #252525FF;
     foreground:     #f5f5f0FF;
     selected:       #3a3a3aFF;
