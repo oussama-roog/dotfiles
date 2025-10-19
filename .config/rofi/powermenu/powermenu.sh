@@ -1,22 +1,12 @@
 #!/usr/bin/env bash
 
-## Author : Aditya Shakya (adi1090x)
-## Github : @adi1090x
-#
-## Rofi   : Power Menu
-#
-## Available Styles
-#
-## style-1   style-2   style-3   style-4   style-5
-## style-6   style-7   style-8   style-9   style-10
-
 # Current Theme
 dir="$HOME/.config/rofi/powermenu"
 theme='style-5'
 
 # CMDs
-uptime="`uptime -p | sed -e 's/up //g'`"
-host=`hostname`
+uptime="$(uptime -p | sed -e 's/up //g')"
+host=$(hostname)
 
 # Options
 shutdown=''
@@ -29,32 +19,32 @@ no=''
 
 # Rofi CMD
 rofi_cmd() {
-	rofi -dmenu \
-		-p "$host" \
-		-theme ${dir}/${theme}.rasi
+    rofi -dmenu \
+        -p "$host" \
+        -theme ${dir}/${theme}.rasi
 }
 
 # Confirmation CMD
 confirm_cmd() {
-	rofi -theme-str 'window {location: south; anchor: south; fullscreen: false; width: 350px; y-offset: -20px;}' \
-		-theme-str 'mainbox {children: [ "message", "listview" ];}' \
-		-theme-str 'listview {columns: 2; lines: 1;}' \
-		-theme-str 'element-text {horizontal-align: 0.5;}' \
-		-theme-str 'textbox {horizontal-align: 0.5;}' \
-		-dmenu \
-		-p 'Confirmation' \
-		-mesg 'Are you Sure?' \
-		-theme ${dir}/${theme}.rasi
+    rofi -theme-str 'window {location: south; anchor: south; fullscreen: false; width: 350px; y-offset: -20px;}' \
+        -theme-str 'mainbox {children: [ "message", "listview" ];}' \
+        -theme-str 'listview {columns: 2; lines: 1;}' \
+        -theme-str 'element-text {horizontal-align: 0.5;}' \
+        -theme-str 'textbox {horizontal-align: 0.5;}' \
+        -dmenu \
+        -p 'Confirmation' \
+        -mesg 'Are you Sure?' \
+        -theme ${dir}/${theme}.rasi
 }
 
 # Ask for confirmation
 confirm_exit() {
-	echo -e "$yes\n$no" | confirm_cmd
+    echo -e "$yes\n$no" | confirm_cmd
 }
 
 # Pass variables to rofi dmenu
 run_rofi() {
-	echo -e "$lock\n$suspend\n$logout\n$reboot\n$shutdown" | rofi_cmd
+    echo -e "$lock\n$suspend\n$logout\n$reboot\n$shutdown" | rofi_cmd
 }
 
 # Execute Command
@@ -69,16 +59,16 @@ run_cmd() {
             systemctl suspend
         elif [[ $1 == '--logout' ]]; then
             if [[ "$XDG_SESSION_TYPE" == 'wayland' ]]; then
-                if pgrep -x "sway" > /dev/null; then
+                if pgrep -x "sway" >/dev/null; then
                     swaymsg exit
-                elif pgrep -x "Hyprland" > /dev/null; then
+                elif pgrep -x "Hyprland" >/dev/null; then
                     hyprctl dispatch exit
                 else
                     echo "Unknown Wayland compositor"
                     exit 1
                 fi
             elif [[ "$XDG_SESSION_TYPE" == 'x11' ]]; then
-                if pgrep -x "i3" > /dev/null; then
+                if pgrep -x "i3" >/dev/null; then
                     i3-msg exit
                 else
                     echo "Unsupported X11 window manager"
@@ -97,13 +87,13 @@ run_cmd() {
 # Lock screen function
 lock_screen() {
     if [[ "$XDG_SESSION_TYPE" == 'wayland' ]]; then
-        if command -v swaylock &> /dev/null; then
+        if command -v swaylock &>/dev/null; then
             swaylock
         else
             echo "swaylock not found"
         fi
     elif [[ "$XDG_SESSION_TYPE" == 'x11' ]]; then
-        if command -v i3lock &> /dev/null; then
+        if command -v i3lock &>/dev/null; then
             i3lock
         else
             echo "i3lock not found"
@@ -116,19 +106,19 @@ lock_screen() {
 # Actions
 chosen="$(run_rofi)"
 case ${chosen} in
-    $shutdown)
-        run_cmd --shutdown
-        ;;
-    $reboot)
-        run_cmd --reboot
-        ;;
-    $lock)
-        lock_screen
-        ;;
-    $suspend)
-        run_cmd --suspend
-        ;;
-    $logout)
-        run_cmd --logout
-        ;;
+$shutdown)
+    run_cmd --shutdown
+    ;;
+$reboot)
+    run_cmd --reboot
+    ;;
+$lock)
+    lock_screen
+    ;;
+$suspend)
+    run_cmd --suspend
+    ;;
+$logout)
+    run_cmd --logout
+    ;;
 esac

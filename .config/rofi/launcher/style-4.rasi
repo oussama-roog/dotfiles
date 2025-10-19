@@ -52,12 +52,12 @@ configuration {
 /*****----- Main Window -----*****/
 window {
     transparency:                "real";
-    location:                    south;
-    anchor:                      south;
+    location:                    north;
+    anchor:                      north;
     fullscreen:                  false;
-    width:                       800px;
+    width:                       600px;
     x-offset:                    0px;
-    y-offset:                    -20px;
+    y-offset:                    -33px;
 
     enabled:                     true;
     margin:                      0px;
@@ -79,7 +79,7 @@ mainbox {
     border-radius:               0px;
     border-color:                @border-colour;
     background-color:            transparent;
-    children:                    [ "message", "listview", "inputbar" ];
+    children:                    [ "inputbar", "message", "listview" ];
 }
 
 /*****----- Inputbar -----*****/
