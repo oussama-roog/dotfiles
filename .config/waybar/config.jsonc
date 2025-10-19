@@ -22,7 +22,6 @@
         "cpu",
         "pulseaudio",
         "battery",
-        "custom/power",
         "tray"
     ],
     "hyprland/workspaces": {
@@ -111,11 +110,6 @@
                 "  "
             ]
         }
-    },
-    "custom/power": {
-        "format": "⏻",
-        "on-click": "~/.config/rofi/powermenu/powermenu.sh",
-        "tooltip": false
     },
     "tray": {
         "icon-size": 14,
