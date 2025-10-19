@@ -3,5 +3,5 @@ Do not write any docs or any README or any md file.
 The DOC-QuickShell.md file is the only documentation file for this project.
 Always Check the example folder for usage examples.
 the exmaple folder is in the root of this dir, do not write any example files do not modify any example files do not use any example files for anything other than reference.
+the theme of this is black and white minimalism in dark mode.
 Always at the end run `quickshell` to see if it works without errors.
-

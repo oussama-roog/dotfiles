@@ -6,6 +6,10 @@ import "components"
 Scope {
     id: root
 
+    ClockPopout {
+        id: clockPopout
+    }
+
     Variants {
         model: Quickshell.screens
 
@@ -43,6 +47,7 @@ Scope {
 
                 Clock {
                     anchors.centerIn: parent
+                    onClicked: clockPopout.show()
                 }
             }
         }
