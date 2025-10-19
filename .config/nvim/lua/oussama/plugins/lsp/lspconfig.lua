@@ -106,6 +106,28 @@ return {
 			qmlls = {
 				cmd = { "qmlls" },
 				filetypes = { "qml" },
+				handlers = {
+					["textDocument/publishDiagnostics"] = function(err, result, ctx, config)
+						if result and result.diagnostics then
+							result.diagnostics = vim.tbl_filter(function(diagnostic)
+								-- Filter out lineNumber warnings
+								if diagnostic.message:match("lineNumber") then
+									return false
+								end
+								-- Filter out "not creatable" warnings
+								-- if diagnostic.message:match("is not creatable") then
+								-- 	return false
+								-- end
+								-- Filter out import warnings
+								if diagnostic.message:match("Warnings occurred while importing") then
+									return false
+								end
+								return true
+							end, result.diagnostics)
+						end
+						vim.lsp.diagnostic.on_publish_diagnostics(err, result, ctx, config)
+					end,
+				},
 			},
 			lua_ls = {
 				cmd = { "lua-language-server" },
@@ -153,6 +175,9 @@ return {
 							autoSearchPaths = true,
 							useLibraryCodeForTypes = true,
 							diagnosticMode = "workspace",
+							-- extraPaths = {
+							-- 	"/home/oussama/dotfiles/.config/fabric/venv/lib/python3.11/site-packages",
+							-- },
 						},
 					},
 				},
