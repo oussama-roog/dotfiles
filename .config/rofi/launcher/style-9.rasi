@@ -24,19 +24,18 @@ configuration {
 /*****----- Main Window -----*****/
 window {
     transparency:                "real";
-    location:                    west;
-    anchor:                      west;
+    location:                    south;
+    anchor:                      south;
     fullscreen:                  false;
-    width:                       180px;
-    height:                      100%;
+    width:                       600px;
     x-offset:                    0px;
-    y-offset:                    0px;
+    y-offset:                    -20px;
 
     enabled:                     true;
     margin:                      0px;
     padding:                     0px;
     border:                      0px solid;
-    border-radius:               0px;
+    border-radius:               12px;
     border-color:                @selected;
     background-color:            @background;
     cursor:                      "default";
@@ -52,7 +51,7 @@ mainbox {
     border-radius:               0px 0px 0px 0px;
     border-color:                @selected;
     background-color:            transparent;
-    children:                    [ "inputbar", "listview" ];
+    children:                    [ "listview", "inputbar" ];
 }
 
 /*****----- Inputbar -----*****/
@@ -60,9 +59,9 @@ inputbar {
     enabled:                     true;
     spacing:                     10px;
     margin:                      0px;
-    padding:                     12px 16px;
-    border:                      0px 0px 2px 0px;
-    border-radius:               4px;
+    padding:                     18px 14px;
+    border:                      0px 0px 0px 0px;
+    border-radius:               8px;
     border-color:                @selected;
     background-color:            @background-alt;
     text-color:                  @foreground;
@@ -73,6 +72,7 @@ prompt {
     enabled:                     true;
     background-color:            inherit;
     text-color:                  inherit;
+    padding:                     0px 4px 0px 0px;
 }
 textbox-prompt-colon {
     enabled:                     true;
@@ -86,7 +86,7 @@ entry {
     background-color:            inherit;
     text-color:                  inherit;
     cursor:                      text;
-    placeholder:                 "Search";
+    placeholder:                 "";
     placeholder-color:           inherit;
 }
 
@@ -94,7 +94,7 @@ entry {
 listview {
     enabled:                     true;
     columns:                     1;
-    lines:                       10;
+    lines:                       8;
     cycle:                       true;
     dynamic:                     true;
     scrollbar:                   false;
@@ -127,11 +127,11 @@ element {
     margin:                      0px;
     padding:                     20px 10px;
     border:                      0px solid;
-    border-radius:               0px;
+    border-radius:               8px;
     border-color:                @selected;
     background-color:            transparent;
     text-color:                  @foreground;
-    orientation:                 vertical;
+    orientation:                 horizontal;
     cursor:                      pointer;
 }
 element normal.normal {
@@ -139,8 +139,8 @@ element normal.normal {
     text-color:                  @foreground;
 }
 element selected.normal {
-    border:                      0px 0px 2px 0px;
-    border-radius:               4px;
+    border:                      0px 0px 0px 0px;
+    border-radius:               8px;
     border-color:                @selected;
     background-color:            @background-alt;
     text-color:                  @foreground;
@@ -148,8 +148,17 @@ element selected.normal {
 element-icon {
     background-color:            transparent;
     text-color:                  inherit;
-    size:                        64px;
+    size:                        24px;
     cursor:                      inherit;
+}
+
+element-text {
+    background-color:            transparent;
+    text-color:                  inherit;
+    highlight:                   inherit;
+    cursor:                      inherit;
+    vertical-align:              0.5;
+    horizontal-align:            0.0;
 }
 element-text {
     background-color:            transparent;

@@ -51,16 +51,14 @@ configuration {
 
 /*****----- Main Window -----*****/
 window {
-    /* properties for window widget */
     transparency:                "real";
-    location:                    center;
-    anchor:                      center;
+    location:                    south;
+    anchor:                      south;
     fullscreen:                  false;
     width:                       800px;
     x-offset:                    0px;
-    y-offset:                    0px;
+    y-offset:                    -20px;
 
-    /* properties for all widgets */
     enabled:                     true;
     margin:                      0px;
     padding:                     0px;
@@ -81,7 +79,7 @@ mainbox {
     border-radius:               0px;
     border-color:                @border-colour;
     background-color:            transparent;
-    children:                    [ "inputbar", "message", "listview" ];
+    children:                    [ "message", "listview", "inputbar" ];
 }
 
 /*****----- Inputbar -----*****/
@@ -90,10 +88,10 @@ inputbar {
     spacing:                     10px;
     margin:                      0px;
     padding:                     18px 14px;
-    border:                      0px 0px 2px 0px solid;
+    border:                      0px 0px 0px 0px solid;
     border-radius:               8px;
     border-color:                @border-colour;
-    background-color:            transparent;
+    background-color:            @alternate-background;
     text-color:                  @foreground-colour;
     children:                    [ "prompt", "entry" ];
 }
@@ -102,6 +100,7 @@ prompt {
     enabled:                     true;
     background-color:            inherit;
     text-color:                  inherit;
+    padding:                     0px 4px 0px 0px;
 }
 
 textbox-prompt-colon {
@@ -226,7 +225,7 @@ element-text {
     cursor:                      inherit;
     vertical-align:              0.5;
     horizontal-align:            0.0;
-    font:                        "JetBrainsMono Nerd Font 14";
+    font:                        "JetBrainsMono Nerd Font 12";
 }
 
 /*****----- Mode Switcher -----*****/
@@ -272,7 +271,7 @@ message {
 textbox {
     padding:                     10px;
     border:                      0px solid;
-    border-radius:               0px;
+    border-radius:               8px;
     border-color:                @border-colour;
     background-color:            @alternate-background;
     text-color:                  @foreground-colour;

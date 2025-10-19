@@ -18,12 +18,11 @@
 // }
 // **/
 
-/* Black theme */
 * {
-    background:     rgba(0, 0, 0, 0.9);
-    background-alt: #101010FF;
-    foreground:     #FFFFFFFF;
-    selected:       #212121FF;
-    active:         #98C379FF;
-    urgent:         #E06B74FF;
+    background:     #1a1a1aF5;
+    background-alt: #252525FF;
+    foreground:     #f5f5f0FF;
+    selected:       #3a3a3aFF;
+    active:         #7a7a6fFF;
+    urgent:         #d4745fFF;
 }

@@ -28,21 +28,21 @@ prompt="${backlight}%"
 mesg="Device: ${card}, Level: $level"
 
 if [[ "$theme" == *'type-1'* ]]; then
-	list_col='1'
-	list_row='4'
-	win_width='400px'
+	list_col='4'
+	list_row='1'
+	win_width='450px'
 elif [[ "$theme" == *'type-3'* ]]; then
-	list_col='1'
-	list_row='4'
-	win_width='120px'
+	list_col='4'
+	list_row='1'
+	win_width='450px'
 elif [[ "$theme" == *'type-5'* ]]; then
-	list_col='1'
-	list_row='4'
-	win_width='425px'
+	list_col='4'
+	list_row='1'
+	win_width='450px'
 elif [[ ( "$theme" == *'type-2'* ) || ( "$theme" == *'type-4'* ) ]]; then
 	list_col='4'
 	list_row='1'
-	win_width='550px'
+	win_width='450px'
 fi
 
 # Options
@@ -63,10 +63,9 @@ fi
 rofi_cmd() {
 	rofi -theme-str "window {width: $win_width;}" \
 		-theme-str "listview {columns: $list_col; lines: $list_row;}" \
-		-theme-str 'textbox-prompt-colon {str: "";}' \
+		-theme-str 'textbox-prompt-colon {str: "";}' \
 		-dmenu \
 		-p "$prompt" \
-		-mesg "$mesg" \
 		-markup-rows \
 		-theme ${theme}
 }

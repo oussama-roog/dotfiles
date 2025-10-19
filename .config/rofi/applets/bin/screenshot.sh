@@ -14,21 +14,21 @@ prompt='Screenshot'
 mesg="DIR: $(xdg-user-dir PICTURES)/Screenshots"
 
 if [[ "$theme" == *'type-1'* ]]; then
-  list_col='1'
-  list_row='5'
-  win_width='400px'
+  list_col='5'
+  list_row='1'
+  win_width='550px'
 elif [[ "$theme" == *'type-3'* ]]; then
-  list_col='1'
-  list_row='5'
-  win_width='120px'
+  list_col='5'
+  list_row='1'
+  win_width='550px'
 elif [[ "$theme" == *'type-5'* ]]; then
-  list_col='1'
-  list_row='5'
-  win_width='520px'
+  list_col='5'
+  list_row='1'
+  win_width='550px'
 elif [[ ("$theme" == *'type-2'*) || ("$theme" == *'type-4'*) ]]; then
   list_col='5'
   list_row='1'
-  win_width='670px'
+  win_width='550px'
 fi
 
 # Options
@@ -51,10 +51,9 @@ fi
 rofi_cmd() {
   rofi -theme-str "window {width: $win_width;}" \
     -theme-str "listview {columns: $list_col; lines: $list_row;}" \
-    -theme-str 'textbox-prompt-colon {str: "";}' \
+    -theme-str 'textbox-prompt-colon {str: "";}' \
     -dmenu \
     -p "$prompt" \
-    -mesg "$mesg" \
     -markup-rows \
     -theme ${theme}
 }
