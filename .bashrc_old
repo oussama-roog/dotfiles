@@ -23,7 +23,7 @@ alias git-test='ssh -T git@github.com'
 
 alias v="nvim"
 alias y="yazi"
-alias ta="tmux attach"
+alias ta='tmux attach-session -t oussama || tmux new-session -s oussama'
 alias lg="lazygit"
 
 # # Load Angular CLI autocompletion.
@@ -33,16 +33,13 @@ alias op='~/.tmux-sessionizer'
 export PATH=$HOME/.local/bin:$PATH
 
 # Add this to your .bashrc file
-if [ -z "$TMUX" ]; then
-  if ! tmux has-session -t oussama 2>/dev/null; then
-    tmux new-session -s oussama
-  else
-    tmux attach-session -t oussama
-  fi
-# else
-#     # Inside an existing tmux session, you can choose to do nothing or notify
-#     # echo "Already inside a tmux session."
-fi
+# if [ -z "$TMUX" ]; then
+#     if ! tmux has-session -t oussama 2>/dev/null; then
+#         tmux new-session -s oussama
+#     else
+#         tmux attach-session -t oussama
+#     fi
+# fi
 
 alias data="sudo mount -t ntfs-3g /dev/nvme0n1p5 /mnt/data"
 alias udata="sudo umount /mnt/data"
@@ -53,3 +50,10 @@ alias udata="sudo umount /mnt/data"
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
+
+# Load fzf key bindings and completion
+[ -f ~/.fzf.bash ] && source ~/.fzf.bash
+source /usr/share/fzf/shell/key-bindings.bash
+
+# opencode
+export PATH=/home/oussama/.opencode/bin:$PATH
