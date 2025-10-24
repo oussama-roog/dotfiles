@@ -2,9 +2,9 @@
 
 {
   imports = [
-    ../../../modules/home-manager/bash.nix
-    ../../../modules/home-manager/tmux.nix
-    ../../../modules/home-manager/tmux-sessionizer.nix
+    ../../../../modules/home-manager/bash.nix
+    ../../../../modules/home-manager/tmux.nix
+    ../../../../modules/home-manager/tmux-sessionizer.nix
   ];
 
   home.packages = with pkgs; [
