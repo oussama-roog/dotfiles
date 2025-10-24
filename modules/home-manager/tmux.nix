@@ -34,9 +34,7 @@
       
       unbind -T copy-mode-vi MouseDragEnd1Pane
       
-      bind-key -r f run-shell "tmux neww ${config.home.homeDirectory}/dotfiles/.tmux-sessionizer"
-      
-      bind -r o popup -E -d "#{pane_current_path}" -w 90% -h 90% "bash -c '${config.home.homeDirectory}/.opencode/bin/opencode; exit'"
+      bind-key -r f run-shell "tmux neww ~/dotfiles/scripts/tmux-sessionizer"
     '';
     
     plugins = with pkgs.tmuxPlugins; [
