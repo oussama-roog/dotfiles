@@ -9,8 +9,8 @@ Modular NixOS configuration with multi-host and multi-user support.
 ├── flake.nix                  # Flake entry point
 ├── hosts/                     # Host-specific configurations
 │   └── dell-pc/
-│       ├── default.nix       # Host configuration
-│       └── hardware.nix      # Hardware configuration
+│       ├── configuration.nix # Host configuration
+│       └── hardware-configuration.nix # Hardware configuration
 ├── modules/                   # Reusable modules
 │   ├── nixos/
 │   │   ├── core.nix          # Core system configuration
@@ -21,7 +21,7 @@ Modular NixOS configuration with multi-host and multi-user support.
 │       └── tmux-sessionizer.nix  # Tmux session manager script
 ├── home/                      # User configurations
 │   └── oussama/
-│       ├── default.nix       # User-specific packages and settings
+│       ├── home.nix          # User-specific packages and settings
 │       └── profiles/
 │           └── hyprland/     # Hyprland profile with symlinked configs
 │               └── default.nix
@@ -50,7 +50,7 @@ sudo nixos-rebuild switch --flake .#dell-pc
 ### Add a New Host
 
 1. Create host directory: `hosts/new-hostname/`
-2. Add `default.nix` and `hardware.nix`
+2. Add `configuration.nix` and `hardware-configuration.nix`
 3. Add to `flake.nix`:
 ```nix
 nixosConfigurations = {
@@ -62,9 +62,9 @@ nixosConfigurations = {
 ### Add a New User
 
 1. Create user directory: `home/username/`
-2. Create `default.nix` with user configuration
+2. Create `home.nix` with user configuration
 3. Create profile: `home/username/profiles/hyprland/` (or other WM)
-4. Add user to host configuration in `hosts/hostname/default.nix`:
+4. Add user to host configuration in `hosts/hostname/configuration.nix`:
 ```nix
 users.users.username = {
   isNormalUser = true;
@@ -75,7 +75,7 @@ users.users.username = {
 
 ### Switch Window Manager Profile
 
-Edit `home/username/default.nix` imports:
+Edit `home/username/home.nix` imports:
 ```nix
 imports = [
   ./profiles/sway  # Instead of ./profiles/hyprland

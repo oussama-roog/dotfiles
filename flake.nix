@@ -24,12 +24,12 @@
         inherit system;
         specialArgs = { inherit inputs unstable; };
         modules = [
-          ./hosts/${hostname}
-          home-manager.nixosModules.home-manager {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              users.${username} = import ./home/${username};
+              ./hosts/${hostname}/configuration.nix
+              home-manager.nixosModules.home-manager {
+                home-manager = {
+                  useGlobalPkgs = true;
+                  useUserPackages = true;
+                  users.${username} = import ./home/${username}/home.nix;
               backupFileExtension = "backup";
               extraSpecialArgs = { 
                 inherit inputs unstable system;
