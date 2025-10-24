@@ -1,8 +1,21 @@
 { config, pkgs, system, inputs, unstable, ... }:
 
+let
+  configs = {
+    hypr = "hypr";
+    nvim = "nvim";
+    waybar = "waybar";
+    rofi = "rofi";
+    ghostty = "ghostty";
+    yazi = "yazi";
+    lazygit = "lazygit";
+  };
+in
 {
   imports = [
-    ./profiles/hyprland
+    ./bash.nix
+    ./tmux.nix
+    ./packages.nix
   ];
 
   home.username = "oussama";
@@ -21,36 +34,16 @@
     userName = "oussama-roog";
     extraConfig = {
       init.defaultBranch = "main";
-      safe = {
-        directory = [
-          "/mnt/data/Notes"
-          "/mnt/data/Projects/codecrafters-http-server-c"
-          "/mnt/data/Projects/simple-http-server"
-          "/mnt/data/Projects/whathiq/wathiq-app"
-          "/mnt/data/Projects/go-tuto/femProject"
-          "/mnt/data/Projects/zaki/dotfiles"
-          "/mnt/data/Projects/zaki/dotfiles-zaki"
-          "/mnt/data/Projects/Pnet"
-        ];
-      };
+      # safe = { directory = []; };
     };
   };
 
-  home.packages = with pkgs; [
-    nodejs
-    unstable.opencode
-    inputs.zen-browser.packages."${system}".beta
-    
-    go
-    cmake
-    gnumake
-    libgcc
-    gcc
-    rustup
-    lua
-    gdb
-    lldb
-    python311
-    lua54Packages.luarocks
-  ];
+  xdg.configFile = let
+    dotfiles = "${config.home.homeDirectory}/dotfiles/.config";
+    create_symlink = path: config.lib.file.mkOutOfStoreSymlink path;
+  in
+    builtins.mapAttrs (name: subpath: {
+      source = create_symlink "${dotfiles}/${subpath}";
+      recursive = true;
+    }) configs;
 }
