@@ -18,25 +18,18 @@
   # Set your time zone.
   time.timeZone = "Africa/Algiers";
 
-  # Select internationalisation properties.
-  i18n.defaultLocale = "en_US.UTF-8";
-
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "ar_DZ.UTF-8";
-    LC_IDENTIFICATION = "ar_DZ.UTF-8";
-    LC_MEASUREMENT = "ar_DZ.UTF-8";
-    LC_MONETARY = "ar_DZ.UTF-8";
-    LC_NAME = "ar_DZ.UTF-8";
-    LC_NUMERIC = "ar_DZ.UTF-8";
-    LC_PAPER = "ar_DZ.UTF-8";
-    LC_TELEPHONE = "ar_DZ.UTF-8";
-    LC_TIME = "ar_DZ.UTF-8";
-  };
-
   # Configure keymap in X11
   services.xserver.xkb = {
     layout = "us";
     variant = "";
+  };
+
+  services.pipewire = {
+      enable = true;
+      alsa.enable = true;
+      alsa.support32Bit = true;
+      pulse.enable = true;
+      audio.enable = true;
   };
 
   services.getty.autologinUser = "oussama";
@@ -45,6 +38,8 @@
 	enable = true;
 	xwayland.enable = true;
   };
+
+
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.oussama = {
@@ -69,10 +64,37 @@
 	ghostty
 	rofi-wayland
 	neovim
+    tmux
+    go 
+    btop 
+    cmake
+    gnumake 
+    libgcc
+    gcc
+    rofi-calc
+    dunst
+    unzip
+    unrar 
+    fzf 
+    wl-clipboard
+    zip 
+    zoxide
+    yazi
+    cliphist
+    ripgrep
+    fd
+    rustup
+    lua 
+    gdb 
+    lldb
+    python311
+    lua54Packages.luarocks
+    bibata-cursors
   ];
 
   fonts.packages = with pkgs; [
 	nerd-fonts.jetbrains-mono
+    icomoon-feather
   ];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
@@ -81,5 +103,4 @@
   # services.openssh.enable = true;
 
   system.stateVersion = "25.05";
-
 }

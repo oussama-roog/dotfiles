@@ -4,9 +4,7 @@ This is my personal dotfiles.
 
 ## Installation
 
-```bash
-git clone https://github.com/oussamahamdaoui/dotfiles.git ~/.dotfiles
-```
+- clone this repo
 
 ## Usage
 
