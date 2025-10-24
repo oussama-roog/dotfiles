@@ -8,6 +8,8 @@
     fd
     lazygit
     btop
+    ghostty
+    kitty
     
     go
     nodejs
@@ -24,9 +26,14 @@
     
     unstable.opencode
     inputs.zen-browser.packages."${system}".beta
-    ghostty
-    kitty
+    spotify
+    obsidian
+    discord
 
     bibata-cursors
+    
+    grim
+    slurp
+    libnotify
   ];
 }
