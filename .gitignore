@@ -1,5 +1,6 @@
 # Ignore backup files
 *.bak
+*.backup
 
 # Ignore log files
 *.log
@@ -18,3 +19,10 @@
 # Ignore all other potentially sensitive or unnecessary files
 .config/*/*.bak
 .config/*/*.log
+
+# NixOS result symlinks
+result
+result-*
+
+# Home-manager result symlinks
+home-manager-result
