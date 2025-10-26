@@ -74,7 +74,7 @@
     zip
     
     waybar
-    hyprpaper
+    swww
     hyprlock
     rofi-wayland
     libqalculate
