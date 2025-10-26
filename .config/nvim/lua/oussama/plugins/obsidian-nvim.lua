@@ -1,11 +1,14 @@
 return {
 	"obsidian-nvim/obsidian.nvim",
-	version = "*", -- recommended, use latest release instead of latest commit
-	lazy = true,
+	version = "*",
+	ft = "markdown",
 	event = {
-		"BufReadPre /mnt/data/Notes/*.md",
-		"BufNewFile /mnt/data/Notes/*.md",
+		"BufReadPre ~/data/Notes/*.md",
+		"BufNewFile ~/data/Notes/*.md",
 	},
+	cond = function()
+		return vim.fn.isdirectory(vim.fn.expand("~/data/Notes")) == 1
+	end,
 	dependencies = {
 		"nvim-lua/plenary.nvim",
 	},
@@ -16,10 +19,9 @@ return {
 		workspaces = {
 			{
 				name = "Notes",
-				path = "/mnt/data/Notes",
+				path = "~/data/Notes",
 			},
 		},
-		-- Disable UI if not needed
 		ui = {
 			enable = false,
 		},
@@ -39,15 +41,11 @@ return {
 			name = "snacks.pick",
 		},
 
-		-- Use the title exactly as the note ID (file name).
 		note_id_func = function(title)
-			-- Just return the title as it is
 			return title
 		end,
 
-		-- Use the title exactly as the file name.
 		note_path_func = function(spec)
-			-- Simply return the directory and the title (no modification).
 			return tostring(spec.dir) .. "/" .. spec.title .. ".md"
 		end,
 	},

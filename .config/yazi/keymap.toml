@@ -5,7 +5,7 @@ desc = "Cd to root"
 
 [[mgr.prepend_keymap]]
 on   = [ "g", "z" ]
-run  = "cd /mnt/data/"
+run  = "cd ~/data/"
 desc = "access Data disk"
 
 [[mgr.prepend_keymap]]

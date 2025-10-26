@@ -9,7 +9,7 @@ url=$(playerctl metadata xesam:url 2>/dev/null)
 
 # Check if there's any media playing
 if [ -z "$title" ]; then
-    echo "No media playing"
+    echo " No media playing"
     exit 0
 fi
 

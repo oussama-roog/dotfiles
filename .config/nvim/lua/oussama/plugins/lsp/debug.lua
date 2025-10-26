@@ -4,29 +4,22 @@ return {
 	dependencies = {
 		"rcarriga/nvim-dap-ui",
 		"nvim-neotest/nvim-nio",
-		"jay-babu/mason-nvim-dap.nvim",
 		"theHamsta/nvim-dap-virtual-text",
 	},
 	config = function()
-		local mason_dap = require("mason-nvim-dap")
 		local dap = require("dap")
 		local ui = require("dapui")
 		local dap_virtual_text = require("nvim-dap-virtual-text")
 
-		-- Dap Virtual Text
 		dap_virtual_text.setup()
 
-		mason_dap.setup({
-			ensure_installed = { "cppdbg" },
-			automatic_installation = true,
-			handlers = {
-				function(config)
-					require("mason-nvim-dap").default_setup(config)
-				end,
-			},
-		})
+		dap.adapters.cppdbg = {
+			id = "cppdbg",
+			type = "executable",
+			command = "gdb",
+			name = "cppdbg",
+		}
 
-		-- Configurations
 		dap.configurations = {
 			c = {
 				{
@@ -38,8 +31,8 @@ return {
 					end,
 					cwd = "${workspaceFolder}",
 					stopAtEntry = false,
-					MIMode = "gdb", -- Changed from lldb to gdb
-					miDebuggerPath = "/usr/bin/gdb", -- Updated path
+					MIMode = "gdb",
+					miDebuggerPath = "gdb",
 					setupCommands = {
 						{
 							description = "Enable pretty-printing for gdb",
@@ -52,9 +45,9 @@ return {
 					name = "Attach to gdbserver :1234",
 					type = "cppdbg",
 					request = "launch",
-					MIMode = "gdb", -- Changed from lldb to gdb
+					MIMode = "gdb",
 					miDebuggerServerAddress = "localhost:1234",
-					miDebuggerPath = "/usr/bin/gdb", -- Updated path
+					miDebuggerPath = "gdb",
 					cwd = "${workspaceFolder}",
 					program = function()
 						return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/", "file")
@@ -62,8 +55,6 @@ return {
 				},
 			},
 		}
-
-		-- Dap UI
 
 		ui.setup({
 			layouts = {
@@ -106,8 +97,6 @@ return {
 			},
 		})
 
-		-- vim.fn.sign_define("DapBreakpoint", { text = "📍" })
-		-- Change breakpoint icons
 		vim.api.nvim_set_hl(0, "DapBreak", { fg = "#e51400" })
 		vim.api.nvim_set_hl(0, "DapStop", { fg = "#ffcc00" })
 		local breakpoint_icons = vim.g.have_nerd_font
