@@ -9,6 +9,7 @@ let
     ghostty = "ghostty";
     yazi = "yazi";
     lazygit = "lazygit";
+    dunst = "dunst";
   };
 in
 {

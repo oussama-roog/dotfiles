@@ -20,10 +20,10 @@ configuration {
 }
 
 /*****----- Global Properties -----*****/
-@import "~/.config/rofi/colors/onedark.rasi"
+@import "~/.config/rofi/colors.rasi"
 
 * {
-    font:                        "JetBrainsMono Nerd Font 12";
+    font:                        "JetBrainsMono Nerd Font Propo 12";
     border-colour:               none;
     handle-colour:               var(selected);
     background-colour:           var(background);
@@ -57,7 +57,7 @@ window {
     fullscreen:                  false;
     width:                       600px;
     x-offset:                    0px;
-    y-offset:                    -33px;
+    y-offset:                    5px;
 
     enabled:                     true;
     margin:                      0px;
@@ -74,7 +74,7 @@ mainbox {
     enabled:                     true;
     spacing:                     10px;
     margin:                      0px;
-    padding:                     30px;
+    padding:                     20px;
     border:                      0px solid;
     border-radius:               0px;
     border-color:                @border-colour;

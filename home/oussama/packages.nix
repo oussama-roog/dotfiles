@@ -27,13 +27,14 @@
     unstable.opencode
     inputs.zen-browser.packages."${system}".beta
     spotify
-    obsidian
     discord
+    # obsidian
 
     bibata-cursors
     
     grim
     slurp
     libnotify
+    ntfs3g
   ];
 }

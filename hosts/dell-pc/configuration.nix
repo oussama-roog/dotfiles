@@ -76,11 +76,12 @@
     waybar
     hyprpaper
     rofi-wayland
-    rofi-calc
+    libqalculate
     dunst
     wl-clipboard
     cliphist
-    
+    pulseaudio
+    wireplumber
   ];
 
   fonts.packages = with pkgs; [

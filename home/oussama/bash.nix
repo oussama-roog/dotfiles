@@ -10,8 +10,8 @@
       ta = "tmux attach-session -t oussama || tmux new-session -s oussama";
       lg = "lazygit";
       op = "tmux-sessionizer";
-      data = "sudo mount -t ntfs-3g /dev/nvme0n1p5 /mnt/data";
-      udata = "sudo umount /mnt/data";
+      data = "sudo mount -t ntfs3 -o noacsrules /dev/nvme0n1p5 /home/oussama/data";
+      udata = "sudo umount /home/oussama/data";
       btw = "echo nixos and neovim btw";
     };
     

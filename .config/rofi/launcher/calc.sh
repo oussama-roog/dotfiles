@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
 
-#!/bin/bash
-
 dir="$HOME/.config/rofi/launcher/"
-theme='style-4'
+theme='style'
 
-# Run rofi with calculator input and copy result to clipboard on Ctrl+Enter
-rofi -show calc -modi calc -no-show-match -no-show-input -theme "${dir}/${theme}.rasi" -calc-command "echo -n '{result}' | wl-copy"
+expression=$(rofi -dmenu -p "Calc =" -theme-str 'listview {enabled: false;}' -theme ${dir}/${theme}.rasi)
+
+if [[ -n "$expression" ]]; then
+    result=$(qalc -t "$expression" 2>/dev/null)
+
+    if [[ -n "$result" ]]; then
+        echo -n "$result" | wl-copy
+        notify-send "Calculator" "Result: $result\nCopied to clipboard"
+    else
+        notify-send "Calculator" "Invalid expression"
+    fi
+fi

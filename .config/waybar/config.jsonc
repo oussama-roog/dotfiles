@@ -13,10 +13,10 @@
         "hyprland/language"
     ],
     "modules-center": [
-        "sway/workspaces",
         "hyprland/workspaces"
     ],
     "modules-right": [
+        "bluetooth",
         "network",
         "memory",
         "cpu",
@@ -68,7 +68,7 @@
         "format-ethernet": "󰈀  {ifname}",
         "format-disconnected": "󰖪  Disconnected",
         "tooltip-format": "{ifname}: {ipaddr}/{cidr}",
-        "on-click": "nm-connection-editor"
+        "on-click": "~/.config/rofi/launcher/wifi.sh"
     },
     "memory": {
         "interval": 15,
@@ -88,7 +88,8 @@
         "format": "{icon}   {volume}%",
         "rotate": 0,
         "format-muted": "<span size='large' rise='-1000'>󰖁 </span>",
-        "on-click": "pavucontrol -t 3",
+        // "on-click": "pavucontrol -t 3",
+        "on-click": "~/.config/rofi/launcher/audio.sh",
         "on-click-middle": "$HOME/.config/scripts/volumecontrol.sh -o m",
         "on-scroll-up": "$HOME/.config/scripts/volumecontrol.sh -o i",
         "on-scroll-down": "$HOME/.config/scripts/volumecontrol.sh -o d",
@@ -110,6 +111,17 @@
                 "  "
             ]
         }
+    },
+
+    "bluetooth": {
+        "format": " {status}",
+        "format-connected": " {device_alias}",
+        "format-connected-battery": " {device_alias} {device_battery_percentage}%",
+        "tooltip-format": "{controller_alias}\t{controller_address}\n\n{num_connections} connected",
+        "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} connected\n\n{device_enumerate}",
+        "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
+        "tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_address}\t{device_battery_percentage}%",
+        "on-click": "~/.config/rofi/launcher/bluetooth.sh"
     },
     "tray": {
         "icon-size": 14,

@@ -13,7 +13,7 @@ configuration {
 }
 
 /*****----- Global Properties -----*****/
-@import "~/.config/rofi/colors/onedark.rasi"
+@import "~/.config/rofi/colors.rasi"
 * {
     font: "JetBrainsMono Nerd Font Propo 12";
 }
@@ -30,7 +30,7 @@ window {
     fullscreen:                  false;
     width:                       550px;
     x-offset:                    0px;
-    y-offset:                    -33px;
+    y-offset:                    5px;
     margin:                      0px;
     padding:                     0px;
     border:                      0px solid;

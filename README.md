@@ -91,8 +91,8 @@ Configured in `modules/home-manager/bash.nix`:
 - `ta` → tmux attach/new session
 - `lg` → lazygit
 - `op` → tmux-sessionizer
-- `data` → mount /mnt/data partition
-- `udata` → unmount /mnt/data partition
+- `data` → mount /home/oussama/data partition
+- `udata` → unmount /home/oussama/data partition
 
 ## Packages
 
