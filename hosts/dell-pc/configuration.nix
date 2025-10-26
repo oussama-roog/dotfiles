@@ -75,6 +75,7 @@
     
     waybar
     hyprpaper
+    hyprlock
     rofi-wayland
     libqalculate
     dunst

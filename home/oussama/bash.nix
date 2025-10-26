@@ -10,7 +10,7 @@
       ta = "tmux attach-session -t oussama || tmux new-session -s oussama";
       lg = "lazygit";
       op = "tmux-sessionizer";
-      data = "sudo mount -t ntfs3 -o noacsrules /dev/nvme0n1p5 /home/oussama/data";
+      data = "sudo mount -t ntfs3 -o umask=000 /dev/nvme0n1p5 /home/oussama/data";
       udata = "sudo umount /home/oussama/data";
       btw = "echo nixos and neovim btw";
     };
@@ -20,6 +20,8 @@
       eval "$(zoxide init bash)"
       
       test -s ~/.alias && . ~/.alias || true
+
+      [ -f ~/.env ] && source ~/.env
       
       [ -f ~/.fzf.bash ] && source ~/.fzf.bash
       
@@ -34,7 +36,6 @@
         exec hyprland
       fi
       
-      export PATH=${config.home.homeDirectory}/.opencode/bin:$PATH
       export PATH=${config.home.homeDirectory}/.local/bin:$PATH
     '';
   };
