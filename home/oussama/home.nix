@@ -17,6 +17,7 @@ in
     ./bash.nix
     ./tmux.nix
     ./packages.nix
+    ./dev-tools.nix
   ];
 
   home.username = "oussama";

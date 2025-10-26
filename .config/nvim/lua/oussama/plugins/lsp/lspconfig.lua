@@ -50,6 +50,10 @@ return {
 				cmd = { "vscode-json-language-server", "--stdio" },
 				filetypes = { "json", "jsonc" },
 			},
+			nil_ls = {
+				cmd = { "nil" },
+				filetypes = { "nix" },
+			},
 			tailwindcss = {
 				cmd = { "tailwindcss-language-server", "--stdio" },
 				filetypes = {
@@ -101,32 +105,6 @@ return {
 					"typescriptreact",
 					"vue",
 					"svelte",
-				},
-			},
-			qmlls = {
-				cmd = { "qmlls" },
-				filetypes = { "qml" },
-				handlers = {
-					["textDocument/publishDiagnostics"] = function(err, result, ctx, config)
-						if result and result.diagnostics then
-							result.diagnostics = vim.tbl_filter(function(diagnostic)
-								-- Filter out lineNumber warnings
-								if diagnostic.message:match("lineNumber") then
-									return false
-								end
-								-- Filter out "not creatable" warnings
-								-- if diagnostic.message:match("is not creatable") then
-								-- 	return false
-								-- end
-								-- Filter out import warnings
-								if diagnostic.message:match("Warnings occurred while importing") then
-									return false
-								end
-								return true
-							end, result.diagnostics)
-						end
-						vim.lsp.diagnostic.on_publish_diagnostics(err, result, ctx, config)
-					end,
 				},
 			},
 			lua_ls = {

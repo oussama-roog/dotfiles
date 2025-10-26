@@ -20,10 +20,11 @@ return {
 			go = { "golangci-lint" },
 			bash = { "shellcheck" },
 			markdown = { "markdownlint" },
+			nix = { "statix" },
 		}
 
 		lint.linters["golangci-lint"] = {
-			cmd = "/home/oussama/.local/share/nvim/mason/bin/golangci-lint",
+			cmd = "golangci-lint",
 			args = { "run", "--out-format", "json" },
 			stdin = false,
 			stream = "stdout",

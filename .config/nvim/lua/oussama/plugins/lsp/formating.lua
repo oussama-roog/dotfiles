@@ -34,6 +34,12 @@ return {
 					c = { "clang-format" },
 					cpp = { "clang-format" },
 					go = { "gofumpt", "goimports-reviser", "golines" },
+					nix = { "nixpkgs_fmt" },
+				},
+				formatters = {
+					nixpkgs_fmt = {
+						command = "nixpkgs-fmt",
+					},
 				},
 				format_on_save = {
 					lsp_fallback = true,
