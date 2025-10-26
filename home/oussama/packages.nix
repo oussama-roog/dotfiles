@@ -10,10 +10,10 @@
     btop
     ghostty
     kitty
-    
+
     go
     nodejs
-    python311
+    python313
     lua
     rustup
     cmake
@@ -23,7 +23,7 @@
     gdb
     lldb
     lua54Packages.luarocks
-    
+
     unstable.opencode
     inputs.zen-browser.packages."${system}".beta
     spotify
@@ -31,10 +31,16 @@
     # obsidian
 
     bibata-cursors
-    
+
     grim
     slurp
     libnotify
     ntfs3g
+
+    # nvim dependencies
+    imagemagick
+    trash-cli
+    sqlite
+    python313Packages.pynvim
   ];
 }
