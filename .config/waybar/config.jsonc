@@ -9,7 +9,7 @@
     "fixed-center": true,
     "modules-left": [
         "clock",
-        "custom/spotify",
+        "custom/songname",
         "hyprland/language"
     ],
     "modules-center": [
@@ -21,8 +21,7 @@
         "memory",
         "cpu",
         "pulseaudio",
-        "battery",
-        "tray"
+        "battery"
     ],
     "hyprland/workspaces": {
         "active-only": false,
@@ -43,10 +42,10 @@
         "format-en": "EN",
         "format-ar": "AR"
     },
-    "custom/spotify": {
+    "custom/songname": {
         "exec": "~/.config/waybar/scripts/songname.sh",
         "interval": 1,
-        "format": "  {}"
+        "format": "{}"
     },
     "clock": {
         "tooltip": true,
@@ -122,10 +121,6 @@
         "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
         "tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_address}\t{device_battery_percentage}%",
         "on-click": "~/.config/rofi/launcher/bluetooth.sh"
-    },
-    "tray": {
-        "icon-size": 14,
-        "spacing": 10
     },
     "battery": {
         "states": {

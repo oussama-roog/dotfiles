@@ -58,26 +58,7 @@ run_cmd() {
         elif [[ $1 == '--suspend' ]]; then
             systemctl suspend
         elif [[ $1 == '--logout' ]]; then
-            if [[ "$XDG_SESSION_TYPE" == 'wayland' ]]; then
-                if pgrep -x "sway" >/dev/null; then
-                    swaymsg exit
-                elif pgrep -x "Hyprland" >/dev/null; then
-                    hyprctl dispatch exit
-                else
-                    echo "Unknown Wayland compositor"
-                    exit 1
-                fi
-            elif [[ "$XDG_SESSION_TYPE" == 'x11' ]]; then
-                if pgrep -x "i3" >/dev/null; then
-                    i3-msg exit
-                else
-                    echo "Unsupported X11 window manager"
-                    exit 1
-                fi
-            else
-                echo "Unknown session type"
-                exit 1
-            fi
+            loginctl terminate-session $XDG_SESSION_ID
         fi
     else
         exit 0
@@ -86,20 +67,10 @@ run_cmd() {
 
 # Lock screen function
 lock_screen() {
-    if [[ "$XDG_SESSION_TYPE" == 'wayland' ]]; then
-        if command -v swaylock &>/dev/null; then
-            swaylock
-        else
-            echo "swaylock not found"
-        fi
-    elif [[ "$XDG_SESSION_TYPE" == 'x11' ]]; then
-        if command -v i3lock &>/dev/null; then
-            i3lock
-        else
-            echo "i3lock not found"
-        fi
+    if command -v hyprlock &>/dev/null; then
+        hyprlock
     else
-        echo "Unknown session type"
+        echo "hyprlock not found"
     fi
 }
 

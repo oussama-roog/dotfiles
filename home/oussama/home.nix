@@ -29,6 +29,8 @@ in
     };
   };
 
+  services.playerctld.enable = true;
+
   programs.git = {
     enable = true;
     userEmail = "oussamaroog@gmail.com";

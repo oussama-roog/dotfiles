@@ -8,6 +8,7 @@
       v = "nvim";
       y = "yazi";
       ta = "tmux attach-session -t oussama || tmux new-session -s oussama";
+      tk = "pkill tmux";
       lg = "lazygit";
       op = "tmux-sessionizer";
       data = "sudo mount -t ntfs3 -o umask=000 /dev/nvme0n1p5 /home/oussama/data";

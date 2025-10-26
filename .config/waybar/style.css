@@ -45,7 +45,7 @@ window#waybar {
 #cpu,
 #pulseaudio,
 #battery,
-#custom-spotify,
+#custom-songname,
 #tray {
   margin: 0 5px;
   padding: 5px 20px;
