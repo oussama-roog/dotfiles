@@ -28,11 +28,16 @@
     inputs.zen-browser.packages."${system}".beta
     spotify
     discord
+    obs-studio
     # obsidian
 
     # GTK file manager
     xfce.thunar
     unstable.nautilus
+
+    # Media viewers
+    mpv
+    unstable.imv
 
     bibata-cursors
     base16-schemes

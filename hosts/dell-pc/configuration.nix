@@ -73,6 +73,8 @@
     unzip
     unrar
     zip
+    ffmpeg
+    jq
 
     waybar
     swww

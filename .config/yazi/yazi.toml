@@ -5,6 +5,7 @@ linemode = "size"
 [open]
 rules = [
     { mime = "image/*", use = "view_image" },
+    { mime = "video/*", use = "view_video" },
     { mime = "text/*", use = "edit" },
     { mime = "inode/directory", use = "change_dir" },  # Directory rule
     { mime = "application/pdf", use = "view_pdf" },
@@ -18,7 +19,10 @@ edit = [
     { run = 'nvim "$@"', block = true, for = "unix" },
 ]
 view_image = [
-    { run = 'loope "$@"', orphan = true, for = "unix" }
+    { run = 'imv "$@"', orphan = true, for = "unix" }
+]
+view_video = [
+    { run = 'mpv "$@"', orphan = true, for = "unix" }
 ]
 change_dir = [
     { run = 'cd "$@" && exec bash', block = true, for = "unix" }
