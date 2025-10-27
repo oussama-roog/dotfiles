@@ -19,10 +19,18 @@ fi
 current_theme=$("$script" current)
 theme_count=$(echo "$themes" | wc -l)
 
-chosen=$(echo "$themes" | rofi -dmenu -i -p "Theme" \
+themes_with_random="🎲 Random
+$themes"
+
+chosen=$(echo "$themes_with_random" | rofi -dmenu -i -p "Theme" \
     -theme "${dir}/${theme}.rasi" \
-    -mesg "Current: $current_theme | Themes: $theme_count")
+    -mesg "Current: $current_theme | Themes: $theme_count" \
+    -filter "")
 
 if [[ -n "$chosen" ]]; then
-    "$script" apply "$chosen"
+    if [[ "$chosen" == "🎲 Random" ]]; then
+        "$script" random
+    else
+        "$script" apply "$chosen"
+    fi
 fi

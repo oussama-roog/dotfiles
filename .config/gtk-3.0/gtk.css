@@ -1,39 +1,23 @@
-@define-color theme_base_color #000000;
-@define-color theme_fg_color #999999;
 @define-color theme_bg_color #000000;
-@define-color theme_active_color #222222;
+@define-color theme_fg_color #c1c1c1;
+@define-color theme_base_color #000000;
+@define-color theme_text_color #c1c1c1;
 @define-color theme_selected_bg_color #888888;
 @define-color theme_selected_fg_color #000000;
-@define-color insensitive_bg_color #000000;
-@define-color insensitive_fg_color #999999;
+@define-color insensitive_bg_color #222222;
+@define-color insensitive_fg_color #333333;
 @define-color insensitive_base_color #000000;
-@define-color theme_unfocused_fg_color #999999;
-@define-color theme_unfocused_bg_color #000000;
-@define-color theme_unfocused_base_color #000000;
-@define-color theme_unfocused_selected_bg_color #888888;
-@define-color theme_unfocused_selected_fg_color #000000;
-@define-color theme_cursor_color #888888;
-@define-color borders #222222;
-@define-color unfocused_borders #222222;
+@define-color borders #333333;
+@define-color warning_color #aaaaaa;
+@define-color error_color #5f8787;
+@define-color success_color #fbcb97;
 
 * {
     background-color: #000000;
     color: #c1c1c1;
-    -GtkIMHtml-hyperlink-color: #888888;
-    -GtkIMHtml-hyperlink-visited-color: #999999;
-    -GtkIMHtml-hyperlink-prelight-color: #c1c1c1;
-    -GtkHTML-link-color: #888888;
-    -GtkHTML-vlink-color: #999999;
-    -GtkHTML-cite-color: #fbcb97;
-    -GtkWidget-link-color: #888888;
-    -GtkWidget-visited-link-color: #999999;
 }
 
 window {
-    background-color: #000000;
-}
-
-.background {
     background-color: #000000;
     color: #c1c1c1;
 }

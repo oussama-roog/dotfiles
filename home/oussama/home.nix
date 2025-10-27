@@ -44,7 +44,7 @@ in
       "video/x-msvideo" = "mpv.desktop";
       "video/quicktime" = "mpv.desktop";
       "video/*" = "mpv.desktop";
-      
+
       "image/png" = "imv.desktop";
       "image/jpeg" = "imv.desktop";
       "image/jpg" = "imv.desktop";
@@ -65,12 +65,15 @@ in
     };
   };
 
-  xdg.configFile = let
-    dotfiles = "${config.home.homeDirectory}/dotfiles/.config";
-    create_symlink = path: config.lib.file.mkOutOfStoreSymlink path;
-  in
-    builtins.mapAttrs (name: subpath: {
-      source = create_symlink "${dotfiles}/${subpath}";
-      recursive = true;
-    }) configs;
+  xdg.configFile =
+    let
+      dotfiles = "${config.home.homeDirectory}/dotfiles/.config";
+      create_symlink = path: config.lib.file.mkOutOfStoreSymlink path;
+    in
+    builtins.mapAttrs
+      (name: subpath: {
+        source = create_symlink "${dotfiles}/${subpath}";
+        recursive = true;
+      })
+      configs;
 }

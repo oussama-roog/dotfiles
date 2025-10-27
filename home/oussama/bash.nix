@@ -3,7 +3,7 @@
 {
   programs.bash = {
     enable = true;
-    
+
     shellAliases = {
       v = "nvim";
       y = "yazi";
@@ -15,7 +15,7 @@
       udata = "sudo umount /home/oussama/data";
       btw = "echo nixos and neovim btw";
     };
-    
+
     initExtra = ''
       eval "$(starship init bash)"
       eval "$(zoxide init bash)"
@@ -31,7 +31,7 @@
         source $(fzf-share)/completion.bash
       fi
     '';
-    
+
     profileExtra = ''
       if [ -z "$WAYLAND_DISPLAY" ] && [ "$XDG_VTNR" = 1 ]; then
         exec hyprland
@@ -40,14 +40,14 @@
       export PATH=${config.home.homeDirectory}/.local/bin:$PATH
     '';
   };
-  
+
   programs.starship.enable = true;
-  
+
   programs.zoxide = {
     enable = true;
     enableBashIntegration = true;
   };
-  
+
   programs.fzf = {
     enable = true;
     enableBashIntegration = true;

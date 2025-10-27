@@ -91,8 +91,17 @@ current)
         echo "black-metal-bathory"
     fi
     ;;
+random)
+    themes=($(get_themes))
+    if [[ ${#themes[@]} -eq 0 ]]; then
+        echo "Error: No themes available"
+        exit 1
+    fi
+    random_theme="${themes[$RANDOM % ${#themes[@]}]}"
+    apply_theme "$random_theme"
+    ;;
 *)
-    echo "Usage: $0 {list|apply <theme>|current}"
+    echo "Usage: $0 {list|apply <theme>|current|random}"
     exit 1
     ;;
 esac

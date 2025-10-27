@@ -2,21 +2,19 @@
 
 apply_gtk_theme() {
     cat > "$CONFIG_DIR/gtk-3.0/gtk.css" << EOF
-@define-color theme_fg_color #${colors[base05]};
 @define-color theme_bg_color #${colors[base00]};
+@define-color theme_fg_color #${colors[base05]};
 @define-color theme_base_color #${colors[base00]};
+@define-color theme_text_color #${colors[base05]};
 @define-color theme_selected_bg_color #${colors[base0D]};
 @define-color theme_selected_fg_color #${colors[base00]};
-@define-color insensitive_bg_color #${colors[base01]};
+@define-color insensitive_bg_color #${colors[base02]};
 @define-color insensitive_fg_color #${colors[base03]};
-@define-color insensitive_base_color #${colors[base01]};
-@define-color theme_unfocused_fg_color #${colors[base04]};
-@define-color theme_unfocused_bg_color #${colors[base01]};
-@define-color theme_unfocused_base_color #${colors[base01]};
-@define-color theme_unfocused_selected_bg_color #${colors[base0D]};
-@define-color theme_unfocused_selected_fg_color #${colors[base00]};
+@define-color insensitive_base_color #${colors[base00]};
 @define-color borders #${colors[base03]};
-@define-color unfocused_borders #${colors[base02]};
+@define-color warning_color #${colors[base09]};
+@define-color error_color #${colors[base08]};
+@define-color success_color #${colors[base0B]};
 
 * {
     background-color: #${colors[base00]};
@@ -24,10 +22,6 @@ apply_gtk_theme() {
 }
 
 window {
-    background-color: #${colors[base00]};
-}
-
-.background {
     background-color: #${colors[base00]};
     color: #${colors[base05]};
 }

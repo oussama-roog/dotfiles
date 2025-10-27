@@ -6,5 +6,8 @@ SCRIPT_DIR="$HOME/dotfiles/scripts"
 
 if [[ -f "$CURRENT_THEME_FILE" ]]; then
     theme=$(cat "$CURRENT_THEME_FILE")
-    "$SCRIPT_DIR/theme-switcher.sh" apply "$theme"
+else
+    theme="black-metal-bathory"
 fi
+
+"$SCRIPT_DIR/theme-switcher.sh" apply "$theme"
