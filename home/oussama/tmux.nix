@@ -1,5 +1,8 @@
 { pkgs, ... }:
 
+let
+  colors = import ./colors.nix;
+in
 {
   programs.tmux = {
     enable = true;
@@ -9,22 +12,21 @@
     mouse = true;
     keyMode = "vi";
     prefix = "C-a";
-    
+
     extraConfig = ''
       set-option -sa terminal-overrides ",xterm*:Tc"
       set-option -g status-position bottom
       set -g renumber-windows on
       
-      source-file ~/dotfiles/.config/tmux/colors.conf
-      
-      set -g status-style "bg=$base01,fg=$base05"
-      set -g status-left "#[bg=$base0A,fg=$base00,bold] #S "
-      set -g status-right "#[bg=$base03,fg=$base05] %Y-%m-%d %H:%M "
-      set -g window-status-current-format "#[bg=$base0A,fg=$base00,bold] #I:#W "
-      set -g window-status-format "#[bg=$base02,fg=$base04] #I:#W "
-      set -g pane-border-style "fg=$base03"
-      set -g pane-active-border-style "fg=$base0A"
-      set -g message-style "bg=$base01,fg=$base05"
+      set -g status-style "bg=${colors.base01},fg=${colors.base05}"
+      set -g status-left "#{?client_prefix,#[bg=${colors.base08}],#[bg=${colors.base0A}]}#[fg=${colors.base00},bold] #S #[fg=${colors.base0A},bg=${colors.base01}]      "
+      set -g status-right "#[bg=${colors.base03},fg=${colors.base05}] %Y-%m-%d %H:%M "
+      set -g window-status-current-format "#[bg=${colors.base0A},fg=${colors.base00},bold] #I:#W "
+      set -g window-status-format "#[bg=${colors.base02},fg=${colors.base04}] #I:#W "
+      set -g window-status-separator ""
+      set -g pane-border-style "fg=${colors.base03}"
+      set -g pane-active-border-style "fg=${colors.base0A}"
+      set -g message-style "bg=${colors.base01},fg=${colors.base05}"
       
       unbind C-b
       bind-key C-a send-prefix
@@ -47,7 +49,7 @@
       
       bind-key -r f run-shell "tmux neww ~/dotfiles/scripts/tmux-sessionizer"
     '';
-    
+
     plugins = with pkgs.tmuxPlugins; [
       vim-tmux-navigator
       sensible
