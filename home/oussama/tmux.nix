@@ -27,6 +27,7 @@ in
       set -g pane-border-style "fg=${colors.base03}"
       set -g pane-active-border-style "fg=${colors.base0A}"
       set -g message-style "bg=${colors.base01},fg=${colors.base05}"
+      set -g status-left-length 100
       
       unbind C-b
       bind-key C-a send-prefix

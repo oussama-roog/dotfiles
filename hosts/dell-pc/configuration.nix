@@ -46,7 +46,7 @@
     enable = true;
     powerOnBoot = true;
   };
-  
+
   services.blueman.enable = true;
 
   programs.hyprland = {
@@ -68,11 +68,12 @@
     vim
     wget
     git
-    
+    tree
+
     unzip
     unrar
     zip
-    
+
     waybar
     swww
     hyprlock
