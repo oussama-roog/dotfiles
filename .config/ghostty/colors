@@ -1,10 +1,10 @@
-background = 000000
-foreground = c1c1c1
-selection-background = c1c1c1
-selection-foreground = 000000
+background = #000000
+foreground = #c1c1c1
+selection-background = #c1c1c1
+selection-foreground = #000000
 
-cursor-color = c1c1c1
-cursor-text = 000000
+cursor-color = #c1c1c1
+cursor-text = #000000
 
 palette = 0=#000000
 palette = 1=#5f8787

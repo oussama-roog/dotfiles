@@ -62,10 +62,3 @@ prepend_conds = [
     { if = "link", text = "", fg = "#999999" },
     { if = "exec", text = "", fg = "#5f8787" }
 ]
-
-[icon]
-prepend_conds = [
-    { if = "dir", text = "", fg = "#9bb4bc" }, #type color, directory icon
-    { if = "link", text = "", fg = "#aeaed1" }, #constant color, link icon
-    { if = "exec", text = "", fg = "#c48282" } #func color, executable icon.
-]

@@ -16,9 +16,9 @@
     base0E: #999999;
     base0F: #444444;
 
-    background:     @base05;
-    background-alt: @base06;
-    foreground:     @base00;
+    background:     @base00;
+    background-alt: @base01;
+    foreground:     @base05;
     selected:       @base0A;
     active:         @base0B;
     urgent:         @base08;

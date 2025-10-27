@@ -15,7 +15,7 @@
       set-option -g status-position bottom
       set -g renumber-windows on
       
-      source-file ~/.config/tmux/colors.conf
+      source-file ~/dotfiles/.config/tmux/colors.conf
       
       set -g status-style "bg=$base01,fg=$base05"
       set -g status-left "#[bg=$base0A,fg=$base00,bold] #S "

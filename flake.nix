@@ -12,31 +12,32 @@
   };
 
   outputs = { nixpkgs, nixpkgs-unstable, home-manager, zen-browser, ... } @ inputs:
-  let
-    system = "x86_64-linux";
-    unstable = import nixpkgs-unstable {
-      inherit system;
-      config.allowUnfree = true;
-    };
-  in
-  {
-    nixosConfigurations.dell-pc = nixpkgs.lib.nixosSystem {
-      inherit system;
-      specialArgs = { inherit inputs unstable; };
-      modules = [
-        ./hosts/dell-pc/configuration.nix
-        home-manager.nixosModules.home-manager {
-          home-manager = {
-            useGlobalPkgs = true;
-            useUserPackages = true;
-            users.oussama = import ./home/oussama/home.nix;
-            backupFileExtension = "backup";
-            extraSpecialArgs = { 
-              inherit inputs unstable system;
+    let
+      system = "x86_64-linux";
+      unstable = import nixpkgs-unstable {
+        inherit system;
+        config.allowUnfree = true;
+      };
+    in
+    {
+      nixosConfigurations.dell-pc = nixpkgs.lib.nixosSystem {
+        inherit system;
+        specialArgs = { inherit inputs unstable; };
+        modules = [
+          ./hosts/dell-pc/configuration.nix
+          home-manager.nixosModules.home-manager
+          {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              users.oussama = import ./home/oussama/home.nix;
+              backupFileExtension = "backup";
+              extraSpecialArgs = {
+                inherit inputs unstable system;
+              };
             };
-          };
-        }
-      ];
+          }
+        ];
+      };
     };
-  };
 }

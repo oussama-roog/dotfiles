@@ -13,7 +13,7 @@ configuration {
 }
 
 /*****----- Global Properties -----*****/
-@import "~/.config/rofi/colors.rasi"
+@import "~/dotfiles/.config/rofi/colors.rasi"
 * {
     font: "JetBrainsMono Nerd Font Propo 12";
 }

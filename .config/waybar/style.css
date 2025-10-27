@@ -1,4 +1,4 @@
-@import "colors.css";
+@import "/home/oussama/dotfiles/.config/waybar/colors.css";
 
 * {
   border: none;
@@ -22,7 +22,7 @@ window#waybar {
   padding: 0px;
   margin: 0px 5px;
   color: transparent;
-  background-color: #a89f91;
+  background-color: @base02;
   border-radius: 10px;
   transition: all 0.2s ease;
 }
@@ -53,7 +53,7 @@ window#waybar {
   padding: 5px 20px;
   font-size: 14px;
   font-weight: bold;
-  color: @base00;
-  background: @base05;
+  color: @base05;
+  background: @base00;
   border-radius: 10px;
 }
