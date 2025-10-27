@@ -1,0 +1,81 @@
+base00 = "#000000"
+base01 = "#121212"
+base02 = "#222222"
+base03 = "#333333"
+base04 = "#999999"
+base05 = "#c1c1c1"
+base06 = "#999999"
+base07 = "#c1c1c1"
+base08 = "#5f8787"
+base09 = "#aaaaaa"
+base0A = "#e78a53"
+base0B = "#fbcb97"
+base0C = "#aaaaaa"
+base0D = "#888888"
+base0E = "#999999"
+base0F = "#444444"
+
+[mgr]
+cwd = { fg = "base05" }
+hovered = { bg = "base02" }
+find_keyword = { fg = "base0A", bold = true }
+marker_copied = { bg = "base0B" }
+marker_cut = { bg = "base0A" }
+tab_active = { fg = "base05", bold = true }
+tab_inactive = { fg = "base04" }
+border_style = { fg = "base03" }
+
+[mode]
+normal_main = { fg = "base05", bg = "base00" }
+select_main = { fg = "base05", bg = "base02" }
+
+[status]
+overall = { fg = "base05", bg = "base00" }
+perm_type = { fg = "base0D" }
+perm_read = { fg = "base0B" }
+perm_write = { fg = "base0A" }
+perm_exec = { fg = "base08" }
+progress_normal = { fg = "base05", bg = "base01" }
+progress_error = { fg = "base08" }
+
+[pick]
+border = { fg = "base03" }
+active = { fg = "base05", bg = "base02" }
+inactive = { fg = "base05" }
+
+[input]
+border = { fg = "base03" }
+value = { fg = "base05" }
+selected = { bg = "base02" }
+
+[cmp]
+border = { fg = "base03" }
+active = { fg = "base05", bg = "base02" }
+inactive = { fg = "base05" }
+
+[tasks]
+border = { fg = "base03" }
+hovered = { bg = "base02" }
+
+[help]
+on = { fg = "base0D" }
+desc = { fg = "base05" }
+hovered = { bg = "base02" }
+
+[notify]
+title_info = { fg = "base0D" }
+title_warn = { fg = "base0A" }
+title_error = { fg = "base08" }
+
+[filetype]
+rules = [
+        { name = "*/", fg = "base0D" },
+        { name = "*", fg = "base05" }
+]
+
+[icon]
+prepend_conds = [
+    { if = "dir", text = "", fg = "base0D" },
+    { if = "link", text = "", fg = "base0E" },
+    { if = "exec", text = "", fg = "base08" }
+]

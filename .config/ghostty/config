@@ -44,4 +44,5 @@
 #
 
 font-size = 14
-theme = vague
+
+import = colors

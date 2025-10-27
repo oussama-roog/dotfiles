@@ -15,6 +15,17 @@
       set-option -g status-position bottom
       set -g renumber-windows on
       
+      source-file ~/.config/tmux/colors.conf
+      
+      set -g status-style "bg=$base01,fg=$base05"
+      set -g status-left "#[bg=$base0A,fg=$base00,bold] #S "
+      set -g status-right "#[bg=$base03,fg=$base05] %Y-%m-%d %H:%M "
+      set -g window-status-current-format "#[bg=$base0A,fg=$base00,bold] #I:#W "
+      set -g window-status-format "#[bg=$base02,fg=$base04] #I:#W "
+      set -g pane-border-style "fg=$base03"
+      set -g pane-active-border-style "fg=$base0A"
+      set -g message-style "bg=$base01,fg=$base05"
+      
       unbind C-b
       bind-key C-a send-prefix
       
@@ -41,12 +52,6 @@
       vim-tmux-navigator
       sensible
       yank
-      {
-        plugin = rose-pine;
-        extraConfig = ''
-          set -g @rose_pine_variant 'main'
-        '';
-      }
     ];
   };
 }
