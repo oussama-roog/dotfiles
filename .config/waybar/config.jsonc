@@ -8,12 +8,12 @@
     "reload_style_on_change": true,
     "fixed-center": true,
     "modules-left": [
+        "hyprland/workspaces",
         "clock",
         "custom/songname",
         "hyprland/language"
     ],
     "modules-center": [
-        "hyprland/workspaces"
     ],
     "modules-right": [
         "bluetooth",
