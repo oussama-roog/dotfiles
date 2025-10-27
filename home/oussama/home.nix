@@ -10,6 +10,8 @@ let
     yazi = "yazi";
     lazygit = "lazygit";
     dunst = "dunst";
+    "gtk-3.0" = "gtk-3.0";
+    "gtk-4.0" = "gtk-4.0";
   };
 in
 {

@@ -29,6 +29,9 @@
     spotify
     discord
     # obsidian
+    
+    # GTK file manager
+    xfce.thunar
 
     bibata-cursors
     base16-schemes
