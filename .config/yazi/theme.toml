@@ -56,9 +56,3 @@ rules = [
         { name = "*", fg = "#c1c1c1" }
 ]
 
-[icon]
-prepend_conds = [
-    { if = "dir", text = "", fg = "#888888" },
-    { if = "link", text = "", fg = "#999999" },
-    { if = "exec", text = "", fg = "#5f8787" }
-]
