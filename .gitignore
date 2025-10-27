@@ -37,4 +37,5 @@ home-manager-result
 .config/yazi/theme.toml
 .config/gtk-3.0/gtk.css
 .config/gtk-4.0/gtk.css
+.config/nvim/lua/oussama/core/theme.lua
 home/oussama/colors.nix
