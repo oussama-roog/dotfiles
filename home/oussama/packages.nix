@@ -31,6 +31,7 @@
     # obsidian
 
     bibata-cursors
+    base16-schemes
 
     grim
     slurp
