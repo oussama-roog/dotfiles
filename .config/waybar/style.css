@@ -1,4 +1,4 @@
-@import "/home/oussama/dotfiles/.config/waybar/colors.css";
+@import url("colors.css");
 
 * {
   border: none;
@@ -7,6 +7,8 @@
   margin: 0px;
   padding: 0px;
   min-height: 0px;
+  background-color: transparent;
+  color: transparent;
 }
 
 window#waybar {
@@ -51,7 +53,6 @@ window#waybar {
 #tray {
   margin: 0 5px;
   padding: 5px 20px;
-  font-size: 14px;
   font-weight: bold;
   color: @base05;
   background: @base00;

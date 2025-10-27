@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+apply_gtk_theme() {
+    cat > "$CONFIG_DIR/gtk-3.0/gtk.css" << EOF
+@define-color theme_fg_color #${colors[base05]};
+@define-color theme_bg_color #${colors[base00]};
+@define-color theme_base_color #${colors[base00]};
+@define-color theme_selected_bg_color #${colors[base0D]};
+@define-color theme_selected_fg_color #${colors[base00]};
+@define-color insensitive_bg_color #${colors[base01]};
+@define-color insensitive_fg_color #${colors[base03]};
+@define-color insensitive_base_color #${colors[base01]};
+@define-color theme_unfocused_fg_color #${colors[base04]};
+@define-color theme_unfocused_bg_color #${colors[base01]};
+@define-color theme_unfocused_base_color #${colors[base01]};
+@define-color theme_unfocused_selected_bg_color #${colors[base0D]};
+@define-color theme_unfocused_selected_fg_color #${colors[base00]};
+@define-color borders #${colors[base03]};
+@define-color unfocused_borders #${colors[base02]};
+
+* {
+    background-color: #${colors[base00]};
+    color: #${colors[base05]};
+}
+
+window {
+    background-color: #${colors[base00]};
+}
+
+.background {
+    background-color: #${colors[base00]};
+    color: #${colors[base05]};
+}
+EOF
+
+    cp "$CONFIG_DIR/gtk-3.0/gtk.css" "$CONFIG_DIR/gtk-4.0/gtk.css"
+}
