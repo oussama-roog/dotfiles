@@ -9,9 +9,9 @@ gui:
     textColor:
       - "#CDCDCD"
     selectedLineBgColor:
-      - "#506075" # A much lighter, more distinct color
+      - "#506075"
     selectedRangeBgColor:
-      - "#607085" # Slightly lighter than the line background
+      - "#607085"
     commitAuthorColor:
       - "#BB9DBD"
     commitShaColor:
