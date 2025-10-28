@@ -40,6 +40,9 @@ opt.backspace = "indent,eol,start" -- allow backspace on indent, end of line or 
 opt.splitright = true -- split vertical window to the right
 opt.splitbelow = true -- split horizontal window to the bottom
 
+-- tabs
+vim.opt.switchbuf = "useopen,usetab"
+
 -- turn off swapfile
 opt.swapfile = false
 

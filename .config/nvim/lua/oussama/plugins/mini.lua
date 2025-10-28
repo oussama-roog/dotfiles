@@ -6,7 +6,6 @@ return {
 		require("mini.bracketed").setup()
 		require("mini.comment").setup()
 		require("mini.cursorword").setup()
-		require("mini.files").setup()
 
 		local hipatterns = require("mini.hipatterns")
 		require("mini.hipatterns").setup({
@@ -23,8 +22,9 @@ return {
 		require("mini.pairs").setup()
 		require("mini.splitjoin").setup()
 		require("mini.surround").setup()
-		require("mini.tabline").setup()
-
-		vim.keymap.set("n", "-", "<CMD>lua MiniFiles.open()<CR>", { desc = "Open parent directory" })
+		require("mini.tabline").setup({
+			show_icons = true,
+			tabpage_section = "right",
+		})
 	end,
 }
