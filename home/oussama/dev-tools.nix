@@ -12,7 +12,8 @@
     clang-tools
     bash-language-server
     nil
-    
+    nixd
+
     nodePackages.prettier
     stylua
     eslint_d
@@ -24,7 +25,7 @@
     golines
     goimports-reviser
     nixpkgs-fmt
-    
+
     shellcheck
     nodePackages.jsonlint
     htmlhint
