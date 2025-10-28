@@ -29,7 +29,9 @@
     spotify
     discord
     obs-studio
-    # obsidian
+    zathura
+    unstable.obsidian
+    unstable.zed-editor
 
     # GTK file manager
     xfce.thunar
