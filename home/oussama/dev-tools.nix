@@ -13,6 +13,7 @@
     bash-language-server
     nil
     nixd
+    sass
 
     nodePackages.prettier
     stylua
