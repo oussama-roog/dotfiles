@@ -295,6 +295,4 @@ apply_gtk_theme() {
 EOF
 
     cp "$CONFIG_DIR/gtk-3.0/colors.css" "$CONFIG_DIR/gtk-4.0/colors.css"
-    cp "$HOME/dotfiles/template/gtk.css" "$CONFIG_DIR/gtk-3.0/gtk.css"
-    cp "$HOME/dotfiles/template/gtk.css" "$CONFIG_DIR/gtk-4.0/gtk.css"
 }
