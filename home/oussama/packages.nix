@@ -24,8 +24,9 @@
     lldb
     lua54Packages.luarocks
 
-    unstable.opencode
+    brave
     inputs.zen-browser.packages."${system}".beta
+    unstable.opencode
     spotify
     discord
     obs-studio

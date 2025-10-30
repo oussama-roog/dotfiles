@@ -55,6 +55,7 @@
   };
 
   programs.firefox.enable = true;
+  programs.chromium.enable = true;
 
   environment.variables.EDITOR = "nvim";
 
