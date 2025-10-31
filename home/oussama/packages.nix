@@ -24,6 +24,7 @@
     lldb
     lua54Packages.luarocks
 
+    gnome-calculator
     brave
     inputs.zen-browser.packages."${system}".beta
     unstable.opencode
@@ -31,6 +32,7 @@
     discord
     obs-studio
     zathura
+    evince
     unstable.obsidian
     unstable.zed-editor
 
