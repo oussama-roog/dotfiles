@@ -3,6 +3,7 @@
 let
   configs = {
     hypr = "hypr";
+    niri = "niri";
     nvim = "nvim";
     waybar = "waybar";
     rofi = "rofi";

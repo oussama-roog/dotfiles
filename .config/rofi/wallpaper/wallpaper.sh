@@ -18,9 +18,12 @@ if [[ ${#wallpapers[@]} -eq 0 ]]; then
 fi
 
 rofi_cmd() {
-    for wallpaper in "${wallpapers[@]}"; do
-        printf '%s\x00icon\x1f%s\n' "$wallpaper" "$wallpaper"
-    done | rofi -dmenu \
+    {
+        printf '⚄ Random\n'
+        for wallpaper in "${wallpapers[@]}"; do
+            printf '%s\x00icon\x1f%s\n' "$wallpaper" "$wallpaper"
+        done
+    } | rofi -dmenu \
         -p "Wallpaper" \
         -theme ${dir}/${theme}.rasi \
         -show-icons
@@ -29,6 +32,11 @@ rofi_cmd() {
 chosen="$(rofi_cmd)"
 
 if [[ -n "$chosen" ]]; then
+    if [[ "$chosen" == "⚄ Random" ]]; then
+        random_index=$((RANDOM % ${#wallpapers[@]}))
+        chosen="${wallpapers[$random_index]}"
+    fi
+    
     if command -v swww &>/dev/null; then
         swww img "$chosen" --transition-type fade --transition-fps 60
         echo "$chosen" > "$HOME/.cache/current_wallpaper"

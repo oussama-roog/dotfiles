@@ -54,16 +54,13 @@
     xwayland.enable = true;
   };
 
+  programs.niri.enable = true;
+
   programs.firefox.enable = true;
   programs.chromium.enable = true;
 
   environment.variables.EDITOR = "nvim";
 
-  environment.sessionVariables = {
-    XDG_CURRENT_DESKTOP = "Hyprland";
-    XDG_SESSION_TYPE = "wayland";
-    XDG_SESSION_DESKTOP = "Hyprland";
-  };
 
   environment.systemPackages = with pkgs; [
     vim
