@@ -1,6 +1,0 @@
-layout {
-    focus-ring {
-        active-gradient from="#e78a53" to="#fbcb97" angle=45
-        inactive-color "#222222"
-    }
-}

@@ -1,4 +1,7 @@
 input {
+
+    focus-follows-mouse max-scroll-amount="0%"
+
     keyboard {
         xkb {
             layout "us,ara"
@@ -21,29 +24,30 @@ input {
 
 output "DP-1" {
     mode "1920x1080@60.000"
-    position x=0 y=0
+    position x=1920 y=0
     scale 1.0
 }
 
 output "eDP-1" {
     mode "1920x1080@120.030"
-    position x=1920 y=0
-    scale 1.25
+    position x=0 y=400
+    scale 1.0
 }
 
 layout {
     gaps 5
 
+    always-center-single-column
     center-focused-column "never"
 
     preset-column-widths {
         proportion 0.33333
         proportion 0.5
         proportion 0.66667
-        proportion 0.9
+        proportion 0.95
     }
 
-    default-column-width { proportion 0.9; }
+    default-column-width { proportion 0.95; }
 
     focus-ring {
         width 2
@@ -55,6 +59,10 @@ layout {
 
     border {
         off
+    }
+
+    struts {
+        top 10
     }
 }
 
@@ -78,7 +86,7 @@ animations {
 
 
 window-rule {
-    match app-id=r#"^zen$"# title="^Picture-in-Picture$"
+    match app-id=r#"zen$"# title="^Picture-in-Picture$"
     open-floating true
 }
 
@@ -230,18 +238,16 @@ binds {
     
     Mod+F { toggle-window-floating; }
     Mod+Shift+F { fullscreen-window; }
-    Mod+M { fullscreen-window; }
-
     Mod+Ctrl+F { expand-column-to-available-width; }
 
     Mod+Shift+C { center-column; }
     Mod+Ctrl+C { center-visible-columns; }
 
-    Mod+Minus { set-column-width "-10%"; }
-    Mod+Equal { set-column-width "+10%"; }
+    Mod+Minus { set-column-width "-5%"; }
+    Mod+Equal { set-column-width "+5%"; }
 
-    Mod+Shift+Minus { set-window-height "-10%"; }
-    Mod+Shift+Equal { set-window-height "+10%"; }
+    Mod+Shift+Minus { set-window-height "-5%"; }
+    Mod+Shift+Equal { set-window-height "+5%"; }
 
     Mod+S { toggle-debug-tint; }
 

@@ -35,6 +35,7 @@
     evince
     unstable.obsidian
     unstable.zed-editor
+    unstable.localsend
 
     # GTK file manager
     xfce.thunar

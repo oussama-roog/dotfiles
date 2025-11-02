@@ -57,4 +57,5 @@ window#waybar {
   color: @base05;
   background: @base00;
   border-radius: 10px;
+  border: 1px solid @base0A;
 }
