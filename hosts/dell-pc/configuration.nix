@@ -8,6 +8,7 @@
   boot.loader = {
     systemd-boot.enable = true;
     efi.canTouchEfiVariables = true;
+    systemd-boot.configurationLimit = 10;
   };
 
   time.timeZone = "Africa/Algiers";
