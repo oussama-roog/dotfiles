@@ -74,6 +74,7 @@
     zip
     ffmpeg
     jq
+    parted
 
     waybar
     swww
