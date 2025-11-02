@@ -31,6 +31,7 @@ chosen="$(rofi_cmd)"
 if [[ -n "$chosen" ]]; then
     if command -v swww &>/dev/null; then
         swww img "$chosen" --transition-type fade --transition-fps 60
+        echo "$chosen" > "$HOME/.cache/current_wallpaper"
         notify-send "Wallpaper Changed" "$(basename "$chosen")"
     else
         notify-send "Error" "swww not found"
