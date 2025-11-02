@@ -9,9 +9,11 @@
     "fixed-center": true,
     "modules-left": [
         "hyprland/workspaces",
+        "niri/workspaces",
         "clock",
         "custom/songname",
-        "hyprland/language"
+        "hyprland/language",
+        "niri/language"
     ],
     "modules-center": [
     ],
@@ -33,6 +35,19 @@
         "on-click": "activate"
     },
     "hyprland/language": {
+        "format": "󰌌  {}",
+        "format-en": "EN",
+        "format-ar": "AR"
+    },
+    "niri/workspaces": {
+        "all-outputs": true,
+        "format": "{icon}",
+        "format-icons": {
+            "active": "",
+            "default": ""
+        }
+    },
+    "niri/language": {
         "format": "󰌌  {}",
         "format-en": "EN",
         "format-ar": "AR"

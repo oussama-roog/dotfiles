@@ -51,6 +51,7 @@
     slurp
     libnotify
     ntfs3g
+    xwayland-satellite
 
     # nvim dependencies
     imagemagick
