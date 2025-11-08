@@ -14,7 +14,6 @@
 window#waybar {
   background: transparent;
   border-radius: 20px;
-  /* margin-top: 6px; */
 }
 
 #workspaces button {
@@ -22,7 +21,7 @@ window#waybar {
   min-width: 20px;
   min-height: 5px;
   padding: 0px;
-  margin: 0px 5px;
+  margin: 3px 5px;
   color: transparent;
   background-color: @base02;
   border-radius: 10px;
@@ -39,7 +38,23 @@ window#waybar {
   background-color: @base0B;
 }
 
-/* Grouped widgets with shared styling */
+/* Left and Right module groups */
+.modules-left,
+.modules-right {
+  padding: 8px 20px;
+  font-weight: bold;
+  color: @base05;
+  background: @base00;
+}
+
+.modules-left {
+  border-radius: 0px 0px 20px 0px;
+}
+.modules-right {
+  border-radius: 0px 0px 0px 20px;
+}
+
+/* Individual module styling inside groups */
 #workspaces,
 #clock,
 #language,
@@ -50,12 +65,16 @@ window#waybar {
 #pulseaudio,
 #battery,
 #custom-songname,
+#custom-nixos,
 #tray {
-  margin: 0 5px;
-  padding: 5px 20px;
+  margin: 0 10px;
+  padding: 0;
   font-weight: bold;
   color: @base05;
-  background: @base00;
-  border-radius: 10px;
-  border: 1px solid @base0A;
+  background: transparent;
+}
+
+/* NixOS logo with larger font */
+#custom-nixos {
+  font-size: 20px;
 }

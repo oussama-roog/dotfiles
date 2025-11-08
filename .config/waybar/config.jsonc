@@ -1,13 +1,14 @@
 {
     "layer": "top",
-    "margin-top": 5,
+    // "margin-top": 5,
     // "margin-bottom": 5,
-    "margin-left": 10,
-    "margin-right": 10,
+    // "margin-left": 10,
+    // "margin-right": 10,
     "gtk-layer-shell": true,
     "reload_style_on_change": true,
     "fixed-center": true,
     "modules-left": [
+        "custom/nixos",
         "hyprland/workspaces",
         "niri/workspaces",
         "clock",
@@ -51,6 +52,10 @@
         "format": "󰌌  {}",
         "format-en": "EN",
         "format-ar": "AR"
+    },
+    "custom/nixos": {
+        "format": "󱄅",
+        "tooltip": false
     },
     "custom/songname": {
         "exec": "~/.config/waybar/scripts/songname.sh",
