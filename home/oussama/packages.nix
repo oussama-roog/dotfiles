@@ -7,6 +7,7 @@
     ripgrep
     fd
     lazygit
+    lazydocker
     btop
     ghostty
     kitty

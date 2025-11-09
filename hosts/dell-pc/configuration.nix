@@ -25,7 +25,7 @@
   users.users.oussama = {
     isNormalUser = true;
     description = "oussama";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "docker" ];
   };
 
   services.xserver.xkb = {
@@ -61,6 +61,8 @@
   programs.chromium.enable = true;
 
   environment.variables.EDITOR = "nvim";
+
+  virtualisation.docker.enable = true;
 
 
   environment.systemPackages = with pkgs; [
