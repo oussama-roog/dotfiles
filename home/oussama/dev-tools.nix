@@ -14,6 +14,7 @@
     nil
     nixd
     sass
+    sqls
 
     nodePackages.prettier
     stylua
@@ -26,6 +27,8 @@
     golines
     goimports-reviser
     nixpkgs-fmt
+    sqlfluff
+    sql-formatter
 
     shellcheck
     nodePackages.jsonlint

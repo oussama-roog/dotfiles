@@ -160,6 +160,26 @@ return {
 					},
 				},
 			},
+			-- sqls = {
+			-- 	cmd = { "sqls" },
+			-- 	filetypes = { "sql", "mysql" },
+			-- 	root_dir = function(fname)
+			-- 		local util = require("lspconfig.util")
+			-- 		return util.root_pattern(".sqls.yml", ".git")(fname) or vim.fn.getcwd()
+			-- 	end,
+			-- 	settings = {
+			-- 		sqls = {
+			-- 			connections = {
+			-- 				-- You can configure database connections here
+			-- 				-- Example:
+			-- 				-- {
+			-- 				--   driver = "mysql",
+			-- 				--   dataSourceName = "username:password@tcp(localhost:3306)/dbname",
+			-- 				-- },
+			-- 			},
+			-- 		},
+			-- 	},
+			-- },
 		}
 
 		for server, config in pairs(servers) do

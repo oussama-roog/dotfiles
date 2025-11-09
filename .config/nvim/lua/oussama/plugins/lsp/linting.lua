@@ -21,6 +21,8 @@ return {
 			bash = { "shellcheck" },
 			markdown = { "markdownlint" },
 			nix = { "statix" },
+			-- sql = { "sqlfluff" },
+			-- mysql = { "sqlfluff" },
 		}
 
 		lint.linters["golangci-lint"] = {
