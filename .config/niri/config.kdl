@@ -80,6 +80,7 @@ spawn-at-startup "swww-daemon"
 spawn-sh-at-startup "[[ -f ~/.cache/current_wallpaper ]] && swww img \"$(cat ~/.cache/current_wallpaper)\" || swww img ~/dotfiles/wallpapers/wall.png"
 spawn-at-startup "wl-paste" "--type" "text" "--watch" "cliphist" "store"
 spawn-sh-at-startup "vicinae server"
+spawn-at-startup "hypridle"
 
 hotkey-overlay {
     skip-at-startup

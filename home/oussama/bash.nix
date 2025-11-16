@@ -15,6 +15,12 @@
       udata = "sudo umount /home/oussama/data";
       data-clean = "sudo ntfsfix -d /dev/nvme0n1p5";
       btw = "echo nixos and neovim btw";
+
+      # NixOS management
+      nxs = "sudo nixos-rebuild switch --flake ~/dotfiles#dell-pc";
+      nxu = "sudo nix flake update --flake ~/dotfiles";
+      nxg = "sudo nix-collect-garbage -d";
+      nxo = "sudo nix-store --optimise";
     };
 
     initExtra = ''

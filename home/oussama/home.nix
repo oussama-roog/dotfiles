@@ -36,6 +36,32 @@ in
 
   services.playerctld.enable = true;
 
+  # Configure hyprlock as the default screen locker
+  systemd.user.services.hyprlock = {
+    Unit = {
+      Description = "Hyprlock screen locker";
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
+    };
+
+    Service = {
+      ExecStart = "${pkgs.hyprlock}/bin/hyprlock";
+      Type = "simple";
+      Restart = "no";
+    };
+  };
+
+  # Trigger hyprlock when lock-session.target is activated
+  systemd.user.targets.lock-session = {
+    Unit = {
+      Description = "Lock the current session";
+      Documentation = [ "man:systemd.special(7)" ];
+      BindsTo = [ "graphical-session.target" ];
+      Wants = [ "hyprlock.service" ];
+      Before = [ "sleep.target" ];
+    };
+  };
+
   xdg.mimeApps = {
     enable = true;
     defaultApplications = {
@@ -71,6 +97,10 @@ in
 
       # PDF viewer
       "application/pdf" = "org.pwmt.zathura.desktop";
+
+      # Terminal
+      "x-scheme-handler/terminal" = "com.mitchellh.ghostty.desktop";
+      "application/x-terminal-emulator" = "com.mitchellh.ghostty.desktop";
     };
   };
 

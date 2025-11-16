@@ -81,6 +81,7 @@
     waybar
     swww
     hyprlock
+    hypridle
     rofi-wayland
     libqalculate
     dunst
@@ -88,6 +89,7 @@
     cliphist
     pulseaudio
     wireplumber
+    brightnessctl
   ];
 
   fonts.packages = with pkgs; [

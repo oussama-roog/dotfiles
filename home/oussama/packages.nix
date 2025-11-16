@@ -39,6 +39,7 @@
     unstable.obsidian
     unstable.zed-editor
     unstable.localsend
+    libreoffice
 
     # GTK file manager
     xfce.thunar
