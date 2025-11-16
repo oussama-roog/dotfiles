@@ -2,6 +2,8 @@
 
 {
   home.packages = with pkgs; [
+    unstable.vicinae
+
     neovim
     yazi
     ripgrep

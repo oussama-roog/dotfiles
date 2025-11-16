@@ -79,6 +79,7 @@ spawn-at-startup "waybar"
 spawn-at-startup "swww-daemon"
 spawn-sh-at-startup "[[ -f ~/.cache/current_wallpaper ]] && swww img \"$(cat ~/.cache/current_wallpaper)\" || swww img ~/dotfiles/wallpapers/wall.png"
 spawn-at-startup "wl-paste" "--type" "text" "--watch" "cliphist" "store"
+spawn-sh-at-startup "vicinae server"
 
 hotkey-overlay {
     skip-at-startup
@@ -119,7 +120,8 @@ binds {
 
     Mod+Return { spawn "ghostty"; }
     Mod+E { spawn "nautilus"; }
-    Mod+Space { spawn "~/.config/rofi/launcher/launcher.sh"; }
+    Mod+Shift+Space { spawn "~/.config/rofi/launcher/launcher.sh"; }
+    Mod+Space repeat=false { spawn "vicinae" "toggle"; }
     Mod+P { spawn "~/.config/rofi/horizontal/powermenu.sh"; }
     Mod+V { spawn "~/.config/rofi/launcher/clipmanager.sh"; }
     Mod+C { spawn "~/.config/rofi/launcher/calc.sh"; }
