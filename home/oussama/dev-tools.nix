@@ -15,6 +15,8 @@
     nixd
     sass
     sqls
+    goose
+    postgresql
 
     nodePackages.prettier
     stylua

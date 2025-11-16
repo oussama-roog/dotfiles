@@ -54,6 +54,7 @@
     libnotify
     ntfs3g
     xwayland-satellite
+    fastfetch
 
     # nvim dependencies
     imagemagick
