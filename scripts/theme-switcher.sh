@@ -48,7 +48,6 @@ apply_theme() {
     source "$THEMES_DIR/ghostty.sh"
     source "$THEMES_DIR/dunst.sh"
     source "$THEMES_DIR/yazi.sh"
-    source "$THEMES_DIR/gtk.sh"
     source "$THEMES_DIR/nvim.sh"
     source "$THEMES_DIR/tmux.sh"
     source "$THEMES_DIR/vicinae.sh"
@@ -61,7 +60,6 @@ apply_theme() {
     apply_ghostty_theme "${colors[@]}"
     apply_dunst_theme "${colors[@]}"
     apply_yazi_theme "${colors[@]}"
-    apply_gtk_theme "${colors[@]}"
     apply_nvim_theme "$theme_name"
     apply_vicinae_theme "$theme_name"
 

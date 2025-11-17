@@ -2,8 +2,18 @@
 
 script="$HOME/dotfiles/scripts/theme-switcher.sh"
 
+# Show loading notification
+notify-send "Theme Switcher" "Loading themes..." -t 0 -p > /tmp/theme-loading-notification-id
+
 # Get list of themes
 themes=$("$script" list)
+
+# Dismiss loading notification
+if [[ -f /tmp/theme-loading-notification-id ]]; then
+    notification_id=$(cat /tmp/theme-loading-notification-id)
+    notify-send -r "$notification_id" -t 1 "Theme Switcher" "Themes loaded"
+    rm /tmp/theme-loading-notification-id
+fi
 
 if [[ -z "$themes" ]]; then
     notify-send "Theme Switcher" "No themes found" -u critical

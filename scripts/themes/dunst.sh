@@ -4,6 +4,8 @@ apply_dunst_theme() {
     cat >"$CONFIG_DIR/dunst/dunstrc" <<EOF
 [global]
     font = JetBrainsMono Nerd Font Propo 12
+    width = (300, 500)
+    height = 300
     corner_radius = 10
     frame_width = 2
     gap_size = 5

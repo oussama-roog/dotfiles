@@ -31,7 +31,7 @@
     brave
     inputs.zen-browser.packages."${system}".beta
     unstable.opencode
-    spotify
+    unstable.spotify
     discord
     obs-studio
     zathura
