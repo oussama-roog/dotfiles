@@ -11,7 +11,7 @@
       tk = "pkill tmux";
       lg = "lazygit";
       op = "tmux-sessionizer";
-      data = "sudo mount -t ntfs3 -o umask=000 /dev/nvme0n1p5 /home/oussama/data";
+      data = "sudo mount -t ntfs3 -o uid=1000,gid=100,umask=022 /dev/nvme0n1p5 /home/oussama/data";
       udata = "sudo umount /home/oussama/data";
       data-clean = "sudo ntfsfix -d /dev/nvme0n1p5";
       btw = "echo nixos and neovim btw";
