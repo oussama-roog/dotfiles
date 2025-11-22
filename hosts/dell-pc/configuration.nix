@@ -16,6 +16,7 @@
   networking = {
     hostName = "dell-pc";
     networkmanager.enable = true;
+    firewall.enable = true;
   };
 
   nixpkgs.config.allowUnfree = true;
