@@ -67,11 +67,7 @@ run_cmd() {
 
 # Lock screen function
 lock_screen() {
-    if command -v hyprlock &>/dev/null; then
-        hyprlock
-    else
-        echo "hyprlock not found"
-    fi
+    loginctl lock-session
 }
 
 # Actions
