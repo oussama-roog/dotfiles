@@ -9,7 +9,7 @@
   ];
 
   # Host-specific settings
-  networking.hostName = "dell-pc";
+  networking.hostName = "work-pc";
 
   # User configuration
   users.users.oussama = {

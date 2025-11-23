@@ -18,19 +18,19 @@
         inherit system;
         config.allowUnfree = true;
       };
-    in
-    {
-      nixosConfigurations.dell-pc = nixpkgs.lib.nixosSystem {
+      
+      # Helper function to create a host configuration
+      mkHost = hostname: nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = { inherit inputs unstable; };
         modules = [
-          ./hosts/dell-pc/configuration.nix
+          ./hosts/${hostname}/configuration.nix
           home-manager.nixosModules.home-manager
           {
             home-manager = {
               useGlobalPkgs = true;
               useUserPackages = true;
-              users.oussama = import ./home/oussama/home.nix;
+              users.oussama = import ./hosts/${hostname}/home.nix;
               backupFileExtension = "backup";
               extraSpecialArgs = {
                 inherit inputs unstable system;
@@ -38,6 +38,12 @@
             };
           }
         ];
+      };
+    in
+    {
+      nixosConfigurations = {
+        dell-pc = mkHost "dell-pc";
+        work-pc = mkHost "work-pc";
       };
     };
 }
