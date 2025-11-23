@@ -58,14 +58,11 @@
 
   programs.niri.enable = true;
 
-  programs.firefox.enable = true;
-  programs.chromium.enable = true;
-
   environment.variables.EDITOR = "nvim";
 
   virtualisation.docker.enable = true;
 
-
+  # System-level essential packages only
   environment.systemPackages = with pkgs; [
     vim
     wget
@@ -78,24 +75,6 @@
     ffmpeg
     jq
     parted
-
-    waybar
-    swww
-    hyprlock
-    hypridle
-    rofi-wayland
-    libqalculate
-    dunst
-    wl-clipboard
-    cliphist
-    pulseaudio
-    wireplumber
-    brightnessctl
-  ];
-
-  fonts.packages = with pkgs; [
-    nerd-fonts.jetbrains-mono
-    icomoon-feather
   ];
 
   system.stateVersion = "25.05";

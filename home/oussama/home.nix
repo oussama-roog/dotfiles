@@ -32,6 +32,13 @@ in
     };
   };
 
+  # User fonts
+  fonts.fontconfig.enable = true;
+  home.packages = with pkgs; [
+    nerd-fonts.jetbrains-mono
+    icomoon-feather
+  ];
+
   services.playerctld.enable = true;
 
   # Configure hyprlock as the default screen locker

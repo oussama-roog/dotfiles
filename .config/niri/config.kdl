@@ -49,9 +49,9 @@ layout {
     center-focused-column "never"
 
     preset-column-widths {
-        proportion 0.33333
+        proportion 0.35
         proportion 0.5
-        proportion 0.66667
+        proportion 0.65
         proportion 0.95
     }
 
@@ -59,9 +59,7 @@ layout {
 
     focus-ring {
         width 2
-
         active-gradient from="#e78a53" to="#fbcb97" angle=45
-
         inactive-color "#222222"
     }
 
@@ -115,6 +113,11 @@ window-rule {
     open-floating true
 }
 
+window-rule {
+    match app-id=r#"^chrome-.*-Default$"#
+    default-column-width { proportion 0.35; }
+}
+
 
 binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
@@ -126,7 +129,7 @@ binds {
     Mod+P { spawn "~/.config/rofi/horizontal/powermenu.sh"; }
     Mod+V { spawn "vicinae" "vicinae://extensions/vicinae/clipboard/history"; }
     Mod+C { spawn "~/.config/rofi/launcher/calc.sh"; }
-    Mod+W { spawn "~/.config/rofi/launcher/web.sh"; }
+    Mod+W { spawn "~/dotfiles/scripts/vicinae-web.sh"; }
     Mod+Shift+W { spawn "~/dotfiles/scripts/vicinae-wallpaper.sh"; }
     Mod+T { spawn "~/dotfiles/scripts/vicinae-theme.sh"; }
 

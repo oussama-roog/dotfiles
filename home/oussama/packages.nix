@@ -29,6 +29,8 @@
 
     gnome-calculator
     brave
+    firefox
+    chromium
     inputs.zen-browser.packages."${system}".beta
     unstable.opencode
     spotify
@@ -48,6 +50,20 @@
     # Media viewers
     mpv
     unstable.imv
+
+    # Desktop/Wayland utilities
+    waybar
+    swww
+    hyprlock
+    hypridle
+    rofi-wayland
+    libqalculate
+    dunst
+    wl-clipboard
+    cliphist
+    pulseaudio
+    wireplumber
+    brightnessctl
 
     bibata-cursors
     base16-schemes
