@@ -6,6 +6,7 @@
     ../../modules/system/base.nix
     ../../modules/system/desktop.nix
     ../../modules/system/docker.nix
+    ../../modules/system/printing.nix
   ];
 
   # Host-specific settings

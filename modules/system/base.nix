@@ -31,6 +31,7 @@
     ffmpeg
     jq
     parted
+    system-config-printer
   ];
 
   environment.variables.EDITOR = "nvim";
