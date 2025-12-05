@@ -1,0 +1,94 @@
+// Zed keymap
+//
+// For information on binding keys, see the Zed
+// documentation: https://zed.dev/docs/key-bindings
+//
+// To see the default key bindings run `zed: open default keymap`
+// from the command palette.
+[
+  {
+    "context": "Editor && vim_mode == insert",
+    "bindings": {
+      "j j": "vim::NormalBefore"
+    }
+  },
+  // Menu navigation with ctrl-j/ctrl-k (like Neovim)
+  {
+    "context": "menu",
+    "bindings": {
+      "ctrl-j": "menu::SelectNext",
+      "ctrl-k": "menu::SelectPrevious"
+    }
+  },
+  {
+    "context": "Picker > Editor",
+    "bindings": {
+      "ctrl-j": "menu::SelectNext",
+      "ctrl-k": "menu::SelectPrevious"
+    }
+  },
+  {
+    "context": "Editor && showing_completions",
+    "bindings": {
+      "ctrl-j": "editor::ContextMenuNext",
+      "ctrl-k": "editor::ContextMenuPrevious"
+    }
+  },
+  {
+    "context": "Editor && (showing_code_actions || showing_completions)",
+    "bindings": {
+      "ctrl-j": "editor::ContextMenuNext",
+      "ctrl-k": "editor::ContextMenuPrevious"
+    }
+  },
+  // File navigation (similar to Neovim Snacks) - Only in normal/visual mode
+  {
+    "context": "vim_mode == normal || vim_mode == visual",
+    "bindings": {
+      "space space": "file_finder::Toggle",
+      "space e": "project_panel::ToggleFocus",
+      "space f f": "file_finder::Toggle",
+      "space f b": "tab_switcher::Toggle",
+      "space f g": "pane::DeploySearch",
+      "space f l": "outline::Toggle",
+      "space f shift-l": "project_symbols::Toggle"
+    }
+  },
+  // Git keybindings (similar to Neovim) - Only in normal/visual mode
+  {
+    "context": "vim_mode == normal || vim_mode == visual",
+    "bindings": {
+      "space g g": "git_panel::ToggleFocus"
+    }
+  },
+  // Buffer/Tab management - Only in normal/visual mode
+  {
+    "context": "vim_mode == normal || vim_mode == visual",
+    "bindings": {
+      "space b d": "pane::CloseActiveItem"
+    }
+  },
+  // Diagnostics (similar to Trouble in Neovim) - Only in normal/visual mode
+  {
+    "context": "vim_mode == normal || vim_mode == visual",
+    "bindings": {
+      "space x w": "diagnostics::Deploy",
+      "space x d": "diagnostics::Deploy"
+    }
+  },
+  // LSP keybindings - Only in normal/visual mode
+  {
+    "context": "Editor && (vim_mode == normal || vim_mode == visual)",
+    "bindings": {
+      "space c a": "editor::ToggleCodeActions",
+      "space r n": "editor::Rename"
+    }
+  },
+  // Project Panel keybindings
+  {
+    "context": "ProjectPanel && not_editing",
+    "bindings": {
+      "space e": "vim::ToggleProjectPanelFocus"
+    }
+  }
+]

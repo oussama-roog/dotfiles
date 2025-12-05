@@ -38,8 +38,9 @@
     "dark": "Base16 Black Metal (Bathory) Dark"
   },
   // Vim-like settings
-  "relative_line_numbers": "enabled",
-  "cursor_blink": true,
+  "relative_line_numbers": false,
+  "cursor_blink": false,
+  "show_whitespaces": "selection",
   "scrollbar": {
     "show": "auto",
     "git_diff": true,
@@ -54,5 +55,21 @@
     "enabled": true
   },
   // Format on save (matching Neovim behavior)
-  "format_on_save": "on"
+  "format_on_save": "on",
+  // Git integration
+  "git": {
+    "git_gutter": "tracked_files",
+    "inline_blame": {
+      "enabled": true
+    }
+  },
+  // Project panel settings
+  "project_panel": {
+    "dock": "left",
+    "git_status": true
+  },
+  // Tab settings
+  "tabs": {
+    "git_status": true
+  }
 }
