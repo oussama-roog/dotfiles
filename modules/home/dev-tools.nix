@@ -33,7 +33,6 @@
     sql-formatter
 
     shellcheck
-    nodePackages.jsonlint
     htmlhint
     stylelint
     yamllint
