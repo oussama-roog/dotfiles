@@ -40,11 +40,11 @@
     '';
 
     profileExtra = ''
-      if [ -z "$WAYLAND_DISPLAY" ] && [ "$XDG_VTNR" = 1 ]; then
-        exec hyprland
-      fi
+      #if [ -z "$WAYLAND_DISPLAY" ] && [ "$XDG_VTNR" = 1 ]; then
+      #  exec hyprland
+      #fi
       
-      export PATH=${config.home.homeDirectory}/.local/bin:$PATH
+       export PATH=${config.home.homeDirectory}/.local/bin:$PATH
     '';
   };
 

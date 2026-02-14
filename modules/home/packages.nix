@@ -57,7 +57,7 @@
     swww
     hyprlock
     hypridle
-    rofi-wayland
+    rofi
     libqalculate
     dunst
     wl-clipboard

@@ -24,9 +24,11 @@
   # Git configuration
   programs.git = {
     enable = true;
-    userEmail = "oussamaroog@gmail.com";
-    userName = "oussama-roog";
-    extraConfig = {
+    settings = {
+      user = {
+        email = "oussamaroog@gmail.com";
+        name = "oussama-roog";
+      };
       init.defaultBranch = "main";
     };
   };
