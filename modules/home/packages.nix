@@ -33,6 +33,7 @@
     chromium
     inputs.zen-browser.packages."${system}".beta
     unstable.opencode
+    unstable.antigravity
     spotify
     discord
     obs-studio
