@@ -17,6 +17,7 @@
   networking = {
     networkmanager.enable = true;
     firewall.enable = true;
+    nameservers = [ "8.8.8.8" "8.8.4.4" ];
   };
 
   # Essential system packages

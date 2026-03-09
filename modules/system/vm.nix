@@ -22,6 +22,6 @@
   # Niri window manager
   programs.niri.enable = true;
 
-  # Auto-login on TTY1 (niri starts via bash profileExtra)
-  services.getty.autologinUser = "oussama";
+  # Display manager
+  services.displayManager.ly.enable = true;
 }

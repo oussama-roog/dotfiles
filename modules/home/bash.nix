@@ -50,12 +50,7 @@
     '';
 
     profileExtra = ''
-       export PATH=${config.home.homeDirectory}/.local/bin:$PATH
-    '' + lib.optionalString hostConfig.isVM ''
-      # Auto-start niri on TTY1 (VM: no display manager)
-      if [ -z "$WAYLAND_DISPLAY" ] && [ "$XDG_VTNR" = 1 ]; then
-        exec niri-session 2>/dev/null || exec niri
-      fi
+      export PATH=${config.home.homeDirectory}/.local/bin:$PATH
     '';
   };
 

@@ -79,12 +79,11 @@
     python313Packages.pynvim
 
     # SQL database clients
-    usql              # universal SQL CLI (mssql, postgres, mysql, sqlite, etc.)
-    unstable.dblab    # interactive TUI database explorer
-    freetds           # TDS protocol driver for MSSQL connections from Linux
-    unixODBC          # ODBC driver manager (needed by some SQL tools)
-    dbeaver-bin       # GUI database tool (SSMS replacement — mssql, postgres, mysql, etc.)
-    beekeeper-studio  # lightweight modern GUI SQL editor
+    usql # universal SQL CLI (mssql, postgres, mysql, sqlite, etc.)
+    unstable.dblab # interactive TUI database explorer
+    freetds # TDS protocol driver for MSSQL connections from Linux
+    unixODBC # ODBC driver manager (needed by some SQL tools)
+    dbeaver-bin # GUI database tool (SSMS replacement — mssql, postgres, mysql, etc.)
   ]
   # Packages only for bare-metal (not VM)
   ++ lib.optionals (!hostConfig.isVM) [
