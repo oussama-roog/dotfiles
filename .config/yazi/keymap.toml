@@ -4,11 +4,21 @@ run  = "cd /"
 desc = "Cd to root"
 
 [[mgr.prepend_keymap]]
-on   = [ "g", "z" ]
-run  = "cd ~/data/"
-desc = "access Data disk"
+on   = [ "g", "s" ]
+run  = "cd ~/share/"
+desc = "Access shared folder"
+
+[[mgr.prepend_keymap]]
+on   = [ "g", "p" ]
+run  = "cd ~/projects/"
+desc = "Access projects"
+
+[[mgr.prepend_keymap]]
+on   = [ "g", "n" ]
+run  = "cd ~/share/notes/"
+desc = "Access notes"
 
 [[mgr.prepend_keymap]]
 on   = [ "g", "e" ]
 run  = "cd ~/Documents/"
-desc = "access Docs"
+desc = "Access Docs"

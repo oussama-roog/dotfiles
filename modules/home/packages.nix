@@ -1,4 +1,4 @@
-{ pkgs, system, inputs, unstable, ... }:
+{ pkgs, lib, system, inputs, unstable, hostConfig, ... }:
 
 {
   home.packages = with pkgs; [
@@ -36,7 +36,6 @@
     unstable.antigravity
     spotify
     discord
-    obs-studio
     zathura
     evince
     unstable.obsidian
@@ -55,8 +54,6 @@
     # Desktop/Wayland utilities
     waybar
     swww
-    hyprlock
-    hypridle
     rofi
     libqalculate
     dunst
@@ -64,7 +61,6 @@
     cliphist
     pulseaudio
     wireplumber
-    brightnessctl
 
     bibata-cursors
     base16-schemes
@@ -81,5 +77,12 @@
     trash-cli
     sqlite
     python313Packages.pynvim
+  ]
+  # Packages only for bare-metal (not VM)
+  ++ lib.optionals (!hostConfig.isVM) [
+    hyprlock
+    hypridle
+    brightnessctl
+    obs-studio
   ];
 }

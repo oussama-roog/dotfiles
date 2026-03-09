@@ -1,29 +1,51 @@
-{ pkgs, config, ... }:
+{ pkgs, lib, config, hostConfig, ... }:
 
 {
-  # Hyprlock systemd service configuration
-  systemd.user.services.hyprlock = {
-    Unit = {
-      Description = "Hyprlock screen locker";
-      PartOf = [ "graphical-session.target" ];
-      After = [ "graphical-session.target" ];
+  # Hyprlock systemd service (bare-metal only — no screen locking in VM)
+  systemd.user.services = lib.mkIf (!hostConfig.isVM) {
+    hyprlock = {
+      Unit = {
+        Description = "Hyprlock screen locker";
+        PartOf = [ "graphical-session.target" ];
+        After = [ "graphical-session.target" ];
+      };
+
+      Service = {
+        ExecStart = "${pkgs.hyprlock}/bin/hyprlock";
+        Type = "simple";
+        Restart = "no";
+      };
     };
 
-    Service = {
-      ExecStart = "${pkgs.hyprlock}/bin/hyprlock";
-      Type = "simple";
-      Restart = "no";
+    hypridle = {
+      Unit = {
+        Description = "Hyprland idle daemon";
+        PartOf = [ "graphical-session.target" ];
+        After = [ "graphical-session.target" ];
+      };
+
+      Service = {
+        ExecStart = "${pkgs.hypridle}/bin/hypridle";
+        Type = "simple";
+        Restart = "on-failure";
+      };
+
+      Install = {
+        WantedBy = [ "graphical-session.target" ];
+      };
     };
   };
 
-  # Trigger hyprlock when lock-session.target is activated
-  systemd.user.targets.lock-session = {
-    Unit = {
-      Description = "Lock the current session";
-      Documentation = [ "man:systemd.special(7)" ];
-      BindsTo = [ "graphical-session.target" ];
-      Wants = [ "hyprlock.service" ];
-      Before = [ "sleep.target" ];
+  # Lock session target (bare-metal only)
+  systemd.user.targets = lib.mkIf (!hostConfig.isVM) {
+    lock-session = {
+      Unit = {
+        Description = "Lock the current session";
+        Documentation = [ "man:systemd.special(7)" ];
+        BindsTo = [ "graphical-session.target" ];
+        Wants = [ "hyprlock.service" ];
+        Before = [ "sleep.target" ];
+      };
     };
   };
 

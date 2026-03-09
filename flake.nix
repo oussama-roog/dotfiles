@@ -20,9 +20,9 @@
       };
 
       # Helper function to create a host configuration
-      mkHost = hostname: nixpkgs.lib.nixosSystem {
+      mkHost = hostname: hostConfig: nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit inputs unstable; };
+        specialArgs = { inherit inputs unstable hostConfig; };
         modules = [
           ./hosts/${hostname}/configuration.nix
           home-manager.nixosModules.home-manager
@@ -33,7 +33,7 @@
               users.oussama = import ./hosts/${hostname}/home.nix;
               backupFileExtension = "backup";
               extraSpecialArgs = {
-                inherit inputs unstable system;
+                inherit inputs unstable system hostConfig;
               };
             };
           }
@@ -42,8 +42,16 @@
     in
     {
       nixosConfigurations = {
-        dell-pc = mkHost "dell-pc";
-        work-pc = mkHost "work-pc";
+        dell-pc = mkHost "dell-pc" {
+          hostName = "dell-pc";
+          isVM = false;
+          hasDataPartition = true;
+        };
+        vm = mkHost "vm" {
+          hostName = "vm";
+          isVM = true;
+          hasDataPartition = false;
+        };
       };
     };
 }
