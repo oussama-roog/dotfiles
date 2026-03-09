@@ -13,6 +13,11 @@
       op = "tmux-sessionizer";
       btw = "echo nixos and neovim btw";
 
+      # SQL clients
+      sql = "usql";
+      pgsql = "pgcli";
+      dbl = "dblab";
+
       # NixOS management (uses hostConfig for correct host name)
       nxs = "sudo nixos-rebuild switch --flake ~/dotfiles#${hostConfig.hostName}";
       nxu = "sudo nix flake update --flake ~/dotfiles";

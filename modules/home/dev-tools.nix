@@ -17,6 +17,7 @@
     sqls
     goose
     postgresql
+    pgcli             # PostgreSQL CLI with auto-completion and syntax highlighting
 
     nodePackages.prettier
     stylua

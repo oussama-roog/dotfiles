@@ -35,16 +35,16 @@ return {
 					cpp = { "clang-format" },
 					go = { "gofumpt", "goimports-reviser", "golines" },
 					nix = { "nixpkgs_fmt" },
-					-- sql = { "sql_formatter" },
+					sql = { "sql_formatter" },
 				},
 				formatters = {
 					nixpkgs_fmt = {
 						command = "nixpkgs-fmt",
 					},
-					-- sql_formatter = {
-					-- 	command = "sql-formatter",
-					-- 	args = { "--config", '{"language":"sql","tabWidth":4,"keywordCase":"upper"}' },
-					-- },
+					sql_formatter = {
+						command = "sql-formatter",
+						args = { "--config", '{"language":"sql","tabWidth":4,"keywordCase":"upper"}' },
+					},
 				},
 				format_on_save = {
 					lsp_fallback = true,
