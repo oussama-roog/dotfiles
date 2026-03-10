@@ -1,0 +1,26 @@
+# Base16 colors for i3 — managed by theme-switcher
+set $base00 #000000
+set $base01 #121212
+set $base02 #222222
+set $base03 #333333
+set $base04 #999999
+set $base05 #c1c1c1
+set $base06 #999999
+set $base07 #c1c1c1
+set $base08 #5f8787
+set $base09 #aaaaaa
+set $base0A #e78a53
+set $base0B #fbcb97
+set $base0C #aaaaaa
+set $base0D #888888
+set $base0E #999999
+set $base0F #444444
+
+# class                 border  backgr  text    indicator child_border
+client.focused          $base0A $base0A $base00 $base0B   $base0A
+client.focused_tab_title $base02 $base02 $base05
+client.focused_inactive $base02 $base02 $base05 $base03   $base02
+client.unfocused        $base01 $base01 $base04 $base01   $base01
+client.urgent           $base08 $base08 $base07 $base08   $base08
+client.placeholder      $base00 $base00 $base05 $base00   $base00
+client.background       $base00

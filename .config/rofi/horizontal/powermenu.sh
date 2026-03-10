@@ -58,7 +58,12 @@ run_cmd() {
         elif [[ $1 == '--suspend' ]]; then
             systemctl suspend
         elif [[ $1 == '--logout' ]]; then
-            loginctl terminate-session $XDG_SESSION_ID
+            # Detect i3 (X11) vs Wayland
+            if pgrep -x i3 > /dev/null; then
+                i3-msg exit
+            else
+                loginctl terminate-session $XDG_SESSION_ID
+            fi
         fi
     else
         exit 0

@@ -128,7 +128,7 @@ window-rule {
 binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
 
-    Mod+Return { spawn "ghostty"; }
+    Mod+Return { spawn "kitty"; }
     Mod+E { spawn "nautilus"; }
     Mod+Shift+Space { spawn "~/.config/rofi/launcher/launcher.sh"; }
     Mod+Space repeat=false { spawn "vicinae" "toggle"; }

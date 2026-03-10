@@ -72,6 +72,16 @@
     xwayland-satellite
     fastfetch
 
+    # X11/i3 utilities
+    polybarFull
+    feh
+    maim
+    xclip
+    xdotool
+    xorg.setxkbmap
+    xorg.xset
+    arandr
+
     # nvim dependencies
     imagemagick
     trash-cli

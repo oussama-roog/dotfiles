@@ -39,8 +39,8 @@
       "application/pdf" = "org.pwmt.zathura.desktop";
 
       # Terminal
-      "x-scheme-handler/terminal" = "com.mitchellh.ghostty.desktop";
-      "application/x-terminal-emulator" = "com.mitchellh.ghostty.desktop";
+      "x-scheme-handler/terminal" = "kitty.desktop";
+      "application/x-terminal-emulator" = "kitty.desktop";
     };
   };
 }

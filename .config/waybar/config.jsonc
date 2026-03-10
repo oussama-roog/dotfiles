@@ -82,7 +82,7 @@
         "format-ethernet": "󰈀  {ifname}",
         "format-disconnected": "󰖪  Disconnected",
         "tooltip-format": "{ifname}: {ipaddr}/{cidr}",
-        "on-click": "ghostty -e nmtui"
+        "on-click": "kitty -e nmtui"
     },
     "memory": {
         "interval": 15,

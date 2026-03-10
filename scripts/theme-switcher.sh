@@ -51,6 +51,8 @@ apply_theme() {
     source "$THEMES_DIR/nvim.sh"
     source "$THEMES_DIR/tmux.sh"
     source "$THEMES_DIR/vicinae.sh"
+    source "$THEMES_DIR/i3.sh"
+    source "$THEMES_DIR/polybar.sh"
 
     apply_hypr_theme "${colors[@]}"
     apply_nix_theme "${colors[@]}"
@@ -62,11 +64,15 @@ apply_theme() {
     apply_yazi_theme "${colors[@]}"
     apply_nvim_theme "$theme_name"
     apply_vicinae_theme "$theme_name"
+    apply_i3_theme "${colors[@]}"
+    apply_polybar_theme "${colors[@]}"
 
     reload_hypr
     reload_waybar
     reload_dunst
     reload_nvim "$theme_name"
+    reload_i3
+    reload_polybar
 
     echo "$theme_name" >"$CURRENT_THEME_FILE"
 

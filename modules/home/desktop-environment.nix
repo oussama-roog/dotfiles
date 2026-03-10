@@ -1,6 +1,19 @@
 { pkgs, lib, config, hostConfig, ... }:
 
 {
+  # Cursor theme (works for both X11/i3 and Wayland/niri)
+  home.pointerCursor = {
+    name = "Bibata-Modern-Classic";
+    size = 24;
+    package = pkgs.bibata-cursors;
+    gtk.enable = true;
+    x11.enable = true;
+  };
+
+  home.sessionVariables = {
+    XCURSOR_THEME = "Bibata-Modern-Classic";
+    XCURSOR_SIZE = "24";
+  };
   # Hyprlock systemd service (bare-metal only — no screen locking in VM)
   systemd.user.services = lib.mkIf (!hostConfig.isVM) {
     hyprlock = {
@@ -57,10 +70,13 @@
       configs = {
         hypr = "hypr";
         niri = "niri";
+        i3 = "i3";
+        polybar = "polybar";
         nvim = "nvim";
         waybar = "waybar";
         rofi = "rofi";
         ghostty = "ghostty";
+        kitty = "kitty";
         yazi = "yazi";
         lazygit = "lazygit";
         dunst = "dunst";
