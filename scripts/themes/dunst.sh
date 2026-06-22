@@ -38,5 +38,5 @@ EOF
 reload_dunst() {
     pkill dunst 2>/dev/null
     sleep 0.2
-    dunst &
+    # dunst &
 }
