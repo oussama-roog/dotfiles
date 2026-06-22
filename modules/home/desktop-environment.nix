@@ -74,6 +74,7 @@
         polybar = "polybar";
         nvim = "nvim";
         waybar = "waybar";
+        quickshell = "quickshell";
         rofi = "rofi";
         ghostty = "ghostty";
         kitty = "kitty";

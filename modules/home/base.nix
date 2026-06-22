@@ -2,7 +2,7 @@
 
 {
   # Basic home-manager settings
-  home.stateVersion = "25.11";
+  home.stateVersion = "26.05";
 
   # Enable dark mode preference
   dconf.settings = {

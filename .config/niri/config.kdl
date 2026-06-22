@@ -79,7 +79,8 @@ layout {
 }
 
 spawn-at-startup "~/dotfiles/scripts/theme-restore.sh"
-spawn-at-startup "waybar"
+// spawn-at-startup "waybar"
+spawn-at-startup "quickshell"
 spawn-at-startup "swww-daemon"
 spawn-sh-at-startup "[[ -f ~/.cache/current_wallpaper ]] && swww img \"$(cat ~/.cache/current_wallpaper)\" || swww img ~/dotfiles/wallpapers/wall.png"
 spawn-at-startup "wl-paste" "--type" "text" "--watch" "cliphist" "store"
@@ -131,13 +132,15 @@ binds {
     Mod+Return { spawn "kitty"; }
     Mod+E { spawn "nautilus"; }
     Mod+Shift+Space { spawn "~/.config/rofi/launcher/launcher.sh"; }
-    Mod+Space repeat=false { spawn "vicinae" "toggle"; }
-    Mod+P { spawn "~/.config/rofi/horizontal/powermenu.sh"; }
-    Mod+V { spawn "vicinae" "vicinae://extensions/vicinae/clipboard/history"; }
+    // Mod+Space repeat=false { spawn "vicinae" "toggle"; }
+    Mod+P { spawn "qs" "ipc" "call" "power" "toggle"; }
+    Mod+V { spawn "qs" "ipc" "call" "clipboard" "toggle"; }
     Mod+C { spawn "~/.config/rofi/launcher/calc.sh"; }
-    Mod+W { spawn "~/dotfiles/scripts/vicinae-web.sh"; }
+    Mod+W { spawn "qs" "ipc" "call" "web" "toggle"; }
     Mod+Shift+W { spawn "~/dotfiles/scripts/vicinae-wallpaper.sh"; }
     Mod+T { spawn "~/dotfiles/scripts/vicinae-theme.sh"; }
+
+    Mod+Space { spawn "qs" "ipc" "call" "launcher" "toggle"; }
 
     Mod+Q { close-window; }
     Mod+X { quit; }

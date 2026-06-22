@@ -9,7 +9,6 @@
     ripgrep
     fd
     lazygit
-    lazydocker
     btop
     ghostty
     kitty
@@ -18,7 +17,6 @@
     nodejs
     python313
     lua
-    rustup
     cmake
     gnumake
     gcc
@@ -31,20 +29,20 @@
     brave
     firefox
     chromium
-    inputs.zen-browser.packages."${system}".beta
+    # inputs.zen-browser.packages."${system}".beta
     unstable.opencode
     unstable.antigravity
-    spotify
-    discord
-    zathura
-    evince
+    # spotify
+    # discord
+    # zathura
+    # evince
     unstable.obsidian
     unstable.zed-editor
     unstable.localsend
-    libreoffice
+    # libreoffice
 
     # GTK file manager
-    xfce.thunar
+    # xfce.thunar
     unstable.nautilus
 
     # Media viewers
@@ -52,6 +50,7 @@
     unstable.imv
 
     # Desktop/Wayland utilities
+    quickshell
     waybar
     swww
     rofi
@@ -89,17 +88,17 @@
     python313Packages.pynvim
 
     # SQL database clients
-    usql # universal SQL CLI (mssql, postgres, mysql, sqlite, etc.)
-    unstable.dblab # interactive TUI database explorer
-    freetds # TDS protocol driver for MSSQL connections from Linux
-    unixODBC # ODBC driver manager (needed by some SQL tools)
-    dbeaver-bin # GUI database tool (SSMS replacement — mssql, postgres, mysql, etc.)
+    # usql # universal SQL CLI (mssql, postgres, mysql, sqlite, etc.)
+    # unstable.dblab # interactive TUI database explorer
+    # freetds # TDS protocol driver for MSSQL connections from Linux
+    # unixODBC # ODBC driver manager (needed by some SQL tools)
+    # dbeaver-bin # GUI database tool (SSMS replacement — mssql, postgres, mysql, etc.)
   ]
   # Packages only for bare-metal (not VM)
   ++ lib.optionals (!hostConfig.isVM) [
     hyprlock
     hypridle
     brightnessctl
-    obs-studio
+    # obs-studio
   ];
 }

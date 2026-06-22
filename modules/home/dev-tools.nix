@@ -17,9 +17,9 @@
     sqls
     goose
     postgresql
-    pgcli             # PostgreSQL CLI with auto-completion and syntax highlighting
+    pgcli # PostgreSQL CLI with auto-completion and syntax highlighting
 
-    nodePackages.prettier
+    prettier
     stylua
     eslint_d
     ruff
