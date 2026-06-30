@@ -88,6 +88,7 @@ ShellRoot {
         function clipboard(): void { root.toggleSurface("", "clipboard"); }
         function wallpaper(): void { root.toggleSurface("", "wallpaper"); }
         function web(): void      { root.toggleSurface("", "web"); }
+        function launcher(): void { root.toggleSurface("", "launcher"); }
         function media(): void {
             if (Players.list.length > 0)
                 root.toggleSurface("", "media");

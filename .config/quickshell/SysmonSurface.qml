@@ -254,6 +254,8 @@ PillSurface {
 
         Item { width: 1; height: 18 * root.s }
 
+
+
         Rectangle {
             width: parent.width
             height: 1

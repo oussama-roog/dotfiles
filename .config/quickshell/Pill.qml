@@ -35,6 +35,7 @@ Item {
     readonly property bool clipboardOpen: surface === "clipboard"
     readonly property bool wallpaperOpen: surface === "wallpaper"
     readonly property bool powerOpen: surface === "power"
+    readonly property bool launcherOpen: surface === "launcher"
     readonly property bool mediaOpen: surface === "media"
     readonly property bool linkOpen: surface === "link"
     readonly property bool batteryOpen: surface === "battery"
@@ -98,6 +99,8 @@ Item {
     readonly property real powerH: 150 * s
     readonly property real mediaW: (Players.pickable.length > 1 ? 460 : 390) * s
     readonly property real mediaH: 150 * s
+    readonly property real launcherW: 360 * s
+    readonly property real launcherH: 332 * s
     readonly property real batteryW: 316 * s
     readonly property real settingsW: 392 * s
     readonly property real sysmonW: 392 * s
@@ -106,6 +109,7 @@ Item {
 
 
     readonly property var surfaces: ({
+        launcher:  { size: () => Qt.size(launcherW, launcherH), ame: launcher },
         calendar:  { size: () => Qt.size(calendarW, calendarH), ame: calendar },
         clipboard: { size: () => Qt.size(clipboardW, clipboardH), ame: clip },
         wallpaper: { size: () => Qt.size(wallpaperW, wallpaperH), ame: null },
@@ -1062,11 +1066,21 @@ Item {
 
     Calendar {
         id: calendar
+        anchors.centerIn: parent
         s: pill.s
         open: pill.calendarOpen
         morphCloseness: pill.morphCloseness
+        onRequestClose: pill.requestClose()
     }
 
+    Launcher {
+        id: launcher
+        anchors.centerIn: parent
+        s: pill.s
+        open: pill.launcherOpen
+        morphCloseness: pill.morphCloseness
+        onRequestClose: pill.requestClose()
+    }
 
     Clipboard {
         id: clip

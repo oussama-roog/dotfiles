@@ -141,7 +141,7 @@ binds {
     Mod+Shift+W { spawn "qs" "ipc" "call" "pill" "wallpaper"; }
     Mod+T { spawn "~/dotfiles/scripts/vicinae-theme.sh"; }
 
-    Mod+Space { spawn "qs" "ipc" "call" "pill" "web"; }
+    Mod+Space { spawn "qs" "ipc" "call" "pill" "launcher"; }
 
     Mod+Q { close-window; }
     Mod+X { quit; }

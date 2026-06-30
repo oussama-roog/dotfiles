@@ -38,7 +38,7 @@ Singleton {
             property bool keepAwake: false
             property bool time12h: false
             property bool clockSeconds: false
-            property bool showGlyphs: true
+            property bool showGlyphs: false
             property real uiScale: 1.0
             property bool reduceMotion: false
             property string uiFont: ""

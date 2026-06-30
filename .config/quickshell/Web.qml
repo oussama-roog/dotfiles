@@ -71,7 +71,8 @@ PillSurface {
 
         SettingsHeader {
             s: root.s
-            glyph: "globe"
+            glyph: "網"
+            icon: "globe"
             title: "WEB"
         }
 

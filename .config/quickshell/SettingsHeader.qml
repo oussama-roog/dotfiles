@@ -13,6 +13,7 @@ Item {
 
     property real s: 1
     property string glyph: ""
+    property string icon: ""
     property string title: ""
     property bool showBack: false
 
@@ -32,6 +33,15 @@ Item {
             font.family: Theme.fontJp
             font.weight: Font.Medium
             font.pixelSize: 16 * head.s
+        }
+        GlyphIcon {
+            anchors.verticalCenter: parent.verticalCenter
+            visible: !Flags.showGlyphs && head.icon.length > 0
+            name: head.icon
+            width: 14 * head.s
+            height: 14 * head.s
+            color: Theme.dim
+            stroke: 1.8
         }
         Text {
             anchors.verticalCenter: parent.verticalCenter

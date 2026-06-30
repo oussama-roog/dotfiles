@@ -7,6 +7,7 @@ Item {
 
     property real s: 1
     property string kanji: ""
+    property string icon: "search"
     property string placeholder: ""
     property string counterText: ""
 
@@ -41,11 +42,21 @@ Item {
         font.pixelSize: 16 * root.s
     }
 
+    GlyphIcon {
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.left: parent.left
+        visible: !Flags.showGlyphs
+        width: !Flags.showGlyphs ? 14 * root.s : 0
+        name: root.icon
+        color: Theme.dim
+        stroke: 1.8
+    }
+
     TextField {
         id: field
         anchors.verticalCenter: parent.verticalCenter
-        anchors.left: glyph.right
-        anchors.leftMargin: Flags.showGlyphs ? 10 * root.s : 0
+        anchors.left: Flags.showGlyphs ? glyph.right : parent.left
+        anchors.leftMargin: Flags.showGlyphs ? 10 * root.s : (22 * root.s)
         anchors.right: counter.left
         anchors.rightMargin: 10 * root.s
         background: null
