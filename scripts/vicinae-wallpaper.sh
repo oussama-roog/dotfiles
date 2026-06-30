@@ -17,12 +17,12 @@ if [[ -n "$chosen" ]]; then
             notify-send "Error" "feh not found"
         fi
     else
-        # Wayland: use swww
-        if command -v swww &>/dev/null; then
-            swww img "$chosen" --transition-type fade --transition-fps 60
+        # Wayland: use awww
+        if command -v awww &>/dev/null; then
+            awww img "$chosen" --transition-type fade --transition-fps 60
             notify-send "Wallpaper Changed" "$(basename "$chosen")"
         else
-            notify-send "Error" "swww not found"
+            notify-send "Error" "awww not found"
         fi
     fi
 fi

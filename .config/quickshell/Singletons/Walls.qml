@@ -52,9 +52,9 @@ Singleton {
             queuedApply = path;
             return;
         }
-        // save to ~/.cache/current_wallpaper and apply via swww
+        // save to ~/.cache/current_wallpaper and apply via awww
         applyProc.command = ["bash", "-c",
-            "echo \"$1\" > ~/.cache/current_wallpaper; swww img \"$1\" --transition-type fade --transition-fps 60",
+            "echo \"$1\" > ~/.cache/current_wallpaper; awww img \"$1\" --transition-type fade --transition-fps 60",
             "_", path];
         applyProc.running = true;
     }
@@ -133,7 +133,7 @@ Singleton {
                 var next = root.queuedApply;
                 root.queuedApply = "";
                 applyProc.command = ["bash", "-c",
-                    "echo \"$1\" > ~/.cache/current_wallpaper; swww img \"$1\" --transition-type fade --transition-fps 60",
+                    "echo \"$1\" > ~/.cache/current_wallpaper; awww img \"$1\" --transition-type fade --transition-fps 60",
                     "_", next];
                 applyProc.running = true;
                 return;

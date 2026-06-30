@@ -52,7 +52,7 @@
     # Desktop/Wayland utilities
     quickshell
     waybar
-    swww
+    awww
     rofi
     libqalculate
     dunst

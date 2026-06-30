@@ -81,7 +81,7 @@ layout {
 spawn-at-startup "~/dotfiles/scripts/theme-restore.sh"
 // spawn-at-startup "waybar"
 spawn-at-startup "quickshell"
-spawn-at-startup "swww-daemon"
+spawn-at-startup "awww-daemon"
 spawn-sh-at-startup "[[ -f ~/.cache/current_wallpaper ]] && swww img \"$(cat ~/.cache/current_wallpaper)\" || swww img ~/dotfiles/wallpapers/wall.png"
 spawn-at-startup "wl-paste" "--type" "text" "--watch" "cliphist" "store"
 spawn-sh-at-startup "vicinae server"

@@ -28,7 +28,7 @@ This Quickshell configuration is based on the Ricelin template, fully adapted to
 * **Clipboard:** Click to copy an item to the clipboard.
 * **Power:** Click to Lock, Suspend, Reboot, or Shutdown.
 * **Media:** Controls MPRIS players. Play/Pause, Next/Prev.
-* **Wallpaper:** Scroll to view wallpapers. Click to apply immediately using `swww`.
+* **Wallpaper:** Scroll to view wallpapers. Click to apply immediately using `awww`.
 * **Link (Connectivity & Inbox):** View WiFi and Bluetooth status. Below is the Notification Inbox where you can view grouped notifications. Hover over a notification and click the `x` to dismiss.
 * **Sysmon:** Displays live dials for CPU, RAM, Network, and Disk usage, along with system uptime.
 * **Settings:** Access other settings surfaces.
