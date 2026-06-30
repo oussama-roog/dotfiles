@@ -22,16 +22,18 @@ PillSurface {
     mRight: 14
     mBottom: 14
 
+    implicitHeight: content.implicitHeight
+
     ameForm: "off"
     amePoint: Qt.point(0, 0)
 
     readonly property var webData: [
-        { name: "Perplexity", url: "https://www.perplexity.ai/",              icon: "globe" },
         { name: "Gemini",     url: "https://gemini.google.com/app",           icon: "sparkles" },
-        { name: "Claude",     url: "https://claude.ai/new",                   icon: "sparkles" },
-        { name: "ChatGPT",    url: "https://chatgpt.com/?temporary-chat=true",icon: "sparkles" },
-        { name: "DeepSeek",   url: "https://chat.deepseek.com/",              icon: "sparkles" },
         { name: "YouTube",    url: "https://youtube.com/",                    icon: "video" },
+        { name: "Claude",     url: "https://claude.ai/new",                   icon: "sparkles" },
+        { name: "DeepSeek",   url: "https://chat.deepseek.com/",              icon: "sparkles" },
+        { name: "ChatGPT",    url: "https://chatgpt.com/?temporary-chat=true",icon: "sparkles" },
+        { name: "Perplexity", url: "https://www.perplexity.ai/",              icon: "globe" },
         { name: "X",          url: "https://x.com/",                         icon: "globe" },
         { name: "Reddit",     url: "https://reddit.com/",                     icon: "globe" },
         { name: "Keep",       url: "https://keep.google.com/",                icon: "clipboard" },
@@ -61,6 +63,7 @@ PillSurface {
     onActiveChanged: if (!active) { query = ""; searchField.clear(); }
 
     Column {
+        id: content
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
