@@ -133,15 +133,15 @@ binds {
     Mod+E { spawn "nautilus"; }
     Mod+Shift+Space { spawn "~/.config/rofi/launcher/launcher.sh"; }
     // Mod+Space repeat=false { spawn "vicinae" "toggle"; }
-    Mod+P { spawn "qs" "ipc" "call" "power" "toggle"; }
-    Mod+V { spawn "qs" "ipc" "call" "clipboard" "toggle"; }
-    Mod+N { spawn "qs" "ipc" "call" "notifications" "toggle"; }
+    Mod+P { spawn "qs" "ipc" "call" "pill" "power"; }
+    Mod+V { spawn "qs" "ipc" "call" "pill" "clipboard"; }
+    Mod+N { spawn "qs" "ipc" "call" "pill" "link"; }
     Mod+C { spawn "~/.config/rofi/launcher/calc.sh"; }
-    Mod+W { spawn "qs" "ipc" "call" "web" "toggle"; }
-    Mod+Shift+W { spawn "~/dotfiles/scripts/vicinae-wallpaper.sh"; }
+    Mod+W { spawn "qs" "ipc" "call" "pill" "web"; }
+    Mod+Shift+W { spawn "qs" "ipc" "call" "pill" "wallpaper"; }
     Mod+T { spawn "~/dotfiles/scripts/vicinae-theme.sh"; }
 
-    Mod+Space { spawn "qs" "ipc" "call" "launcher" "toggle"; }
+    Mod+Space { spawn "qs" "ipc" "call" "pill" "web"; }
 
     Mod+Q { close-window; }
     Mod+X { quit; }
