@@ -3,7 +3,6 @@ return {
 	-- optional: provides snippets for the snippet source
 	dependencies = {
 		"L3MON4D3/LuaSnip",
-		"Kaiser-Yang/blink-cmp-avante",
 	},
 
 	-- use a release tag to download pre-built binaries
@@ -50,20 +49,10 @@ return {
 		-- elsewhere in your config, without redefining it, due to `opts_extend`
 		sources = {
 			default = {
-				"avante",
 				"lsp",
 				"path",
 				"snippets",
 				"buffer",
-			},
-			providers = {
-				avante = {
-					module = "blink-cmp-avante",
-					name = "Avante",
-					opts = {
-						-- options for blink-cmp-avante
-					},
-				},
 			},
 		},
 

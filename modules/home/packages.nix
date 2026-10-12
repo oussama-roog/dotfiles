@@ -31,7 +31,8 @@
     chromium
     # inputs.zen-browser.packages."${system}".beta
     unstable.opencode
-    unstable.antigravity
+    unstable.claude-code
+    unstable.antigravity-ide
     # spotify
     # discord
     # zathura
