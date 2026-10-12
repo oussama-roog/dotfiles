@@ -12,7 +12,8 @@ import Quickshell
  * theme and only the colours that should breathe with the wallpaper do.
  */
 Singleton {
-    readonly property bool dyn: Flags.paletteMode !== "static"
+    // Always follow the theme-switcher palette written to colors.json (written by scripts/themes/quickshell.sh)
+    readonly property bool dyn: true
 
     /**
      * Bright warm pop shared by the flame glow, charging glyphs, the recording

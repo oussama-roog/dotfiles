@@ -24,15 +24,6 @@ Item {
 
     signal requestClose()
 
-    /**
-     * Ame anchor. Each surface declares the flame's form and dock point (in
-     * surface-local coords) for its open state; the host maps the point into
-     * pill space and feeds the active surface's pair to Ame. Left non-readonly
-     * so a deriving surface can re-bind. Base default is off at the centre.
-     */
-    property string ameForm: "off"
-    property point amePoint: Qt.point(width / 2, height / 2)
-
     readonly property bool active: open
 
     /**

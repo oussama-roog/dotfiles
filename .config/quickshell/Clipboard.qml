@@ -33,20 +33,6 @@ PillSurface {
      */
     property point lastPointer: Qt.point(-1, -1)
 
-    readonly property point caretPoint: {
-        void root.width;
-        void root.height;
-        void search.input.width;
-        return search.input.mapToItem(root,
-            search.input.cursorRectangle.x + search.input.cursorRectangle.width / 2,
-            search.input.cursorRectangle.y + search.input.cursorRectangle.height / 2);
-    }
-    readonly property real caretX: caretPoint.x
-    readonly property real caretY: caretPoint.y
-
-    ameForm: "caret"
-    amePoint: Qt.point(caretX, caretY)
-
     readonly property var results: {
         var all = Cliphist.entries;
         var q = query.trim().toLowerCase();

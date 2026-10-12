@@ -53,6 +53,7 @@ apply_theme() {
     source "$THEMES_DIR/vicinae.sh"
     source "$THEMES_DIR/i3.sh"
     source "$THEMES_DIR/polybar.sh"
+    source "$THEMES_DIR/quickshell.sh"
 
     apply_hypr_theme "${colors[@]}"
     apply_nix_theme "${colors[@]}"
@@ -66,6 +67,7 @@ apply_theme() {
     apply_vicinae_theme "$theme_name"
     apply_i3_theme "${colors[@]}"
     apply_polybar_theme "${colors[@]}"
+    apply_quickshell_theme
 
     reload_hypr
     reload_waybar

@@ -469,8 +469,8 @@ PillSurface {
         visible: root.itemCount === 0 && !searchProc.running
         text: {
             if (!root.searching)
-                return "No wallpapers in ~/Ricelin/wallpapers";
-            return root.query.length ? "no results" : "No wallpapers in ~/Ricelin/wallpapers";
+                return "No wallpapers in ~/dotfiles/wallpapers";
+            return root.query.length ? "no results" : "No wallpapers in ~/dotfiles/wallpapers";
         }
         color: Theme.faint
         font.family: Theme.font

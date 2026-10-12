@@ -84,7 +84,9 @@ Item {
         "clock": { d: "M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18z M12 7v5l3.5 2", fill: false },
         "cursor": { d: "M5 3l6 16 2-6 6-2L5 3z", fill: false },
         "video": { d: "M3 7.5a1.5 1.5 0 0 1 1.5-1.5h9A1.5 1.5 0 0 1 15 7.5v9A1.5 1.5 0 0 1 13.5 18h-9A1.5 1.5 0 0 1 3 16.5z M15 10l6-3v10l-6-3z", fill: false },
-        "record": { d: "M12 4a8 8 0 1 0 0 16a8 8 0 1 0 0-16z", fill: true }
+        "record": { d: "M12 4a8 8 0 1 0 0 16a8 8 0 1 0 0-16z", fill: true },
+        "cpu": { d: "M6 4h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z M9 9h6v6H9z M9 2v2 M15 2v2 M9 20v2 M15 20v2 M2 9h2 M2 15h2 M20 9h2 M20 15h2", fill: false },
+        "memory": { d: "M4 6h16a2 2 0 0 1 2 2v1.1a2 2 0 0 0 0 3.8V16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-3.1a2 2 0 0 0 0-3.8V8a2 2 0 0 1 2-2z M2 14h20 M6 18v-3 M10 18v-3 M14 18v-3 M18 18v-3 M8 11V9 M12 11V9 M16 11V9", fill: false }
     })
 
     readonly property var g: glyphs[name] !== undefined ? glyphs[name] : ({ d: "", fill: false })

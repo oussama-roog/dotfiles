@@ -81,7 +81,7 @@ Item {
      * Leading-edge throttle. The first change flashes at once so a real track
      * switch feels instant, then the cooldown mutes the burst that hovering the
      * YouTube grid throws off. Anything that lands during the cooldown, or while
-     * the OSD is suppressed (a surface open, the pill pinned), stays `dirty` and
+     * the OSD is suppressed (a surface open), stays `dirty` and
      * fires when the gate opens, so the stashed-player flash still replays.
      */
     function tryShow() {
@@ -479,9 +479,9 @@ Item {
                     color: "transparent"
                     gradient: Gradient {
                         orientation: Gradient.Horizontal
-                        GradientStop { position: 0.0; color: "#00ffffff" }
-                        GradientStop { position: 0.5; color: "#55ffe6d6" }
-                        GradientStop { position: 1.0; color: "#00ffffff" }
+                        GradientStop { position: 0.0; color: "transparent" }
+                        GradientStop { position: 0.5; color: Qt.alpha(Theme.bright, 0.33) }
+                        GradientStop { position: 1.0; color: "transparent" }
                     }
 
                     NumberAnimation on x {

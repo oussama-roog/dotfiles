@@ -35,6 +35,7 @@ home-manager-result
 .config/ghostty/config
 .config/dunst/dunstrc
 .config/yazi/theme.toml
+.config/quickshell/colors.json
 .config/gtk-3.0/colors.css
 .config/gtk-4.0/colors.css
 .config/nvim/lua/oussama/core/theme.lua

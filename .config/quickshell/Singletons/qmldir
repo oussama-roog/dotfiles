@@ -8,7 +8,6 @@ singleton Devices Devices.qml
 singleton Battery Battery.qml
 singleton Sysmon Sysmon.qml
 singleton Dyn Dyn.qml
-singleton Weather Weather.qml
-singleton Events Events.qml
 singleton NiriSpaces NiriSpaces.qml
 singleton Players Players.qml
+singleton Themes Themes.qml

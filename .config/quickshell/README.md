@@ -1,41 +1,37 @@
 # Quickshell Niri Configuration
 
-This Quickshell configuration is based on the Ricelin template, fully adapted to work natively with the Niri compositor instead of Hyprland. It features a morphing, two-window architecture ("Pill Shell") that stays out of your way and expands dynamically when you need it.
+This Quickshell configuration is to work natively with the Niri compositor instead of Hyprland. It features a morphing, two-window architecture ("Pill Shell") that stays out of your way and expands dynamically when you need it.
 
 ## Keybindings (via `niri msg`)
 
 | Shortcut | Action |
 |----------|--------|
-| `Mod+Space` or `Mod+W` | Toggle Web Launcher (app & web search) |
+| `Mod+Space` | Toggle App Launcher |
+| `Mod+W` | Toggle Web Launcher |
 | `Mod+P` | Toggle Power Menu |
 | `Mod+V` | Toggle Clipboard History |
-| `Mod+N` | Toggle Notification Center & Networks (Link Surface) |
+| `Mod+N` | Toggle Notification Inbox |
 | `Mod+Shift+W` | Toggle Wallpaper Picker |
 
 *Note: All IPC calls use the format `qs ipc call pill <surface>`.*
 
-## Mouse Interactions
+## The Pill
 
-### The Pill (Rest / Hover)
-* **Hover:** Expands the rest pill to show the full bar (Clock, WiFi, Battery, Inbox, Mixer, Power, Sysmon).
-* **Clicking Icons:** Clicking any icon in the expanded hover bar will open its respective morphing surface.
-* **Workspace Dots:** The active workspace is represented by a wider vermillion line. You can click on the workspace dots to switch to that workspace.
+The resting pill is a single bar: workspace dots on the left (click to switch),
+CPU % and used RAM (GB) in the middle, the clock on the right. There is no hover
+expansion; surfaces open only through the shortcuts above.
 
 ### Available Surfaces
+* **Launcher:** Fuzzy app search.
 * **Web Launcher:** Type to search predefined websites. Use `Up`/`Down` to navigate, `Enter` to launch (focuses existing Niri window or opens in a Chromium `--app`).
-* **Mixer:** Use the mouse wheel to scroll through volume levels. Click the mute icon to toggle mute.
-* **Calendar:** Browse months, view current time.
 * **Clipboard:** Click to copy an item to the clipboard.
-* **Power:** Click to Lock, Suspend, Reboot, or Shutdown.
-* **Media:** Controls MPRIS players. Play/Pause, Next/Prev.
+* **Power:** Click to Lock, Logout or Suspend; press-and-hold to Reboot or Shutdown.
 * **Wallpaper:** Scroll to view wallpapers. Click to apply immediately using `awww`.
-* **Link (Connectivity & Inbox):** View WiFi and Bluetooth status. Below is the Notification Inbox where you can view grouped notifications. Hover over a notification and click the `x` to dismiss.
-* **Sysmon:** Displays live dials for CPU, RAM, Network, and Disk usage, along with system uptime.
-* **Settings:** Access other settings surfaces.
+* **Inbox:** Grouped notifications. Hover over a notification and click the `x` to dismiss.
 
 ### OSD & Toasts
 * **Volume/Brightness Changes:** Trigger a fast On-Screen Display (OSD) pill showing the new percentage.
 * **Notifications:** Show as stacked pop-up toasts below the main pill area.
 
 ## Theming
-This configuration uses the static "Washi" color palette from the Ricelin template. It does not pull colors from external themes. Colors and UI tokens are defined in `Singletons/Theme.qml`.
+Colors follow the theme switcher: `scripts/themes/quickshell.sh` writes the base16 palette to `colors.json` in this folder, and `Singletons/Dyn.qml` watches it so the shell recolours live. UI tokens are defined in `Singletons/Theme.qml`. Settings are stored in `flags.json` here as well.

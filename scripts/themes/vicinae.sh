@@ -119,7 +119,8 @@ current_match_foreground = "#${colors[base00]}"
 EOF
 
     # Apply the theme using vicinae command
-    if command -v vicinae &> /dev/null; then
+    # Only when the vicinae server is already running (i3); never start it from here
+    if pgrep -f vicinae-server &>/dev/null; then
         vicinae theme set "$theme_name" 2>/dev/null || true
     fi
 }

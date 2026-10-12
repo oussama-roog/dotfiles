@@ -1,0 +1,13 @@
+{
+  "clockSeconds": false,
+  "dnd": false,
+  "keepAwake": false,
+  "pillBlur": false,
+  "pillOpacity": 1,
+  "reduceMotion": false,
+  "showGlyphs": false,
+  "time12h": false,
+  "uiFont": "",
+  "uiScale": 1,
+  "weatherCity": ""
+}

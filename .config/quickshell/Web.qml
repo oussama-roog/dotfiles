@@ -8,7 +8,7 @@ import "Singletons"
 
 /**
  * Web-app launcher surface. Ported from the old config's WebView.qml but
- * re-skinned to use the Ricelin template's PillSurface style, Theme tokens
+ * re-skinned to use the PillSurface style, Theme tokens
  * and Motion animations.
  *
  * Searches the configured list of websites; Enter/click opens or focuses
@@ -23,9 +23,6 @@ PillSurface {
     mBottom: 14
 
     implicitHeight: content.implicitHeight
-
-    ameForm: "off"
-    amePoint: Qt.point(0, 0)
 
     readonly property var webData: [
         { name: "Gemini",     url: "https://gemini.google.com/app",           icon: "sparkles" },

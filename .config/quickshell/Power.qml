@@ -12,8 +12,8 @@ import "Singletons"
  * bottom-up heat fill, releasing early drains it, so a stray click can never
  * reboot the machine. Only the hovered, focused or held action shows its label.
  *
- * Arrow keys move a keyboard focus across the tiles; the focused tile lights and
- * docks the soul bead exactly like a hovered one. Enter fires a safe tile at
+ * Arrow keys move a keyboard focus across the tiles; the focused tile lights
+ * exactly like a hovered one. Enter fires a safe tile at
  * once; on a destructive tile a held Enter drives the same heat fill as a
  * pointer hold (release before it completes drains), so the keyboard path can
  * never reboot on a single keystroke either.
@@ -32,19 +32,6 @@ PillSurface {
 
     property int holdingIndex: -1
     property real holdProgress: 0
-
-    readonly property real anchorX: tiles.x + tiles.width / 2
-    readonly property real anchorY: tiles.y - 10 * root.s
-    property real tileHeatX: 0
-    property real tileHeatY: 0
-    property string soulKey: ""
-    property real hoverX: 0
-    property real hoverY: 0
-    readonly property real heatX: holdingIndex >= 0 ? tileHeatX : (soulKey.length ? hoverX : anchorX)
-    readonly property real heatY: holdingIndex >= 0 ? tileHeatY : (soulKey.length ? hoverY : anchorY)
-
-    ameForm: holdingIndex >= 0 ? "dock" : (soulKey.length ? "soul" : "off")
-    amePoint: Qt.point(heatX, heatY)
 
     readonly property var actions: [
         { key: "lock",     glyph: "lock",     label: "Lock",     confirm: false, argv: ["loginctl", "lock-session"] },
@@ -99,7 +86,6 @@ PillSurface {
 
     onActiveChanged: if (!active) {
         hovered = "";
-        soulKey = "";
         focusIndex = -1;
         keyHeld = false;
         holdingIndex = -1;
@@ -170,10 +156,6 @@ PillSurface {
                         if (!tile.kbFocus)
                             return;
                         root.hovered = cell.modelData.key;
-                        root.soulKey = cell.modelData.key;
-                        const c = tile.mapToItem(root, tile.width / 2, 0);
-                        root.hoverX = c.x;
-                        root.hoverY = c.y - 9 * root.s;
                     }
 
                     /**
@@ -192,9 +174,6 @@ PillSurface {
                         if (cell.modelData.confirm && tile.hold > 0.001) {
                             root.holdingIndex = cell.index;
                             root.holdProgress = tile.hold;
-                            const c = tile.mapToItem(root, tile.width / 2, tile.height / 2);
-                            root.tileHeatX = c.x;
-                            root.tileHeatY = c.y;
                         } else if (root.holdingIndex === cell.index) {
                             root.holdingIndex = -1;
                             root.holdProgress = 0;
@@ -256,10 +235,6 @@ PillSurface {
                         cursorShape: Qt.PointingHandCursor
                         onEntered: {
                             root.hovered = cell.modelData.key;
-                            root.soulKey = cell.modelData.key;
-                            const c = tile.mapToItem(root, tile.width / 2, 0);
-                            root.hoverX = c.x;
-                            root.hoverY = c.y - 9 * root.s;
                         }
                         onExited: {
                             if (root.hovered === cell.modelData.key)
