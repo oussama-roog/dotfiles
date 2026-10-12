@@ -188,15 +188,13 @@ Item {
         visible: opacity > 0.01
         Behavior on opacity { NumberAnimation { duration: 150 } }
 
-        GlyphIcon {
+        Icon {
             id: meterGlyph
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            width: 17 * root.s
-            height: 17 * root.s
-            name: meter.icon
+            size: 18 * root.s
+            text: meter.icon
             color: meter.muted ? Theme.textDim : Theme.icon
-            stroke: 1.7
         }
 
         Text {
@@ -238,14 +236,14 @@ Item {
 
     Meter {
         forKind: "volume"
-        icon: root.muted ? "speaker-off" : "speaker"
+        icon: root.muted ? Icons.speakerOff : Icons.speaker
         value: root.volume
         muted: root.muted
     }
 
     Meter {
         forKind: "brightness"
-        icon: "sun"
+        icon: Icons.sun
         value: root.brightness
     }
 
@@ -281,11 +279,10 @@ Item {
                     hideTimer.restart();
                 }
             }
-            GlyphIcon {
+            Icon {
                 anchors.centerIn: parent
-                width: parent.width * 0.42
-                height: width
-                name: "music"
+                size: parent.width * 0.42
+                text: Icons.music
                 color: Theme.textSubtle
                 visible: cover.status !== Image.Ready
             }
@@ -315,13 +312,12 @@ Item {
             }
         }
 
-        GlyphIcon {
+        Icon {
             id: trackCtrl
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            width: 18 * root.s
-            height: 18 * root.s
-            name: root.subjectPlaying ? "play" : "pause"
+            size: 18 * root.s
+            text: root.subjectPlaying ? Icons.play : Icons.pause
             color: root.subjectPlaying ? Theme.accent : Theme.icon
         }
 
@@ -364,15 +360,13 @@ Item {
         visible: opacity > 0.01
         Behavior on opacity { NumberAnimation { duration: 150 } }
 
-        GlyphIcon {
+        Icon {
             id: battGlyph
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            width: 17 * root.s
-            height: 17 * root.s
-            name: "bolt"
+            size: 18 * root.s
+            text: Icons.lightning
             color: Theme.accent
-            stroke: 1.7
         }
 
         Text {

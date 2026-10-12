@@ -57,7 +57,7 @@ ShellRoot {
         PanelWindow {
             required property var modelData
             readonly property real s: modelData ? (modelData.height / 1080) * Flags.uiScale : 1
-            readonly property real zone: (38 + 8) * s
+            readonly property real zone: 38 * s
 
             screen: modelData
             color: "transparent"
@@ -89,9 +89,17 @@ ShellRoot {
             WlrLayershell.namespace: "pill"
             anchors { top: true; left: true; right: true; bottom: true }
 
-            // Only the pill takes input, unless a surface is open: then the whole
+            // Only the pills take input, unless a surface is open: then the whole
             // screen does, so a click outside closes it.
-            mask: surfaceOpen ? fullRegion : pillRegion
+            mask: surfaceOpen ? fullRegion : barRegion
+            Region {
+                id: barRegion
+                regions: [pillRegion, notifRegion]
+            }
+            Region {
+                id: notifRegion
+                item: notifPill
+            }
             Region {
                 id: pillRegion
                 readonly property real baseW: Math.max(pill.width, pill.targetW)
@@ -129,11 +137,30 @@ ShellRoot {
                 Pill {
                     id: pill
                     anchors.top: parent.top
-                    anchors.topMargin: 8 * overlay.s
                     anchors.horizontalCenter: parent.horizontalCenter
                     s: overlay.s
                     surface: overlay.surface
                     onRequestClose: root.close()
+                }
+
+                /**
+                 * Floats beside the main pill's right edge, on top of it. With
+                 * the notification centre open it docks its bell in the
+                 * centre's header slot (Notifications.bellSlot), right of the
+                 * unread count; both ends follow the notch's live edge.
+                 */
+                NotifPill {
+                    id: notifPill
+                    z: 1
+                    readonly property real restLeft: 26 * overlay.s
+                    readonly property real dockLeft: -(16 + 12) * overlay.s - dotW / 2
+                    anchors.top: parent.top
+                    anchors.topMargin: (4 + 4 * mergeT) * overlay.s
+                    anchors.left: pill.right
+                    anchors.leftMargin: restLeft + (dockLeft - restLeft) * mergeT
+                    s: overlay.s
+                    merged: overlay.surface === "notifications"
+                    onBellClicked: root.toggle("notifications")
                 }
             }
 

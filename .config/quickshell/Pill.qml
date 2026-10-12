@@ -1,7 +1,6 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Effects
 import Quickshell
 import "services"
 import "widgets"
@@ -9,11 +8,14 @@ import "surfaces"
 
 /**
  * The pill body. One element carries every state. Width/height driven by `mode`
- * (rest, osd, toast, or an open surface) with a no-overshoot easing so surfaces
+ * (rest, osd, or an open surface) with a no-overshoot easing so surfaces
  * grow out of the pill in place. Surfaces are stacked absolutely and cross-fade.
  *
  * The rest pill is a three-part bar: workspace dots on the left, CPU % and
  * used RAM dead centre, the clock on the right. Surfaces only open via IPC.
+ *
+ * Drawn as an Ambxst-style notch hanging from the top edge, with concave
+ * "ears" joining it to the screen.
  */
 Item {
     id: pill
@@ -23,11 +25,10 @@ Item {
 
     readonly property bool surfaceOpen: surface.length > 0
 
-    readonly property bool toastActive: Notifs.popups.length > 0
     readonly property bool osdActive: osd.flashing
 
     readonly property real restCorner: 18 * s
-    readonly property real openCorner: 22 * s
+    readonly property real openCorner: 24 * s
 
     // ─── Size constants ───────────────────────────────────────────────────────
     readonly property real restH: 38 * s
@@ -36,7 +37,8 @@ Item {
     /** Side columns share one width so the stats stay dead centre. */
     readonly property real restSideW: Math.max(ws.implicitWidth, restClock.implicitWidth)
     readonly property real restW: 2 * restSideW + stats.implicitWidth + 2 * restGap + 2 * restPad
-    readonly property real toastW: 342 * s
+    /** Shared width of the list surfaces (launcher, clipboard, web, themes, notifications). */
+    readonly property real listW: 460 * s
 
     /**
      * Single source of truth for every morphing surface, keyed by its `surface`
@@ -44,18 +46,17 @@ Item {
      * live dep of targetSize.
      */
     readonly property var surfaces: ({
-        launcher:      () => Qt.size(360 * s, 332 * s),
-        clipboard:     () => Qt.size(360 * s, 332 * s),
-        themes:        () => Qt.size(400 * s, 360 * s),
-        wallpaper:     () => Qt.size(720 * s, 172 * s),
-        power:         () => Qt.size(330 * s, 150 * s),
-        web:           () => Qt.size(400 * s, web.implicitHeight + 29 * s),
-        notifications: () => Qt.size(330 * s, notifications.implicitHeight + 26 * s)
+        launcher:      () => Qt.size(listW, 332 * s),
+        clipboard:     () => Qt.size(listW, 332 * s),
+        themes:        () => Qt.size(listW, 360 * s),
+        wallpaper:     () => Qt.size(1000 * s, 222 * s),
+        power:         () => Qt.size(340 * s, 106 * s),
+        web:           () => Qt.size(listW, web.implicitHeight + 29 * s),
+        notifications: () => Qt.size(listW, notifications.implicitHeight + 26 * s)
     })
 
     readonly property string mode: surfaceOpen && surfaces[surface] !== undefined ? surface
-        : (osdActive ? "osd"
-        : (toastActive ? "toast" : "rest"))
+        : (osdActive ? "osd" : "rest")
 
     signal requestClose()
 
@@ -80,8 +81,7 @@ Item {
      * they read register as live deps of targetSize.
      */
     readonly property var modeSize: ({
-        osd:   () => Qt.size(osd.desiredW, osd.desiredH),
-        toast: () => Qt.size(toastW, toastLoader.item ? toastLoader.item.implicitHeight + 24 * s : restH)
+        osd:   () => Qt.size(osd.desiredW, osd.desiredH)
     })
 
     readonly property size targetSize: {
@@ -108,39 +108,16 @@ Item {
         return 1 - Math.min(1, d / (110 * s));
     }
 
-    Behavior on width { NumberAnimation { duration: Motion.morph; easing.type: Motion.easeMorph; easing.bezierCurve: Motion.morphCurve } }
-    Behavior on height { NumberAnimation { duration: Motion.morph; easing.type: Motion.easeMorph; easing.bezierCurve: Motion.morphCurve } }
-    Behavior on morphRadius { NumberAnimation { duration: Motion.morph; easing.type: Motion.easeMorph; easing.bezierCurve: Motion.morphCurve } }
+    /** Ambxst motion: grow with a slight overshoot, settle back without one. */
+    readonly property bool expanding: mode !== "rest"
+    Behavior on width { NumberAnimation { duration: Motion.morph; easing.type: pill.expanding ? Motion.easeOpen : Motion.easeClose; easing.overshoot: Motion.overshoot } }
+    Behavior on height { NumberAnimation { duration: Motion.morph; easing.type: pill.expanding ? Motion.easeOpen : Motion.easeClose; easing.overshoot: Motion.overshoot } }
+    Behavior on morphRadius { NumberAnimation { duration: Motion.morph; easing.type: Motion.easeClose } }
 
-    Rectangle {
-        id: body
+    NotchBody {
         anchors.fill: parent
+        s: pill.s
         radius: pill.morphRadius
-        border.width: 1
-        border.color: Theme.border
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: Qt.alpha(Theme.cardTop, Flags.pillOpacity) }
-            GradientStop { position: 1.0; color: Qt.alpha(Theme.cardBot, Flags.pillOpacity) }
-        }
-
-        layer.enabled: true
-        layer.effect: MultiEffect {
-            shadowEnabled: true
-            shadowColor: Theme.shadow
-            shadowBlur: 0.7
-            shadowVerticalOffset: 3 * pill.s
-        }
-
-        Rectangle {
-            anchors.top: parent.top
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.topMargin: 1
-            anchors.leftMargin: body.radius * 0.6
-            anchors.rightMargin: body.radius * 0.6
-            height: 1
-            color: Theme.sheen
-        }
     }
 
     /** One CPU/RAM readout: dim glyph, tabular value; turns hot when `hot`. */
@@ -152,13 +129,11 @@ Item {
 
         spacing: 5 * pill.s
 
-        GlyphIcon {
+        Icon {
             anchors.verticalCenter: parent.verticalCenter
-            width: 15 * pill.s
-            height: 15 * pill.s
-            name: stat.icon
+            size: 15 * pill.s
+            text: stat.icon
             color: stat.hot ? Theme.accent : Theme.icon
-            stroke: 1.7
         }
         Text {
             anchors.verticalCenter: parent.verticalCenter
@@ -180,6 +155,8 @@ Item {
         visible: opacity > 0.01
         enabled: pill.mode === "rest"
         Behavior on opacity { NumberAnimation { duration: pill.mode === "rest" ? Motion.fast : 260 } }
+        scale: pill.mode === "rest" ? 1 : 0.86
+        Behavior on scale { NumberAnimation { duration: Motion.morph; easing.type: pill.mode === "rest" ? Motion.easeOpen : Motion.easeClose; easing.overshoot: Motion.overshoot } }
 
         Workspaces {
             id: ws
@@ -197,13 +174,13 @@ Item {
 
             Stat {
                 anchors.verticalCenter: parent.verticalCenter
-                icon: "cpu"
+                icon: Icons.cpu
                 text: Sysmon.cpu + "%"
                 hot: Sysmon.cpu >= 90
             }
             Stat {
                 anchors.verticalCenter: parent.verticalCenter
-                icon: "memory"
+                icon: Icons.ram
                 text: Sysmon.memUsedGb.toFixed(1) + "G"
                 hot: Sysmon.memPct >= 90
             }
@@ -246,46 +223,7 @@ Item {
         Behavior on opacity {
             NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard }
         }
-    }
-
-    Loader {
-        id: toastLoader
-        active: pill.toastActive
-        anchors.fill: parent
-        anchors.topMargin: 12 * pill.s
-        anchors.leftMargin: 16 * pill.s
-        anchors.rightMargin: 16 * pill.s
-        anchors.bottomMargin: 12 * pill.s
-        enabled: pill.mode === "toast"
-        opacity: pill.mode === "toast" ? 1 : 0
-        visible: opacity > 0.01
-        Behavior on opacity {
-            NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard }
-        }
-
-        sourceComponent: Item {
-            implicitHeight: toastContent.implicitHeight
-
-            Toast {
-                id: toastContent
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                s: pill.s
-                live: pill.mode === "toast"
-                notif: Notifs.popups.length > 0 ? Notifs.popups[Notifs.popups.length - 1] : null
-            }
-
-            Text {
-                anchors.right: parent.right
-                anchors.bottom: parent.bottom
-                visible: Notifs.popups.length > 1
-                text: "+" + (Notifs.popups.length - 1)
-                color: Theme.textDim
-                font.family: Theme.font
-                font.pixelSize: 9 * pill.s
-                font.weight: Font.DemiBold
-            }
-        }
+        scale: pill.mode === "osd" ? 1 : 0.86
+        Behavior on scale { NumberAnimation { duration: Motion.morph; easing.type: pill.mode === "osd" ? Motion.easeOpen : Motion.easeClose; easing.overshoot: Motion.overshoot } }
     }
 }

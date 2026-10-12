@@ -32,6 +32,9 @@ Singleton {
     readonly property color accentDark: Qt.darker(c.accent, 1.18)
     readonly property color accentDim:  Qt.darker(c.accent, 1.5)
     readonly property color accentDeep: c.accent_container
+    /** Text/icons drawn on top of the accent (the sliding selection highlight). */
+    readonly property color onAccent: (0.2126 * accent.r + 0.7152 * accent.g + 0.0722 * accent.b) > 0.5
+        ? Qt.rgba(0, 0, 0, 0.87) : Qt.rgba(1, 1, 1, 0.95)
 
     // Overlays derived from the text colour
     readonly property color hair:        Qt.alpha(text, 0.13)

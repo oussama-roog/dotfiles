@@ -11,9 +11,9 @@ import "../widgets"
  * substring, Return copies the selected entry and closes, hovering a row
  * cross-fades a dismiss glyph that deletes it (Ctrl+X does the same for the
  * keyboard selection). Image entries render their cached thumbnail beside the
- * size label. Holding the 掃 glyph for the heat duration wipes the whole
- * history; progress sweeps along the header divider and drains on early
- * release.
+ * size label. Holding the trash (or 掃) glyph for the heat duration wipes the
+ * whole history; progress sweeps along under the search field and drains on
+ * early release.
  */
 PillSurface {
     id: root
@@ -62,6 +62,18 @@ PillSurface {
             return;
         Cliphist.copy(results[selectedIndex]);
         root.requestClose();
+    }
+
+    function rowH(entry) {
+        return (entry && entry.isImage ? 44 : 28) * s;
+    }
+
+    /** Top of row `index` in the list, for the sliding highlight. */
+    function rowY(index) {
+        var y = 0;
+        for (var i = 0; i < index && i < results.length; i++)
+            y += rowH(results[i]) + list.spacing;
+        return y;
     }
 
     function removeAt(index) {
@@ -133,14 +145,12 @@ PillSurface {
                 Behavior on color { ColorAnimation { duration: Motion.fast } }
             }
 
-            GlyphIcon {
+            Icon {
                 visible: !Flags.showGlyphs
                 anchors.centerIn: parent
-                width: 12 * root.s
-                height: 12 * root.s
-                name: "trash"
+                size: 14 * root.s
+                text: Icons.trash
                 color: wipeBtn.tone
-                Behavior on color { ColorAnimation { duration: Motion.fast } }
             }
 
             HeatHold {
@@ -164,11 +174,14 @@ PillSurface {
     Rectangle {
         id: divider
         anchors.top: search.bottom
-        anchors.topMargin: 8 * root.s
+        anchors.topMargin: 4 * root.s
         anchors.left: parent.left
         anchors.right: parent.right
-        height: 1
-        color: Theme.hair
+        anchors.leftMargin: 14 * root.s
+        anchors.rightMargin: 14 * root.s
+        height: 2 * root.s
+        radius: height / 2
+        color: "transparent"
 
         Rectangle {
             anchors.top: parent.top
@@ -196,7 +209,7 @@ PillSurface {
     ListView {
         id: list
         anchors.top: divider.bottom
-        anchors.topMargin: 6 * root.s
+        anchors.topMargin: 2 * root.s
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -205,11 +218,22 @@ PillSurface {
         boundsBehavior: Flickable.StopAtBounds
         model: root.results.length
 
+        ElasticHighlight {
+            parent: list.contentItem
+            z: -1
+            tx: 0
+            ty: root.rowY(root.selectedIndex)
+            tw: list.width
+            th: root.rowH(root.results[root.selectedIndex])
+            radius: 10 * root.s
+            shown: root.results.length > 0
+        }
+
         delegate: Item {
             id: row
             required property int index
             width: list.width
-            height: (entry && entry.isImage ? 44 : 28) * root.s
+            height: root.rowH(entry)
 
             readonly property var entry: root.results[index]
             readonly property bool selected: index === root.selectedIndex
@@ -225,15 +249,6 @@ PillSurface {
                         root.selectedIndex = row.index;
                     }
                 }
-            }
-
-            Rectangle {
-                anchors.fill: parent
-                radius: 9 * root.s
-                visible: row.selected || rowHover.hovered
-                color: row.selected ? Theme.frameBg : Qt.alpha(Theme.text, 0.03)
-                border.width: row.selected ? 1 : 0
-                border.color: Theme.frameBorder
             }
 
             MouseArea {
@@ -282,9 +297,8 @@ PillSurface {
                     anchors.right: sizeTag.left
                     anchors.rightMargin: 8 * root.s
                     text: row.entry === undefined ? "" : (row.entry.isImage ? row.entry.label : row.entry.preview)
-                    color: row.entry !== undefined && row.entry.isImage
-                        ? (row.selected ? Theme.textDim : Theme.textFaint)
-                        : (row.selected ? Theme.text : Theme.textSubtle)
+                    color: row.selected ? Theme.onAccent
+                        : (row.entry !== undefined && row.entry.isImage ? Theme.textFaint : Theme.textSubtle)
                     font.family: Theme.font
                     font.pixelSize: 11.5 * root.s
                     font.weight: row.selected ? Font.DemiBold : Font.Medium
@@ -300,7 +314,7 @@ PillSurface {
                     anchors.verticalCenter: parent.verticalCenter
                     text: row.entry !== undefined && row.entry.isImage ? row.entry.sizeLabel : ""
                     width: text.length ? implicitWidth : 0
-                    color: Theme.textFaint
+                    color: row.selected ? Qt.alpha(Theme.onAccent, 0.65) : Theme.textFaint
                     font.family: Theme.font
                     font.pixelSize: 10.5 * root.s
                     font.features: { "tnum": 1 }
@@ -319,20 +333,20 @@ PillSurface {
                         anchors.verticalCenter: parent.verticalCenter
                         opacity: row.selected && !rowHover.hovered ? 1 : 0
                         text: "↵"
-                        color: Theme.accent
+                        color: Theme.onAccent
                         font.family: Theme.font
                         font.pixelSize: 12 * root.s
                         Behavior on opacity { NumberAnimation { duration: Motion.fast } }
                     }
 
-                    Text {
+                    Icon {
                         id: dismiss
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
                         opacity: rowHover.hovered ? 1 : 0
-                        text: "✕"
-                        color: dismissArea.containsMouse ? Theme.text : Theme.textDim
-                        font.pixelSize: 10 * root.s
+                        size: 12 * root.s
+                        text: Icons.close
+                        color: row.selected ? Theme.onAccent : (dismissArea.containsMouse ? Theme.text : Theme.textDim)
                         Behavior on opacity { NumberAnimation { duration: Motion.fast } }
 
                         MouseArea {

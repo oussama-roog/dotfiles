@@ -17,19 +17,19 @@ PillSurface {
     mRight: 11
     mBottom: 14
 
-    implicitHeight: search.height + 15 * s + list.height
+    implicitHeight: search.height + 8 * s + list.height
 
     readonly property var sites: [
-        { name: "Gemini",     url: "https://gemini.google.com/app",            icon: "sparkles" },
-        { name: "YouTube",    url: "https://youtube.com/",                     icon: "video" },
-        { name: "Claude",     url: "https://claude.ai/new",                    icon: "sparkles" },
-        { name: "DeepSeek",   url: "https://chat.deepseek.com/",               icon: "sparkles" },
-        { name: "ChatGPT",    url: "https://chatgpt.com/?temporary-chat=true", icon: "sparkles" },
-        { name: "Perplexity", url: "https://www.perplexity.ai/",               icon: "globe" },
-        { name: "X",          url: "https://x.com/",                           icon: "globe" },
-        { name: "Reddit",     url: "https://reddit.com/",                      icon: "globe" },
-        { name: "Keep",       url: "https://keep.google.com/",                 icon: "clipboard" },
-        { name: "Gmail",      url: "https://mail.google.com/",                 icon: "inbox" }
+        { name: "Gemini",     url: "https://gemini.google.com/app",            icon: Icons.sparkle },
+        { name: "YouTube",    url: "https://youtube.com/",                     icon: Icons.youtube },
+        { name: "Claude",     url: "https://claude.ai/new",                    icon: Icons.sparkle },
+        { name: "DeepSeek",   url: "https://chat.deepseek.com/",               icon: Icons.brain },
+        { name: "ChatGPT",    url: "https://chatgpt.com/?temporary-chat=true", icon: Icons.openai },
+        { name: "Perplexity", url: "https://www.perplexity.ai/",               icon: Icons.search },
+        { name: "X",          url: "https://x.com/",                           icon: Icons.xLogo },
+        { name: "Reddit",     url: "https://reddit.com/",                      icon: Icons.reddit },
+        { name: "Keep",       url: "https://keep.google.com/",                 icon: Icons.note },
+        { name: "Gmail",      url: "https://mail.google.com/",                 icon: Icons.envelope }
     ]
 
     property string query: ""
@@ -71,7 +71,7 @@ PillSurface {
         anchors.right: parent.right
         s: root.s
         kanji: "網"
-        icon: "globe"
+        icon: Icons.globe
         placeholder: "Search websites"
         counterText: root.results.length + " / " + root.sites.length
         onTextChanged: {
@@ -83,26 +83,27 @@ PillSurface {
         onDismissed: root.requestClose()
     }
 
-    Rectangle {
-        id: divider
-        anchors.top: search.bottom
-        anchors.topMargin: 8 * root.s
-        anchors.left: parent.left
-        anchors.right: parent.right
-        height: 1
-        color: Theme.hair
-    }
-
     ListView {
         id: list
-        anchors.top: divider.bottom
-        anchors.topMargin: 6 * root.s
+        anchors.top: search.bottom
+        anchors.topMargin: 8 * root.s
         anchors.left: parent.left
         anchors.right: parent.right
         height: Math.max(1, root.results.length) * 40 * root.s
         spacing: 2 * root.s
         interactive: false
         model: root.results
+
+        ElasticHighlight {
+            parent: list.contentItem
+            z: -1
+            tx: 0
+            ty: root.selectedIndex * (38 * root.s + list.spacing)
+            tw: list.width
+            th: 38 * root.s
+            radius: 12 * root.s
+            shown: root.results.length > 0
+        }
 
         delegate: Item {
             id: row
@@ -113,15 +114,6 @@ PillSurface {
             width: list.width
             height: 38 * root.s
 
-            Rectangle {
-                anchors.fill: parent
-                radius: 9 * root.s
-                visible: row.selected
-                color: Theme.frameBg
-                border.width: 1
-                border.color: Theme.frameBorder
-            }
-
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
@@ -130,16 +122,14 @@ PillSurface {
                 onClicked: root.activate()
             }
 
-            GlyphIcon {
+            Icon {
                 id: siteIcon
                 anchors.left: parent.left
                 anchors.leftMargin: 14 * root.s
                 anchors.verticalCenter: parent.verticalCenter
-                width: 16 * root.s
-                height: 16 * root.s
-                name: row.modelData.icon
-                color: row.selected ? Theme.accent : Theme.icon
-                stroke: 1.7
+                size: 18 * root.s
+                text: row.modelData.icon
+                color: row.selected ? Theme.onAccent : Theme.icon
             }
 
             Column {
@@ -153,7 +143,7 @@ PillSurface {
                 Text {
                     width: parent.width
                     text: row.modelData.name
-                    color: row.selected ? Theme.text : Theme.textSubtle
+                    color: row.selected ? Theme.onAccent : Theme.textSubtle
                     font.family: Theme.font
                     font.pixelSize: 13 * root.s
                     font.weight: row.selected ? Font.DemiBold : Font.Normal
@@ -161,7 +151,7 @@ PillSurface {
                 Text {
                     width: parent.width
                     text: row.modelData.url
-                    color: Theme.textFaint
+                    color: row.selected ? Qt.alpha(Theme.onAccent, 0.65) : Theme.textFaint
                     font.family: Theme.font
                     font.pixelSize: 10 * root.s
                     elide: Text.ElideRight

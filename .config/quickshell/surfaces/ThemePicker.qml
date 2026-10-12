@@ -91,7 +91,7 @@ PillSurface {
         anchors.right: parent.right
         s: root.s
         kanji: "彩"
-        icon: "palette"
+        icon: Icons.palette
         placeholder: "Search themes"
         counterText: root.results.length + " / " + Themes.count
         onTextChanged: {
@@ -124,13 +124,11 @@ PillSurface {
                 show: randomArea.containsMouse
             }
 
-            GlyphIcon {
+            Icon {
                 anchors.centerIn: parent
-                width: 12 * root.s
-                height: 12 * root.s
-                name: "sparkles"
+                size: 14 * root.s
+                text: Icons.shuffle
                 color: randomBtn.tone
-                Behavior on color { ColorAnimation { duration: Motion.fast } }
             }
 
             MouseArea {
@@ -147,11 +145,15 @@ PillSurface {
     Rectangle {
         id: divider
         anchors.top: search.bottom
-        anchors.topMargin: 8 * root.s
+        anchors.topMargin: 4 * root.s
         anchors.left: parent.left
         anchors.right: parent.right
-        height: 1
-        color: Theme.hair
+        anchors.leftMargin: 14 * root.s
+        anchors.rightMargin: 14 * root.s
+        height: 2 * root.s
+        radius: height / 2
+        color: "transparent"
+        clip: true
 
         /** Indeterminate sweep while theme-switcher.sh is running. */
         Rectangle {
@@ -160,6 +162,7 @@ PillSurface {
             anchors.bottom: parent.bottom
             width: parent.width * 0.3
             visible: Themes.applying
+            radius: height / 2
             color: Theme.accent
 
             NumberAnimation on x {
@@ -184,7 +187,7 @@ PillSurface {
     ListView {
         id: list
         anchors.top: divider.bottom
-        anchors.topMargin: 6 * root.s
+        anchors.topMargin: 2 * root.s
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -193,11 +196,24 @@ PillSurface {
         boundsBehavior: Flickable.StopAtBounds
         model: root.results.length
 
+        readonly property real rowH: 30 * root.s
+
+        ElasticHighlight {
+            parent: list.contentItem
+            z: -1
+            tx: 0
+            ty: root.selectedIndex * (list.rowH + list.spacing)
+            tw: list.width
+            th: list.rowH
+            radius: 10 * root.s
+            shown: root.results.length > 0
+        }
+
         delegate: Item {
             id: row
             required property int index
             width: list.width
-            height: 28 * root.s
+            height: list.rowH
 
             readonly property var entry: root.results[index]
             readonly property bool selected: index === root.selectedIndex
@@ -214,15 +230,6 @@ PillSurface {
                         root.selectedIndex = row.index;
                     }
                 }
-            }
-
-            Rectangle {
-                anchors.fill: parent
-                radius: 9 * root.s
-                visible: row.selected || rowHover.hovered
-                color: row.selected ? Theme.frameBg : Qt.alpha(Theme.text, 0.03)
-                border.width: row.selected ? 1 : 0
-                border.color: Theme.frameBorder
             }
 
             MouseArea {
@@ -276,7 +283,7 @@ PillSurface {
                     anchors.right: tail.left
                     anchors.rightMargin: 8 * root.s
                     text: row.entry ? row.entry.name : ""
-                    color: row.selected || row.isCurrent ? Theme.text : Theme.textSubtle
+                    color: row.selected ? Theme.onAccent : (row.isCurrent ? Theme.text : Theme.textSubtle)
                     font.family: Theme.font
                     font.pixelSize: 11.5 * root.s
                     font.weight: row.selected ? Font.DemiBold : Font.Medium
@@ -292,13 +299,12 @@ PillSurface {
                     width: 12 * root.s
                     height: 12 * root.s
 
-                    GlyphIcon {
+                    Icon {
                         anchors.centerIn: parent
-                        width: 12 * root.s
-                        height: 12 * root.s
+                        size: 13 * root.s
                         visible: row.isCurrent
-                        name: "check"
-                        color: Theme.accent
+                        text: Icons.check
+                        color: row.selected ? Theme.onAccent : Theme.accent
                     }
 
                     Text {
@@ -306,7 +312,7 @@ PillSurface {
                         visible: !row.isCurrent
                         opacity: row.selected && !rowHover.hovered ? 1 : 0
                         text: "↵"
-                        color: Theme.accent
+                        color: Theme.onAccent
                         font.family: Theme.font
                         font.pixelSize: 12 * root.s
                         Behavior on opacity { NumberAnimation { duration: Motion.fast } }

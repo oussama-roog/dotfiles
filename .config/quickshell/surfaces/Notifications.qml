@@ -20,7 +20,6 @@ PillSurface {
     mRight: 16
     mBottom: 13
 
-    readonly property real desiredW: 330 * s
 
     implicitHeight: mainCol.implicitHeight
 
@@ -193,16 +192,14 @@ PillSurface {
                     Behavior on opacity { NumberAnimation { duration: Motion.fast } }
                 }
 
-                GlyphIcon {
+                Icon {
                     id: nrowX
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 11 * root.s
-                    height: 11 * root.s
+                    size: 12 * root.s
                     opacity: nrowHover.hovered ? 1 : 0
-                    name: "close"
+                    text: Icons.close
                     color: nrowXArea.containsMouse ? Theme.text : Theme.textDim
-                    stroke: 1.9
                     Behavior on opacity { NumberAnimation { duration: Motion.fast } }
 
                     MouseArea {
@@ -261,8 +258,12 @@ PillSurface {
                     }
                 }
 
+                /** The notification dot docks its bell here (see shell.qml). */
+                readonly property real bellSlot: 24 * root.s
+
                 Row {
                     anchors.right: parent.right
+                    anchors.rightMargin: parent.bellSlot + 6 * root.s
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 6 * root.s
                     visible: Notifs.unread > 0
@@ -474,29 +475,25 @@ PillSurface {
                                         textFormat: Text.PlainText
                                     }
 
-                                    GlyphIcon {
+                                    Icon {
                                         id: headChev
                                         anchors.right: parent.right
                                         anchors.rightMargin: 8 * root.s
                                         anchors.verticalCenter: parent.verticalCenter
-                                        width: 11 * root.s
-                                        height: 11 * root.s
-                                        name: group.expanded ? "chevron-down" : "chevron-right"
+                                        size: 12 * root.s
+                                        text: group.expanded ? Icons.caretDown : Icons.caretRight
                                         color: Theme.textFaint
-                                        stroke: 2
                                     }
 
-                                    GlyphIcon {
+                                    Icon {
                                         id: headX
                                         anchors.right: headChev.left
                                         anchors.rightMargin: 7 * root.s
                                         anchors.verticalCenter: parent.verticalCenter
-                                        width: 11 * root.s
-                                        height: 11 * root.s
+                                        size: 12 * root.s
                                         opacity: headHover.hovered ? 1 : 0
-                                        name: "close"
+                                        text: Icons.close
                                         color: headXArea.containsMouse ? Theme.text : Theme.textDim
-                                        stroke: 1.9
                                         Behavior on opacity { NumberAnimation { duration: Motion.fast } }
 
                                         MouseArea {

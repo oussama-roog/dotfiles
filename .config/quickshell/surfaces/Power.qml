@@ -7,283 +7,186 @@ import "../services"
 import "../widgets"
 
 /**
- * Power surface: a row of hand-drawn session glyphs split by a hairline into a
- * safe group (lock, logout, sleep; fire on tap) and a destructive group
- * (restart, shutdown; press-and-hold). Holding a destructive tile ramps a
- * bottom-up heat fill, releasing early drains it, so a stray click can never
- * reboot the machine. Only the hovered, focused or held action shows its label.
+ * Power surface, after Ambxst's power menu: a row of icon buttons with an
+ * accent highlight that slides elastically to the selected one. A hairline
+ * splits the safe group (lock, sleep; fire on tap) from the destructive group
+ * (logout, restart, shutdown; press-and-hold). Holding a destructive button
+ * ramps a bottom-up heat fill, releasing early drains it, so a stray click can
+ * never reboot the machine. The label below names the selected action.
  *
- * Arrow keys move a keyboard focus across the tiles; the focused tile lights
- * exactly like a hovered one. Enter fires a safe tile at
- * once; on a destructive tile a held Enter drives the same heat fill as a
- * pointer hold (release before it completes drains), so the keyboard path can
- * never reboot on a single keystroke either.
+ * Up/Down (or Ctrl+K/Ctrl+J) or hover move the selection along the row. Enter fires a safe button at once;
+ * on a destructive button a held Enter drives the same heat fill as a pointer
+ * hold, so the keyboard can never reboot on a single keystroke either.
  */
 PillSurface {
     id: root
 
-    mTop: 15
-    mLeft: 17
-    mRight: 17
-    mBottom: 14
+    mTop: 16
+    mLeft: 16
+    mRight: 16
+    mBottom: 12
 
-    property string hovered: ""
-    property int focusIndex: -1
+    property int focusIndex: 0
     property bool keyHeld: false
 
-    property int holdingIndex: -1
-
     readonly property var actions: [
-        { key: "lock",     glyph: "lock",     label: "Lock",     confirm: false, argv: ["loginctl", "lock-session"] },
-        { key: "logout",   glyph: "logout",   label: "Logout",   confirm: true,  argv: ["niri", "msg", "action", "quit", "--skip-confirmation"] },
-        { key: "suspend",  glyph: "suspend",  label: "Sleep",    confirm: false, argv: ["systemctl", "suspend"] },
-        { key: "reboot",   glyph: "reboot",   label: "Restart",  confirm: true,  argv: ["systemctl", "reboot"] },
-        { key: "shutdown", glyph: "shutdown", label: "Shutdown", confirm: true,  argv: ["systemctl", "poweroff"] }
+        { label: "Lock",     icon: Icons.lock,     confirm: false, argv: ["loginctl", "lock-session"] },
+        { label: "Sleep",    icon: Icons.suspend,  confirm: false, argv: ["systemctl", "suspend"] },
+        { label: "Logout",   icon: Icons.logout,   confirm: true,  argv: ["niri", "msg", "action", "quit", "--skip-confirmation"] },
+        { label: "Restart",  icon: Icons.reboot,   confirm: true,  argv: ["systemctl", "reboot"] },
+        { label: "Shutdown", icon: Icons.shutdown, confirm: true,  argv: ["systemctl", "poweroff"] }
     ]
 
-    readonly property int splitAfter: 2
+    /** The hairline sits before this index. */
+    readonly property int splitAt: 2
+    readonly property real btn: 48 * s
+    readonly property real gap: 8 * s
+    readonly property real splitW: 1 + gap
+
+    function btnX(i) {
+        return i * (btn + gap) + (i >= splitAt ? splitW : 0);
+    }
 
     function run(a) {
         Quickshell.execDetached(a.argv);
         root.requestClose();
     }
 
-    /**
-     * Slide keyboard focus across the tiles; `dir` is +1 (right) or -1 (left).
-     * Releases any held heat so focus never drags a half-filled tile with it.
-     */
+    /** Releases any held heat so the selection never drags a half-filled button. */
     function move(dir) {
         keyHeld = false;
-        if (focusIndex < 0)
-            focusIndex = dir > 0 ? 0 : actions.length - 1;
-        else
-            focusIndex = Math.max(0, Math.min(actions.length - 1, focusIndex + dir));
-    }
-
-    /**
-     * Enter pressed on the focused tile. A safe tile fires at once; a destructive
-     * tile latches keyHeld so its delegate ramps the heat fill, mirroring a
-     * pointer hold. Returns true when a tile consumed the key.
-     */
-    function pressFocused() {
-        if (focusIndex < 0 || focusIndex >= actions.length)
-            return false;
-        if (actions[focusIndex].confirm) {
-            keyHeld = true;
-            return true;
-        }
-        run(actions[focusIndex]);
-        return true;
-    }
-
-    /**
-     * Enter released: drop the destructive hold so an early release drains the
-     * heat instead of confirming.
-     */
-    function releaseFocused() {
-        keyHeld = false;
+        focusIndex = Math.max(0, Math.min(actions.length - 1, focusIndex + dir));
     }
 
     onOpenChanged: {
         if (open) {
+            focusIndex = 0;
             Qt.callLater(root.forceActiveFocus);
-            return;
         }
-        hovered = "";
-        focusIndex = -1;
         keyHeld = false;
-        holdingIndex = -1;
     }
 
     function isConfirmKey(e) {
         return e.key === Qt.Key_Return || e.key === Qt.Key_Enter || e.key === Qt.Key_Space;
     }
 
-    Keys.onLeftPressed: move(-1)
-    Keys.onRightPressed: move(1)
+    Keys.onUpPressed: move(-1)
+    Keys.onDownPressed: move(1)
     Keys.onPressed: (e) => {
-        if (isConfirmKey(e)) {
-            if (!e.isAutoRepeat)
-                pressFocused();
+        if (e.modifiers & Qt.ControlModifier && (e.key === Qt.Key_J || e.key === Qt.Key_K)) {
+            move(e.key === Qt.Key_J ? 1 : -1);
             e.accepted = true;
+            return;
         }
+        if (!isConfirmKey(e))
+            return;
+        e.accepted = true;
+        if (e.isAutoRepeat)
+            return;
+        if (actions[focusIndex].confirm)
+            keyHeld = true;
+        else
+            run(actions[focusIndex]);
     }
     Keys.onReleased: (e) => {
         if (isConfirmKey(e) && !e.isAutoRepeat) {
-            releaseFocused();
+            keyHeld = false;
             e.accepted = true;
         }
     }
 
-    Text {
-        id: header
-        anchors.top: parent.top
-        anchors.left: parent.left
-        height: 22 * root.s
-        verticalAlignment: Text.AlignVCenter
-        text: "POWER"
-        color: Theme.textSubtle
-        font.family: Theme.font
-        font.pixelSize: 10 * root.s
-        font.weight: Font.DemiBold
-        font.letterSpacing: 1.6 * root.s
-    }
-
-    Row {
-        id: tiles
+    Item {
+        id: row
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: header.bottom
-        anchors.topMargin: 14 * root.s
-        spacing: 12 * root.s
+        anchors.top: parent.top
+        width: root.btnX(root.actions.length - 1) + root.btn
+        height: root.btn
+
+        ElasticHighlight {
+            tx: root.btnX(root.focusIndex)
+            ty: 0
+            tw: root.btn
+            th: root.btn
+            radius: 16 * root.s
+        }
+
+        Rectangle {
+            x: root.btnX(root.splitAt) - root.splitW + (root.gap - 1) / 2
+            anchors.verticalCenter: parent.verticalCenter
+            width: 1
+            height: 24 * root.s
+            color: Theme.hair
+        }
 
         Repeater {
             model: root.actions
 
-            delegate: Row {
-                id: cell
+            delegate: Item {
+                id: button
                 required property int index
                 required property var modelData
-                spacing: 12 * root.s
 
-                Rectangle {
-                    anchors.verticalCenter: parent.verticalCenter
-                    visible: cell.index === root.splitAfter
-                    width: 1
-                    height: 26 * root.s
-                    color: Theme.hair
-                }
+                readonly property bool selected: root.focusIndex === index
+                readonly property bool keyDriving: selected && root.keyHeld && modelData.confirm
 
-                Item {
-                    id: tile
-                    width: 50 * root.s
-                    height: 50 * root.s
+                x: root.btnX(index)
+                width: root.btn
+                height: root.btn
 
-                    readonly property real hold: heat.hold
-                    readonly property bool kbFocus: root.focusIndex === cell.index
-                    readonly property bool isHover: root.hovered === cell.modelData.key || tile.kbFocus
-                    readonly property bool holding: heat.holding
-                    readonly property bool lit: isHover || tile.holding
-                    readonly property color accent: cell.modelData.confirm ? Theme.accent : Theme.text
+                onKeyDrivingChanged: keyDriving ? heat.press() : heat.release()
 
-                    onKbFocusChanged: {
-                        if (!tile.kbFocus)
-                            return;
-                        root.hovered = cell.modelData.key;
-                    }
-
-                    /**
-                     * A held Enter on the focused destructive tile drives the same
-                     * heat fill as a pointer hold; dropping the key drains it.
-                     */
-                    readonly property bool keyDriving: tile.kbFocus && root.keyHeld && cell.modelData.confirm
-                    onKeyDrivingChanged: {
-                        if (tile.keyDriving)
-                            heat.press();
-                        else
-                            heat.release();
-                    }
-
-                    onHoldChanged: {
-                        if (cell.modelData.confirm && tile.hold > 0.001)
-                            root.holdingIndex = cell.index;
-                        else if (root.holdingIndex === cell.index)
-                            root.holdingIndex = -1;
-                    }
+                /** Heat fill, clipped to the highlight's corners. */
+                ClippingRectangle {
+                    anchors.fill: parent
+                    radius: 16 * root.s
+                    color: "transparent"
+                    visible: heat.holding
 
                     Rectangle {
-                        anchors.fill: parent
-                        radius: Motion.rTile * root.s
-                        color: tile.isHover ? Theme.frameBg : "transparent"
-                        border.width: 1
-                        border.color: tile.isHover ? Theme.frameBorder : Theme.border
-                        Behavior on color { ColorAnimation { duration: Motion.fast } }
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+                        height: parent.height * heat.hold
+                        color: Qt.alpha(Theme.onAccent, 0.25)
                     }
+                }
 
-                    /**
-                     * Heat fill lives in a ClippingRectangle that carries the
-                     * tile's corner radius. A plain Rectangle with its own radius
-                     * gets it clamped to height/2 while the fill is still flat,
-                     * so corners poked outside the tile outline on the first beat
-                     * of every hold.
-                     */
-                    ClippingRectangle {
-                        anchors.fill: parent
-                        anchors.margins: 1
-                        radius: (Motion.rTile - 1) * root.s
-                        color: "transparent"
+                Icon {
+                    anchors.centerIn: parent
+                    size: 20 * root.s
+                    text: button.modelData.icon
+                    color: button.selected ? Theme.onAccent : Theme.icon
+                }
 
-                        Rectangle {
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.bottom: parent.bottom
-                            height: tile.height * tile.hold
-                            visible: tile.holding
-                            gradient: Gradient {
-                                GradientStop { position: 0.0; color: Qt.alpha(Theme.accentDark, 0.7) }
-                                GradientStop { position: 1.0; color: Qt.alpha(Theme.accent, 0.15) }
-                            }
-                        }
-                    }
+                HeatHold {
+                    id: heat
+                    onConfirmed: root.run(button.modelData)
+                }
 
-                    GlyphIcon {
-                        anchors.centerIn: parent
-                        width: 22 * root.s
-                        height: 22 * root.s
-                        name: cell.modelData.glyph
-                        color: tile.holding ? Theme.accent : (tile.lit ? tile.accent : Theme.icon)
-                        stroke: 1.9
-                    }
-
-                    HeatHold {
-                        id: heat
-                        onConfirmed: root.run(cell.modelData)
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onEntered: {
-                            root.hovered = cell.modelData.key;
-                        }
-                        onExited: {
-                            if (root.hovered === cell.modelData.key)
-                                root.hovered = "";
-                            if (cell.modelData.confirm)
-                                heat.cancel();
-                        }
-                        onPressed: if (cell.modelData.confirm) heat.press()
-                        onReleased: if (cell.modelData.confirm) heat.release()
-                        onClicked: {
-                            if (!cell.modelData.confirm)
-                                root.run(cell.modelData);
-                        }
-                    }
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onEntered: root.focusIndex = button.index
+                    onExited: if (button.modelData.confirm) heat.cancel()
+                    onPressed: if (button.modelData.confirm) heat.press()
+                    onReleased: if (button.modelData.confirm) heat.release()
+                    onClicked: if (!button.modelData.confirm) root.run(button.modelData)
                 }
             }
         }
     }
 
     Text {
-        id: label
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: tiles.bottom
+        anchors.top: row.bottom
         anchors.topMargin: 12 * root.s
-        readonly property string focusKey: root.holdingIndex >= 0
-            ? root.actions[root.holdingIndex].key : root.hovered
-        readonly property var act: {
-            for (var i = 0; i < root.actions.length; i++)
-                if (root.actions[i].key === label.focusKey)
-                    return root.actions[i];
-            return null;
-        }
-        text: act ? (act.confirm ? act.label + " — hold" : act.label) : ""
-        color: act && act.confirm ? Theme.accent : Theme.textSubtle
+        readonly property var act: root.actions[root.focusIndex]
+        text: act.confirm ? act.label + " — hold" : act.label
+        color: act.confirm ? Theme.accent : Theme.textSubtle
         font.family: Theme.font
         font.pixelSize: 11 * root.s
         font.weight: Font.Medium
         font.letterSpacing: 0.4 * root.s
-        opacity: text.length > 0 ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: Motion.fast } }
     }
 }

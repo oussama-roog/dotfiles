@@ -2,7 +2,12 @@
 
 A single morphing "pill" at the top of the screen. At rest it shows workspace
 dots, CPU / RAM and the clock; it grows in place into a surface when you open
-one, and briefly into an OSD or a notification toast when something happens.
+one, and briefly into an OSD when something happens. Beside it floats a
+notification dot: a bell that stretches to the right into a one-line pill when
+a notification arrives; click the bell for the list.
+
+It hangs from the top edge as a notch (Ambxst style). Motion, icons, the
+search field and the sliding selection highlight are borrowed from Ambxst.
 
 ## Layout
 
@@ -10,7 +15,8 @@ one, and briefly into an OSD or a notification toast when something happens.
 shell.qml           entry point: windows per monitor, IPC, open/close
 Pill.qml            the pill: rest bar, morph animation, hosts everything below
 Osd.qml             volume / brightness / battery / now-playing flash
-Toast.qml           notification popup
+NotifPill.qml       notification dot beside the notch, stretches into the toast
+Toast.qml           one-line notification shown in NotifPill
 Workspaces.qml      workspace dots in the rest bar
 
 surfaces/           what opens inside the pill (one file each)
@@ -24,7 +30,9 @@ surfaces/           what opens inside the pill (one file each)
   Notifications.qml   notification inbox
 
 widgets/            small reusable pieces
-  GlyphIcon.qml       built-in vector icons
+  Icon.qml            Phosphor icon glyph
+  NotchBody.qml       notch background (shape, ears, gradient, sheen, shadow)
+  ElasticHighlight.qml sliding accent selection background
   SearchField.qml     search row used by the list surfaces
   HeatHold.qml        press-and-hold to confirm
   Tooltip.qml         hover hint
@@ -33,6 +41,7 @@ widgets/            small reusable pieces
 services/           singletons holding state and talking to the system
   Theme.qml           colours (from colors.json) and fonts
   Motion.qml          animation timings
+  Icons.qml           Phosphor icon codepoints
   Flags.qml           settings (from flags.json)
   Notifs.qml          notification server + history
   Cliphist.qml        clipboard history + image thumbnails
@@ -61,10 +70,12 @@ All go through `qs ipc call pill <surface>` (`hide` closes the open one).
 | `Mod+P`       | `power`         |
 | `Mod+N`       | `notifications` |
 
-Inside a surface: type to search, `Up`/`Down` (or `Left`/`Right` in the
-wallpaper strip and power row) to move, `Enter` to pick, `Esc` or a click
-outside to close. Destructive actions (restart, shutdown, deleting a
+Inside a surface: type to search, `Up`/`Down` or `Ctrl+K`/`Ctrl+J` to move
+(also in the wallpaper strip and power row, where down moves right), `Enter` to pick, `Esc` or a click
+outside to close. Destructive actions (logout, restart, shutdown, deleting a
 wallpaper, wiping the clipboard) need a press-and-hold.
+
+Icons use the Phosphor-Bold font, installed by `modules/home/phosphor-icons.nix`.
 
 ## Theming
 

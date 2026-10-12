@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import "../services"
 
 /**
@@ -6,6 +7,8 @@ import "../services"
  * `name`; the surface is open while `host.surface === name`, fills the pill
  * inset by its own `mTop`/`mLeft`/`mRight`/`mBottom` margins, and fades in as
  * the pill finishes morphing to its size. `requestClose()` closes the pill.
+ * Like Ambxst's notch views it also scales up with a slight overshoot and
+ * sharpens from a blur as it opens.
  */
 Item {
     id: surface
@@ -31,7 +34,12 @@ Item {
      * inside the open surface (e.g. the inbox growing) must not dim it again.
      */
     property bool settled: false
-    onOpenChanged: if (!open) settled = false
+    onOpenChanged: {
+        if (open)
+            unblur.restart();
+        else
+            settled = false;
+    }
     onMorphClosenessChanged: if (open && morphCloseness > 0.92) settled = true
 
     anchors.fill: parent
@@ -46,5 +54,31 @@ Item {
 
     Behavior on opacity {
         NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard }
+    }
+
+    scale: open ? 1 : 0.86
+    Behavior on scale {
+        NumberAnimation {
+            duration: Motion.morph
+            easing.type: surface.open ? Motion.easeOpen : Motion.easeClose
+            easing.overshoot: Motion.overshoot
+        }
+    }
+
+    property real blur: 0
+    NumberAnimation {
+        id: unblur
+        target: surface
+        property: "blur"
+        from: 1
+        to: 0
+        duration: Motion.morph
+        easing.type: Easing.OutQuart
+    }
+    layer.enabled: blur > 0.01
+    layer.effect: MultiEffect {
+        blurEnabled: true
+        blurMax: 32
+        blur: surface.blur
     }
 }

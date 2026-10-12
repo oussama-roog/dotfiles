@@ -16,6 +16,7 @@
   home.packages = with pkgs; [
     nerd-fonts.jetbrains-mono
     icomoon-feather
+    (pkgs.callPackage ./phosphor-icons.nix { })
   ];
 
   # Media player control daemon

@@ -3,17 +3,19 @@ import QtQuick.Controls
 import "../services"
 
 /**
- * Search row shared by the list surfaces: icon (or kanji when Flags.showGlyphs),
- * text field, a counter, and an optional slot on the right for a button.
- * Up/Down emit `moved`, Enter `accepted`, Escape `dismissed`; every other key
- * goes through `keyPressed` first so a surface can claim shortcuts.
+ * Search row shared by the list surfaces, styled after Ambxst's search input:
+ * a filled rounded field with an accent icon (or kanji when Flags.showGlyphs),
+ * the text, a counter, and an optional slot on the right for a button.
+ * Up/Down (or Ctrl+K/Ctrl+J, vim style) emit `moved`, Enter `accepted`,
+ * Escape `dismissed`; every other key goes through `keyPressed` first so a
+ * surface can claim shortcuts.
  */
 Item {
     id: root
 
     property real s: 1
     property string kanji: ""
-    property string icon: "search"
+    property string icon: Icons.search
     property string placeholder: ""
     property string counterText: ""
 
@@ -26,51 +28,75 @@ Item {
     signal dismissed()
     signal keyPressed(var event)
 
-    height: 30 * s
+    height: 40 * s
 
-    Text {
-        id: glyph
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.left: parent.left
-        visible: Flags.showGlyphs
-        width: Flags.showGlyphs ? implicitWidth : 0
-        text: root.kanji
-        color: Theme.textDim
-        font.family: Theme.fontJp
-        font.weight: Font.Medium
-        font.pixelSize: 16 * root.s
+    Rectangle {
+        anchors.fill: parent
+        radius: 14 * root.s
+        color: Theme.frameBg
+        border.width: 1
+        border.color: field.activeFocus ? Qt.alpha(Theme.accent, 0.35) : Theme.frameBorder
+        Behavior on border.color { ColorAnimation { duration: Motion.standard } }
     }
 
-    GlyphIcon {
-        anchors.verticalCenter: parent.verticalCenter
+    Item {
+        id: lead
         anchors.left: parent.left
-        visible: !Flags.showGlyphs
-        width: !Flags.showGlyphs ? 14 * root.s : 0
-        name: root.icon
-        color: Theme.textDim
-        stroke: 1.8
+        anchors.leftMargin: 12 * root.s
+        anchors.verticalCenter: parent.verticalCenter
+        width: 18 * root.s
+        height: 18 * root.s
+
+        Text {
+            anchors.centerIn: parent
+            visible: Flags.showGlyphs
+            text: root.kanji
+            color: Theme.accent
+            font.family: Theme.fontJp
+            font.weight: Font.Medium
+            font.pixelSize: 16 * root.s
+        }
+
+        Icon {
+            anchors.centerIn: parent
+            visible: !Flags.showGlyphs
+            size: 18 * root.s
+            text: root.icon
+            color: Theme.accent
+        }
     }
 
     TextField {
         id: field
         anchors.verticalCenter: parent.verticalCenter
-        anchors.left: Flags.showGlyphs ? glyph.right : parent.left
-        anchors.leftMargin: Flags.showGlyphs ? 10 * root.s : (22 * root.s)
+        anchors.left: lead.right
+        anchors.leftMargin: 10 * root.s
         anchors.right: counter.left
         anchors.rightMargin: 10 * root.s
         background: null
         padding: 0
         color: Theme.text
         font.family: Theme.font
-        font.pixelSize: 15 * root.s
+        font.pixelSize: 14 * root.s
         placeholderText: root.placeholder
         placeholderTextColor: Theme.textFaint
         selectByMouse: true
         selectionColor: Theme.accentDark
-        cursorDelegate: Item {}
+        selectedTextColor: Theme.onAccent
+        cursorDelegate: Rectangle {
+            width: 2 * root.s
+            radius: 1
+            color: Theme.accent
+            visible: field.cursorVisible
+        }
         Keys.onUpPressed: root.moved(-1)
         Keys.onDownPressed: root.moved(1)
         Keys.onPressed: (e) => {
+            if (e.modifiers & Qt.ControlModifier && (e.key === Qt.Key_J || e.key === Qt.Key_K)) {
+                root.moved(e.key === Qt.Key_J ? 1 : -1);
+                e.accepted = true;
+                return;
+            }
             root.keyPressed(e);
             if (e.accepted)
                 return;
@@ -82,17 +108,6 @@ Item {
                 e.accepted = true;
             }
         }
-    }
-
-    Rectangle {
-        anchors.left: field.left
-        anchors.right: field.right
-        anchors.top: field.bottom
-        anchors.topMargin: 2 * root.s
-        height: 1
-        color: Theme.textFaint
-        opacity: field.activeFocus ? 0.7 : 0
-        Behavior on opacity { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard } }
     }
 
     Text {
@@ -111,6 +126,7 @@ Item {
         id: rightSlot
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: parent.right
+        anchors.rightMargin: 14 * root.s
         width: childrenRect.width
         height: parent.height
     }

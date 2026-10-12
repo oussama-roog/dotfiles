@@ -1,10 +1,10 @@
 {
-  "clockSeconds": false,
-  "dnd": false,
-  "pillOpacity": 1,
-  "reduceMotion": false,
-  "showGlyphs": false,
-  "time12h": false,
-  "uiFont": "",
-  "uiScale": 1
+    "clockSeconds": false,
+    "dnd": false,
+    "pillOpacity": 1,
+    "reduceMotion": false,
+    "showGlyphs": false,
+    "time12h": false,
+    "uiFont": "",
+    "uiScale": 1
 }

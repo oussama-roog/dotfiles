@@ -10,8 +10,8 @@ import "../widgets"
  * Wallpaper surface: a filmstrip over the wallpaper directory, rendered as one
  * of the pill's surfaces. Thumbs come from the Walls singleton snapshot, newest
  * first. The focused thumb is large and fully lit; neighbours shrink, dim and
- * desaturate as they slide under it, so the strip reads as depth. Arrow keys
- * and wheel move focus, clicking a neighbour glides to it, Enter or a tap on
+ * desaturate as they slide under it, so the strip reads as depth. Up/Down
+ * (or Ctrl+K/Ctrl+J) and wheel move focus, clicking a neighbour glides to it, Enter or a tap on
  * the focused thumb applies it with awww (strip stays open so you can
  * keep trying picks). Hold the focused thumb for the heat duration to trash the
  * file; progress sweeps along the thumb's lower edge and drains on early release.
@@ -54,11 +54,16 @@ PillSurface {
 
     clip: true
 
-    readonly property var slotW:      [196, 126, 104, 88, 74]
-    readonly property var slotH:      [110, 71, 59, 50, 42]
-    readonly property var slotCX:     [0, 143, 244, 326, 393]
-    readonly property var slotBright: [1, 0.56, 0.42, 0.30, 0.22]
-    readonly property var slotSat:    [1, 0.65, 0.55, 0.45, 0.40]
+    /** Per-slot geometry (16:9) by distance from focus; neighbours tuck under. */
+    readonly property var slotW:      [320, 214, 172, 140, 116]
+    readonly property var slotH:      [180, 120, 97, 79, 65]
+    readonly property var slotCX:     [0, 228, 352, 446, 520]
+    readonly property var slotBright: [1, 0.6, 0.45, 0.32, 0.22]
+    readonly property var slotSat:    [1, 0.7, 0.55, 0.45, 0.40]
+
+    /** The strip sits near the top; the hint goes in the band below it. */
+    readonly property real stripTop: 12 * s
+    readonly property real stripH: slotH[0] * s
 
     function slotLerp(arr, ao) {
         if (ao >= 4)
@@ -70,7 +75,7 @@ PillSurface {
 
     function offsetX(off) {
         var ao = Math.abs(off);
-        var cx = ao <= 4 ? slotLerp(slotCX, ao) : slotCX[4] + (ao - 4) * 60;
+        var cx = ao <= 4 ? slotLerp(slotCX, ao) : slotCX[4] + (ao - 4) * 80;
         return (off < 0 ? -cx : cx) * s;
     }
 
@@ -113,9 +118,14 @@ PillSurface {
         hintDwell.restart();
     }
 
-    Keys.onLeftPressed: move(-1)
-    Keys.onRightPressed: move(1)
+    Keys.onUpPressed: move(-1)
+    Keys.onDownPressed: move(1)
     Keys.onPressed: (e) => {
+        if (e.modifiers & Qt.ControlModifier && (e.key === Qt.Key_J || e.key === Qt.Key_K)) {
+            move(e.key === Qt.Key_J ? 1 : -1);
+            e.accepted = true;
+            return;
+        }
         if (e.key === Qt.Key_Return || e.key === Qt.Key_Enter || e.key === Qt.Key_Space) {
             if (!e.isAutoRepeat)
                 activate();
@@ -150,7 +160,7 @@ PillSurface {
             readonly property bool focused: index === root.focusIndex
             readonly property real bright: root.slotLerp(root.slotBright, ao)
             readonly property real sat: root.slotLerp(root.slotSat, ao)
-            readonly property real corner: (8 + 2 * Math.max(0, 1 - ao)) * root.s
+            readonly property real corner: (10 + 4 * Math.max(0, 1 - ao)) * root.s
 
             readonly property real hold: trashHeat.hold
             readonly property bool committing: trashHeat.hold >= trashHeat.tapThreshold
@@ -162,7 +172,7 @@ PillSurface {
              * the pill's clip.
              */
             readonly property real edgeFade: {
-                var soft = 70 * root.s;
+                var soft = 60 * root.s;
                 var gap = Math.min(x, root.width - (x + width));
                 return Math.max(0, Math.min(1, gap / soft));
             }
@@ -170,7 +180,7 @@ PillSurface {
             width: root.slotLerp(root.slotW, ao) * root.s
             height: root.slotLerp(root.slotH, ao) * root.s
             x: root.width / 2 + root.offsetX(off) - width / 2
-            y: (root.height - height) / 2
+            y: root.stripTop + (root.stripH - height) / 2
             z: 10 - ao
             visible: ao <= 5
             opacity: edgeFade * (ao <= 4 ? 1 : Math.max(0, 5 - ao))
@@ -283,8 +293,7 @@ PillSurface {
 
     Text {
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 11 * root.s
+        y: root.stripTop + root.stripH + 9 * root.s
         visible: root.itemCount > 0
         opacity: root.hintShown ? 1 : 0
         text: "tap to set · hold to delete"

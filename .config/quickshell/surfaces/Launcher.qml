@@ -158,16 +158,6 @@ PillSurface {
         onDismissed: root.requestClose()
     }
 
-    Rectangle {
-        id: divider
-        anchors.top: search.bottom
-        anchors.topMargin: 8 * root.s
-        anchors.left: parent.left
-        anchors.right: parent.right
-        height: 1
-        color: Theme.hair
-    }
-
     Text {
         anchors.centerIn: list
         visible: root.results.length === 0
@@ -179,8 +169,8 @@ PillSurface {
 
     ListView {
         id: list
-        anchors.top: divider.bottom
-        anchors.topMargin: 6 * root.s
+        anchors.top: search.bottom
+        anchors.topMargin: 8 * root.s
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -189,11 +179,24 @@ PillSurface {
         boundsBehavior: Flickable.StopAtBounds
         model: root.results.length
 
+        readonly property real rowH: 38 * root.s
+
+        ElasticHighlight {
+            parent: list.contentItem
+            z: -1
+            tx: 0
+            ty: root.selectedIndex * (list.rowH + list.spacing)
+            tw: list.width
+            th: list.rowH
+            radius: 12 * root.s
+            shown: root.results.length > 0
+        }
+
         delegate: Item {
             id: appRow
             required property int index
             width: list.width
-            height: 38 * root.s
+            height: list.rowH
 
             readonly property var entry: root.results[index]
             readonly property bool selected: index === root.selectedIndex
@@ -206,15 +209,6 @@ PillSurface {
                 if (entry.categories && entry.categories.length > 0)
                     return root.mapCategory(entry.categories);
                 return "";
-            }
-
-            Rectangle {
-                anchors.fill: parent
-                radius: 9 * root.s
-                visible: appRow.selected || rowArea.containsMouse
-                color: appRow.selected ? Theme.frameBg : Qt.alpha(Theme.text, 0.03)
-                border.width: appRow.selected ? 1 : 0
-                border.color: Theme.frameBorder
             }
 
             MouseArea {
@@ -272,7 +266,7 @@ PillSurface {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.right: parent.right
                     text: retMetrics.text
-                    color: Theme.accent
+                    color: Theme.onAccent
                     font.family: Theme.font
                     font.pixelSize: 12 * root.s
                     visible: appRow.selected
@@ -298,7 +292,7 @@ PillSurface {
                         id: nameText
                         width: parent.width
                         text: appRow.entry ? appRow.entry.name : ""
-                        color: Theme.text
+                        color: appRow.selected ? Theme.onAccent : Theme.text
                         font.family: Theme.font
                         font.pixelSize: 13 * root.s
                         font.weight: appRow.selected ? Font.DemiBold : Font.Normal
@@ -309,7 +303,7 @@ PillSurface {
                         width: parent.width
                         visible: appRow.secondary.length > 0
                         text: appRow.secondary
-                        color: appRow.selected ? Theme.textDim : Theme.textFaint
+                        color: appRow.selected ? Qt.alpha(Theme.onAccent, 0.65) : Theme.textFaint
                         font.family: Theme.font
                         font.pixelSize: 10.5 * root.s
                         elide: Text.ElideRight
