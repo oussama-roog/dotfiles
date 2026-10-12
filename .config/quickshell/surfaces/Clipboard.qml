@@ -1,7 +1,8 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import "Singletons"
+import "../services"
+import "../widgets"
 
 /**
  * Clipboard surface: search field over the cliphist history, drawn as one of
@@ -69,8 +70,8 @@ PillSurface {
         Cliphist.remove(results[index]);
     }
 
-    onActiveChanged: {
-        if (active) {
+    onOpenChanged: {
+        if (open) {
             query = "";
             search.text = "";
             selectedIndex = 0;
@@ -113,7 +114,7 @@ PillSurface {
 
             readonly property real hold: wipeHeat.hold
             readonly property bool holding: wipeHeat.holding
-            readonly property color tone: holding ? Theme.vermLit : (wipeArea.containsMouse ? Theme.cream : Theme.faint)
+            readonly property color tone: holding ? Theme.accent : (wipeArea.containsMouse ? Theme.text : Theme.textFaint)
 
             Tooltip {
                 s: root.s
@@ -177,8 +178,8 @@ PillSurface {
             visible: wipeBtn.holding
             gradient: Gradient {
                 orientation: Gradient.Horizontal
-                GradientStop { position: 0.0; color: Qt.alpha(Theme.vermLit, 0.15) }
-                GradientStop { position: 1.0; color: Theme.vermLit }
+                GradientStop { position: 0.0; color: Qt.alpha(Theme.accent, 0.15) }
+                GradientStop { position: 1.0; color: Theme.accent }
             }
         }
     }
@@ -187,7 +188,7 @@ PillSurface {
         anchors.centerIn: list
         visible: root.results.length === 0
         text: root.query.length ? "No matches" : "History empty"
-        color: Theme.faint
+        color: Theme.textFaint
         font.family: Theme.font
         font.pixelSize: 10.5 * root.s
     }
@@ -230,7 +231,7 @@ PillSurface {
                 anchors.fill: parent
                 radius: 9 * root.s
                 visible: row.selected || rowHover.hovered
-                color: row.selected ? Theme.frameBg : Qt.rgba(0.94, 0.88, 0.84, 0.03)
+                color: row.selected ? Theme.frameBg : Qt.alpha(Theme.text, 0.03)
                 border.width: row.selected ? 1 : 0
                 border.color: Theme.frameBorder
             }
@@ -282,8 +283,8 @@ PillSurface {
                     anchors.rightMargin: 8 * root.s
                     text: row.entry === undefined ? "" : (row.entry.isImage ? row.entry.label : row.entry.preview)
                     color: row.entry !== undefined && row.entry.isImage
-                        ? (row.selected ? Theme.dim : Theme.faint)
-                        : (row.selected ? Theme.cream : Theme.subtle)
+                        ? (row.selected ? Theme.textDim : Theme.textFaint)
+                        : (row.selected ? Theme.text : Theme.textSubtle)
                     font.family: Theme.font
                     font.pixelSize: 11.5 * root.s
                     font.weight: row.selected ? Font.DemiBold : Font.Medium
@@ -299,7 +300,7 @@ PillSurface {
                     anchors.verticalCenter: parent.verticalCenter
                     text: row.entry !== undefined && row.entry.isImage ? row.entry.sizeLabel : ""
                     width: text.length ? implicitWidth : 0
-                    color: Theme.faint
+                    color: Theme.textFaint
                     font.family: Theme.font
                     font.pixelSize: 10.5 * root.s
                     font.features: { "tnum": 1 }
@@ -318,7 +319,7 @@ PillSurface {
                         anchors.verticalCenter: parent.verticalCenter
                         opacity: row.selected && !rowHover.hovered ? 1 : 0
                         text: "↵"
-                        color: Theme.vermLit
+                        color: Theme.accent
                         font.family: Theme.font
                         font.pixelSize: 12 * root.s
                         Behavior on opacity { NumberAnimation { duration: Motion.fast } }
@@ -330,7 +331,7 @@ PillSurface {
                         anchors.verticalCenter: parent.verticalCenter
                         opacity: rowHover.hovered ? 1 : 0
                         text: "✕"
-                        color: dismissArea.containsMouse ? Theme.cream : Theme.dim
+                        color: dismissArea.containsMouse ? Theme.text : Theme.textDim
                         font.pixelSize: 10 * root.s
                         Behavior on opacity { NumberAnimation { duration: Motion.fast } }
 

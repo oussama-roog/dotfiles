@@ -1,7 +1,13 @@
 import QtQuick
 import QtQuick.Controls
-import "Singletons"
+import "../services"
 
+/**
+ * Search row shared by the list surfaces: icon (or kanji when Flags.showGlyphs),
+ * text field, a counter, and an optional slot on the right for a button.
+ * Up/Down emit `moved`, Enter `accepted`, Escape `dismissed`; every other key
+ * goes through `keyPressed` first so a surface can claim shortcuts.
+ */
 Item {
     id: root
 
@@ -11,13 +17,6 @@ Item {
     property string placeholder: ""
     property string counterText: ""
 
-    /**
-     * Map Left/Right to the moved() signal instead of text-cursor motion. For a
-     * horizontal result strip the arrows should page the strip; without this the
-     * field swallows them until the caret sits at a text boundary, so navigation
-     * stalls mid-query.
-     */
-    property bool horizontalNav: false
     readonly property alias input: field
     property alias text: field.text
     default property alias rightContent: rightSlot.data
@@ -36,7 +35,7 @@ Item {
         visible: Flags.showGlyphs
         width: Flags.showGlyphs ? implicitWidth : 0
         text: root.kanji
-        color: Theme.dim
+        color: Theme.textDim
         font.family: Theme.fontJp
         font.weight: Font.Medium
         font.pixelSize: 16 * root.s
@@ -48,7 +47,7 @@ Item {
         visible: !Flags.showGlyphs
         width: !Flags.showGlyphs ? 14 * root.s : 0
         name: root.icon
-        color: Theme.dim
+        color: Theme.textDim
         stroke: 1.8
     }
 
@@ -61,13 +60,13 @@ Item {
         anchors.rightMargin: 10 * root.s
         background: null
         padding: 0
-        color: Theme.cream
+        color: Theme.text
         font.family: Theme.font
         font.pixelSize: 15 * root.s
         placeholderText: root.placeholder
-        placeholderTextColor: Theme.faint
+        placeholderTextColor: Theme.textFaint
         selectByMouse: true
-        selectionColor: Theme.verm
+        selectionColor: Theme.accentDark
         cursorDelegate: Item {}
         Keys.onUpPressed: root.moved(-1)
         Keys.onDownPressed: root.moved(1)
@@ -75,10 +74,7 @@ Item {
             root.keyPressed(e);
             if (e.accepted)
                 return;
-            if (root.horizontalNav && (e.key === Qt.Key_Left || e.key === Qt.Key_Right)) {
-                root.moved(e.key === Qt.Key_Right ? 1 : -1);
-                e.accepted = true;
-            } else if (e.key === Qt.Key_Return || e.key === Qt.Key_Enter) {
+            if (e.key === Qt.Key_Return || e.key === Qt.Key_Enter) {
                 root.accepted();
                 e.accepted = true;
             } else if (e.key === Qt.Key_Escape) {
@@ -94,7 +90,7 @@ Item {
         anchors.top: field.bottom
         anchors.topMargin: 2 * root.s
         height: 1
-        color: Theme.faint
+        color: Theme.textFaint
         opacity: field.activeFocus ? 0.7 : 0
         Behavior on opacity { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard } }
     }
@@ -105,7 +101,7 @@ Item {
         anchors.right: rightSlot.left
         anchors.rightMargin: rightSlot.width > 0 ? 10 * root.s : 0
         text: root.counterText
-        color: Theme.faint
+        color: Theme.textFaint
         font.family: Theme.font
         font.pixelSize: 10.5 * root.s
         font.features: { "tnum": 1 }

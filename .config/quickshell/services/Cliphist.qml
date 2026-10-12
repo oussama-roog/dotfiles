@@ -7,17 +7,16 @@ import Quickshell.Io
  * cliphist bridge: keeps a warm in-memory snapshot of the clipboard history so
  * the clipboard surface opens instantly without shelling out on demand. A
  * wl-paste watcher fires on every clipboard change; after a short debounce the
- * thumbnail script regenerates missing image previews (and prunes stale ones),
+ * missing image previews are decoded to small pngs (stale ones pruned),
  * then `cliphist list` is re-read into `entries`. Thumbnails are written before
  * the list lands so image delegates never bind to a not-yet-existing file. A
  * change arriving while the pipeline runs sets `pending` and replays once the
  * list lands, so no clipboard event is ever silently dropped; the watcher
  * respawns through a cooldown timer if wl-paste dies.
  *
- * Entries are plain objects: { id, preview, isImage, meta, label, sizeLabel,
- * thumb } where meta is cliphist's raw binary descriptor ("245 KiB png
- * 1920x1080"), label/sizeLabel its display split ("png 1920×1080" / "245 KiB")
- * and thumb the absolute path of the cached preview png (empty for text).
+ * Entries are plain objects: { id, preview, isImage, label, sizeLabel, thumb }
+ * where label/sizeLabel split cliphist's binary descriptor ("png 1920×1080" /
+ * "245 KiB") and thumb is the cached preview png (empty for text).
  */
 Singleton {
     id: root
@@ -26,8 +25,7 @@ Singleton {
     readonly property int count: entries.length
     property bool pending: false
 
-    readonly property string thumbDir: (Quickshell.env("XDG_CACHE_HOME") || (Quickshell.env("HOME") + "/.cache")) + "/cliphist-thumbs/"
-    readonly property string thumbScript: Quickshell.env("HOME") + "/.config/hypr/scripts/cliphist-thumbs.sh"
+    readonly property string thumbDir: (Quickshell.env("XDG_CACHE_HOME") || (Quickshell.env("HOME") + "/.cache")) + "/quickshell/cliphist-thumbs/"
 
     function refresh() {
         if (thumbProc.running || listProc.running || delProc.running || delQueue.length) {
@@ -118,7 +116,11 @@ Singleton {
 
     Process {
         id: thumbProc
-        command: ["sh", root.thumbScript]
+        command: ["sh", "-c",
+            "mkdir -p \"$1\"; ids=$(cliphist list | awk -F'\\t' '/^[0-9]+\\t\\[\\[ binary data .*(png|jpg|jpeg|gif|bmp|webp)/ { print $1 }'); "
+            + "for id in $ids; do t=\"$1$id.png\"; [ -f \"$t\" ] || cliphist decode \"$id\" | ffmpeg -loglevel quiet -i - -vf scale=256:-1 -frames:v 1 -y \"$t\"; done; "
+            + "for f in \"$1\"*.png; do [ -e \"$f\" ] || continue; n=${f##*/}; echo \"$ids\" | grep -qx \"${n%.png}\" || rm -f \"$f\"; done",
+            "_", root.thumbDir]
         onExited: listProc.running = true
     }
 

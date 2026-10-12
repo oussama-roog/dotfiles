@@ -3,11 +3,14 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Services.Notifications
-import "Singletons"
+import "../services"
+import "../widgets"
 
 /**
- * 報 INBOX notification center. Opening marks all notifications seen after a
- * short beat so unread embers register first.
+ * Notification inbox: notifications grouped by app (criticals pinned on top),
+ * click a row to open its app, hover to dismiss, CLEAR wipes everything.
+ * Opening marks all notifications seen after a short beat so the unread dots
+ * register first.
  */
 PillSurface {
     id: root
@@ -21,13 +24,8 @@ PillSurface {
 
     implicitHeight: mainCol.implicitHeight
 
-    /** No subviews left; Escape always closes the surface. */
-    function back() {
-        return false;
-    }
-
-    onActiveChanged: {
-        if (active)
+    onOpenChanged: {
+        if (open)
             seenTimer.restart();
         else
             seenTimer.stop();
@@ -56,7 +54,7 @@ PillSurface {
             width: parent.width
             height: parent.height
             radius: width / 2
-            color: Theme.flameGlow
+            color: Theme.accent
             opacity: 0.22
         }
 
@@ -65,14 +63,14 @@ PillSurface {
             width: ember.size
             height: ember.size
             radius: width / 2
-            color: Theme.flameGlow
+            color: Theme.accent
         }
     }
 
     /**
      * Single inbox entry: icon tile or diamond, body text, ×N coalesce badge,
      * age label that cross-fades into a dismiss glyph on hover. Critical
-     * entries gain a vermilion left hairline and cream emphasis.
+     * entries gain an accent left hairline and brighter text.
      */
     component NotifRow: Rectangle {
         id: nrow
@@ -107,7 +105,7 @@ PillSurface {
             width: 2 * root.s
             height: parent.height - 10 * root.s
             radius: 999
-            color: Theme.verm
+            color: Theme.accentDark
         }
 
         Rectangle {
@@ -141,7 +139,7 @@ PillSurface {
                 height: 5 * root.s
                 radius: 1.5 * root.s
                 rotation: 45
-                color: nrow.critical ? Theme.vermLit : Theme.verm
+                color: nrow.critical ? Theme.accent : Theme.accentDark
             }
         }
 
@@ -152,7 +150,7 @@ PillSurface {
             anchors.rightMargin: 8 * root.s
             anchors.verticalCenter: parent.verticalCenter
             text: nrow.n.body.length > 0 ? nrow.n.body : nrow.n.summary
-            color: nrow.critical ? Theme.cream : Theme.subtle
+            color: nrow.critical ? Theme.text : Theme.textSubtle
             font.family: Theme.font
             font.pixelSize: 10.5 * root.s
             font.weight: nrow.critical ? Font.DemiBold : Font.Medium
@@ -172,7 +170,7 @@ PillSurface {
                 visible: nrow.entry.count > 1
                 anchors.verticalCenter: parent.verticalCenter
                 text: "×" + nrow.entry.count
-                color: nrow.critical ? Theme.vermLit : Theme.vermDim
+                color: nrow.critical ? Theme.accent : Theme.accentDim
                 font.family: Theme.font
                 font.pixelSize: 9 * root.s
                 font.weight: Font.Bold
@@ -189,7 +187,7 @@ PillSurface {
                     anchors.verticalCenter: parent.verticalCenter
                     opacity: nrowHover.hovered ? 0 : 1
                     text: Notifs.ageLabel(nrow.n)
-                    color: Theme.faint
+                    color: Theme.textFaint
                     font.family: Theme.font
                     font.pixelSize: 9 * root.s
                     Behavior on opacity { NumberAnimation { duration: Motion.fast } }
@@ -203,7 +201,7 @@ PillSurface {
                     height: 11 * root.s
                     opacity: nrowHover.hovered ? 1 : 0
                     name: "close"
-                    color: nrowXArea.containsMouse ? Theme.cream : Theme.dim
+                    color: nrowXArea.containsMouse ? Theme.text : Theme.textDim
                     stroke: 1.9
                     Behavior on opacity { NumberAnimation { duration: Motion.fast } }
 
@@ -224,7 +222,7 @@ PillSurface {
     Item {
         id: mainView
         anchors.fill: parent
-        enabled: root.active
+        enabled: root.open
 
         Column {
             id: mainCol
@@ -246,7 +244,7 @@ PillSurface {
                         anchors.verticalCenter: parent.verticalCenter
                         visible: Flags.showGlyphs
                         text: "報"
-                        color: Theme.cream
+                        color: Theme.text
                         font.family: Theme.fontJp
                         font.weight: Font.Medium
                         font.pixelSize: 16 * root.s
@@ -254,7 +252,7 @@ PillSurface {
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "INBOX"
-                        color: Theme.subtle
+                        color: Theme.textSubtle
                         font.family: Theme.font
                         font.pixelSize: 10 * root.s
                         font.weight: Font.DemiBold
@@ -285,7 +283,7 @@ PillSurface {
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         text: Notifs.unread + " NEU"
-                        color: Theme.dim
+                        color: Theme.textDim
                         font.family: Theme.font
                         font.pixelSize: 9.5 * root.s
                         font.weight: Font.Bold
@@ -314,7 +312,7 @@ PillSurface {
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "払"
-                        color: clearArea.containsMouse ? Theme.vermLit : Theme.vermDim
+                        color: clearArea.containsMouse ? Theme.accent : Theme.accentDim
                         font.family: Theme.fontJp
                         font.pixelSize: 9 * root.s
                         font.weight: Font.Bold
@@ -322,7 +320,7 @@ PillSurface {
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "CLEAR"
-                        color: clearArea.containsMouse ? Theme.vermLit : Theme.vermDim
+                        color: clearArea.containsMouse ? Theme.accent : Theme.accentDim
                         font.family: Theme.font
                         font.pixelSize: 9 * root.s
                         font.weight: Font.Bold
@@ -428,7 +426,7 @@ PillSurface {
                                             height: 6 * root.s
                                             radius: 2 * root.s
                                             rotation: 45
-                                            color: Theme.verm
+                                            color: Theme.accentDark
                                         }
                                     }
 
@@ -439,7 +437,7 @@ PillSurface {
                                         anchors.verticalCenter: parent.verticalCenter
                                         width: Math.min(implicitWidth, 110 * root.s)
                                         text: group.modelData.app
-                                        color: Theme.subtle
+                                        color: Theme.textSubtle
                                         font.family: Theme.font
                                         font.pixelSize: 9 * root.s
                                         font.weight: Font.Bold
@@ -454,7 +452,7 @@ PillSurface {
                                         anchors.leftMargin: 5 * root.s
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: "· " + group.modelData.count
-                                        color: Theme.faint
+                                        color: Theme.textFaint
                                         font.family: Theme.font
                                         font.pixelSize: 9 * root.s
                                     }
@@ -468,7 +466,7 @@ PillSurface {
                                         text: group.modelData.preview.body.length > 0
                                             ? group.modelData.preview.body
                                             : group.modelData.preview.summary
-                                        color: Theme.dim
+                                        color: Theme.textDim
                                         font.family: Theme.font
                                         font.pixelSize: 10 * root.s
                                         elide: Text.ElideRight
@@ -484,7 +482,7 @@ PillSurface {
                                         width: 11 * root.s
                                         height: 11 * root.s
                                         name: group.expanded ? "chevron-down" : "chevron-right"
-                                        color: Theme.faint
+                                        color: Theme.textFaint
                                         stroke: 2
                                     }
 
@@ -497,7 +495,7 @@ PillSurface {
                                         height: 11 * root.s
                                         opacity: headHover.hovered ? 1 : 0
                                         name: "close"
-                                        color: headXArea.containsMouse ? Theme.cream : Theme.dim
+                                        color: headXArea.containsMouse ? Theme.text : Theme.textDim
                                         stroke: 1.9
                                         Behavior on opacity { NumberAnimation { duration: Motion.fast } }
 
@@ -559,7 +557,7 @@ PillSurface {
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: Flags.showGlyphs ? "SILENCE" : "No notifications to display"
-                    color: Theme.faint
+                    color: Theme.textFaint
                     font.family: Theme.font
                     font.pixelSize: 9 * root.s
                     font.weight: Font.Bold

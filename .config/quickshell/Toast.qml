@@ -2,13 +2,13 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Services.Notifications
-import "Singletons"
+import "services"
 
 /**
  * Toast content for the morphing pill body: icon tile, app eyebrow, summary
  * with critical ember dot, optional body text and action pills, dismiss glyph
  * on the right. Draws no background of its own; the pill body behind it
- * provides the washi material. Clicking the body jumps to the source app;
+ * provides the background. Clicking the body jumps to the source app;
  * dismiss and action pills consume their clicks. Auto-expires via
  * Notifs.expireAt unless the notification is critical.
  */
@@ -77,7 +77,7 @@ Item {
             height: 7 * root.s
             radius: 2 * root.s
             rotation: 45
-            color: root.critical ? Theme.vermLit : Theme.verm
+            color: root.critical ? Theme.accent : Theme.accentDark
         }
     }
 
@@ -86,7 +86,7 @@ Item {
         anchors.right: parent.right
         anchors.top: parent.top
         text: "✕"
-        color: dismissArea.containsMouse ? Theme.cream : Theme.dim
+        color: dismissArea.containsMouse ? Theme.text : Theme.textDim
         font.family: Theme.font
         font.pixelSize: 11 * root.s
 
@@ -116,7 +116,7 @@ Item {
         Text {
             width: parent.width
             text: (root.notif.appName && root.notif.appName.length) ? root.notif.appName : "System"
-            color: Theme.dim
+            color: Theme.textDim
             font.family: Theme.font
             font.pixelSize: 8.5 * root.s
             font.weight: Font.DemiBold
@@ -140,7 +140,7 @@ Item {
                     width: 8 * root.s
                     height: 8 * root.s
                     radius: 999
-                    color: Theme.flameGlow
+                    color: Theme.accent
                     opacity: 0.3
                 }
                 Rectangle {
@@ -148,14 +148,14 @@ Item {
                     width: 4 * root.s
                     height: 4 * root.s
                     radius: 999
-                    color: Theme.flameGlow
+                    color: Theme.accent
                 }
             }
 
             Text {
                 width: parent.width - (root.critical ? 13 * root.s : 0)
                 text: root.notif.summary
-                color: Theme.cream
+                color: Theme.text
                 font.family: Theme.font
                 font.pixelSize: 11.5 * root.s
                 font.weight: Font.DemiBold
@@ -168,7 +168,7 @@ Item {
             width: parent.width
             visible: root.notif.body.length > 0
             text: root.notif.body
-            color: Theme.dim
+            color: Theme.textDim
             font.family: Theme.font
             font.pixelSize: 10.5 * root.s
             wrapMode: Text.Wrap
@@ -201,7 +201,7 @@ Item {
                         id: actText
                         anchors.centerIn: parent
                         text: actPill.modelData.text
-                        color: actPill.index === 0 ? Theme.vermLit : Theme.dim
+                        color: actPill.index === 0 ? Theme.accent : Theme.textDim
                         font.family: Theme.font
                         font.pixelSize: 9.5 * root.s
                         font.weight: Font.DemiBold

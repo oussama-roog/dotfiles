@@ -135,7 +135,7 @@ binds {
     // Mod+Space repeat=false { spawn "vicinae" "toggle"; }
     Mod+P { spawn "qs" "ipc" "call" "pill" "power"; }
     Mod+V { spawn "qs" "ipc" "call" "pill" "clipboard"; }
-    Mod+N { spawn "qs" "ipc" "call" "pill" "link"; }
+    Mod+N { spawn "qs" "ipc" "call" "pill" "notifications"; }
     Mod+C { spawn "~/.config/rofi/launcher/calc.sh"; }
     Mod+W { spawn "qs" "ipc" "call" "pill" "web"; }
     Mod+Shift+W { spawn "qs" "ipc" "call" "pill" "wallpaper"; }

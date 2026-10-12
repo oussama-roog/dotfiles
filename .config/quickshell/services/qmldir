@@ -1,0 +1,11 @@
+singleton Battery Battery.qml
+singleton Cliphist Cliphist.qml
+singleton Flags Flags.qml
+singleton Motion Motion.qml
+singleton NiriSpaces NiriSpaces.qml
+singleton Notifs Notifs.qml
+singleton Players Players.qml
+singleton Sysmon Sysmon.qml
+singleton Theme Theme.qml
+singleton Themes Themes.qml
+singleton Walls Walls.qml

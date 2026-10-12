@@ -1,7 +1,8 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import "Singletons"
+import "../services"
+import "../widgets"
 
 /**
  * Theme surface: search field over every base16 scheme, drawn as one of the
@@ -66,8 +67,8 @@ PillSurface {
         selectedIndex = 0;
     }
 
-    onActiveChanged: {
-        if (active) {
+    onOpenChanged: {
+        if (open) {
             query = "";
             search.text = "";
             Themes.refresh();
@@ -76,7 +77,7 @@ PillSurface {
         }
     }
     onResultsChanged: {
-        if (!query.length && active)
+        if (!query.length && open)
             selectCurrent();
         else if (selectedIndex >= results.length)
             selectedIndex = Math.max(0, results.length - 1);
@@ -113,8 +114,8 @@ PillSurface {
             width: 16 * root.s
             height: 16 * root.s
 
-            readonly property color tone: Themes.applying ? Theme.vermLit
-                : (randomArea.containsMouse ? Theme.cream : Theme.faint)
+            readonly property color tone: Themes.applying ? Theme.accent
+                : (randomArea.containsMouse ? Theme.text : Theme.textFaint)
 
             Tooltip {
                 s: root.s
@@ -159,7 +160,7 @@ PillSurface {
             anchors.bottom: parent.bottom
             width: parent.width * 0.3
             visible: Themes.applying
-            color: Theme.vermLit
+            color: Theme.accent
 
             NumberAnimation on x {
                 from: -sweep.width
@@ -175,7 +176,7 @@ PillSurface {
         anchors.centerIn: list
         visible: root.results.length === 0
         text: Themes.count === 0 ? "Loading themes…" : "No matches"
-        color: Theme.faint
+        color: Theme.textFaint
         font.family: Theme.font
         font.pixelSize: 10.5 * root.s
     }
@@ -219,7 +220,7 @@ PillSurface {
                 anchors.fill: parent
                 radius: 9 * root.s
                 visible: row.selected || rowHover.hovered
-                color: row.selected ? Theme.frameBg : Qt.alpha(Theme.cream, 0.03)
+                color: row.selected ? Theme.frameBg : Qt.alpha(Theme.text, 0.03)
                 border.width: row.selected ? 1 : 0
                 border.color: Theme.frameBorder
             }
@@ -275,7 +276,7 @@ PillSurface {
                     anchors.right: tail.left
                     anchors.rightMargin: 8 * root.s
                     text: row.entry ? row.entry.name : ""
-                    color: row.selected || row.isCurrent ? Theme.cream : Theme.subtle
+                    color: row.selected || row.isCurrent ? Theme.text : Theme.textSubtle
                     font.family: Theme.font
                     font.pixelSize: 11.5 * root.s
                     font.weight: row.selected ? Font.DemiBold : Font.Medium
@@ -297,7 +298,7 @@ PillSurface {
                         height: 12 * root.s
                         visible: row.isCurrent
                         name: "check"
-                        color: Theme.vermLit
+                        color: Theme.accent
                     }
 
                     Text {
@@ -305,7 +306,7 @@ PillSurface {
                         visible: !row.isCurrent
                         opacity: row.selected && !rowHover.hovered ? 1 : 0
                         text: "↵"
-                        color: Theme.vermLit
+                        color: Theme.accent
                         font.family: Theme.font
                         font.pixelSize: 12 * root.s
                         Behavior on opacity { NumberAnimation { duration: Motion.fast } }

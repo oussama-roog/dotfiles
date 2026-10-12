@@ -1,5 +1,5 @@
 import QtQuick
-import "Singletons"
+import "../services"
 
 /**
  * Hold-to-confirm heat shared by the destructive gestures (power tiles,

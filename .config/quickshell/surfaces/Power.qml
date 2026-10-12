@@ -3,7 +3,8 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Widgets
-import "Singletons"
+import "../services"
+import "../widgets"
 
 /**
  * Power surface: a row of hand-drawn session glyphs split by a hairline into a
@@ -31,7 +32,6 @@ PillSurface {
     property bool keyHeld: false
 
     property int holdingIndex: -1
-    property real holdProgress: 0
 
     readonly property var actions: [
         { key: "lock",     glyph: "lock",     label: "Lock",     confirm: false, argv: ["loginctl", "lock-session"] },
@@ -84,36 +84,49 @@ PillSurface {
         keyHeld = false;
     }
 
-    onActiveChanged: if (!active) {
+    onOpenChanged: {
+        if (open) {
+            Qt.callLater(root.forceActiveFocus);
+            return;
+        }
         hovered = "";
         focusIndex = -1;
         keyHeld = false;
         holdingIndex = -1;
-        holdProgress = 0;
     }
 
-    Item {
+    function isConfirmKey(e) {
+        return e.key === Qt.Key_Return || e.key === Qt.Key_Enter || e.key === Qt.Key_Space;
+    }
+
+    Keys.onLeftPressed: move(-1)
+    Keys.onRightPressed: move(1)
+    Keys.onPressed: (e) => {
+        if (isConfirmKey(e)) {
+            if (!e.isAutoRepeat)
+                pressFocused();
+            e.accepted = true;
+        }
+    }
+    Keys.onReleased: (e) => {
+        if (isConfirmKey(e) && !e.isAutoRepeat) {
+            releaseFocused();
+            e.accepted = true;
+        }
+    }
+
+    Text {
         id: header
         anchors.top: parent.top
         anchors.left: parent.left
-        anchors.right: parent.right
         height: 22 * root.s
-
-        Row {
-            anchors.left: parent.left
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: 8 * root.s
-            Text {
-                anchors.verticalCenter: parent.verticalCenter
-                text: "POWER"
-                color: Theme.subtle
-                font.family: Theme.font
-                font.pixelSize: 10 * root.s
-                font.weight: Font.DemiBold
-                font.capitalization: Font.AllUppercase
-                font.letterSpacing: 1.6 * root.s
-            }
-        }
+        verticalAlignment: Text.AlignVCenter
+        text: "POWER"
+        color: Theme.textSubtle
+        font.family: Theme.font
+        font.pixelSize: 10 * root.s
+        font.weight: Font.DemiBold
+        font.letterSpacing: 1.6 * root.s
     }
 
     Row {
@@ -150,7 +163,7 @@ PillSurface {
                     readonly property bool isHover: root.hovered === cell.modelData.key || tile.kbFocus
                     readonly property bool holding: heat.holding
                     readonly property bool lit: isHover || tile.holding
-                    readonly property color accent: cell.modelData.confirm ? Theme.vermLit : Theme.cream
+                    readonly property color accent: cell.modelData.confirm ? Theme.accent : Theme.text
 
                     onKbFocusChanged: {
                         if (!tile.kbFocus)
@@ -171,13 +184,10 @@ PillSurface {
                     }
 
                     onHoldChanged: {
-                        if (cell.modelData.confirm && tile.hold > 0.001) {
+                        if (cell.modelData.confirm && tile.hold > 0.001)
                             root.holdingIndex = cell.index;
-                            root.holdProgress = tile.hold;
-                        } else if (root.holdingIndex === cell.index) {
+                        else if (root.holdingIndex === cell.index)
                             root.holdingIndex = -1;
-                            root.holdProgress = 0;
-                        }
                     }
 
                     Rectangle {
@@ -209,8 +219,8 @@ PillSurface {
                             height: tile.height * tile.hold
                             visible: tile.holding
                             gradient: Gradient {
-                                GradientStop { position: 0.0; color: Qt.alpha(Theme.verm, 0.7) }
-                                GradientStop { position: 1.0; color: Qt.alpha(Theme.vermLit, 0.15) }
+                                GradientStop { position: 0.0; color: Qt.alpha(Theme.accentDark, 0.7) }
+                                GradientStop { position: 1.0; color: Qt.alpha(Theme.accent, 0.15) }
                             }
                         }
                     }
@@ -220,7 +230,7 @@ PillSurface {
                         width: 22 * root.s
                         height: 22 * root.s
                         name: cell.modelData.glyph
-                        color: tile.holding ? Theme.flameCore : (tile.lit ? tile.accent : Theme.iconDim)
+                        color: tile.holding ? Theme.accent : (tile.lit ? tile.accent : Theme.icon)
                         stroke: 1.9
                     }
 
@@ -268,7 +278,7 @@ PillSurface {
             return null;
         }
         text: act ? (act.confirm ? act.label + " — hold" : act.label) : ""
-        color: act && act.confirm ? Theme.vermLit : Theme.subtle
+        color: act && act.confirm ? Theme.accent : Theme.textSubtle
         font.family: Theme.font
         font.pixelSize: 11 * root.s
         font.weight: Font.Medium

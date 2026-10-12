@@ -4,20 +4,13 @@ import Quickshell
 import Quickshell.Io
 
 /**
- * Wallpaper bridge: keeps a warm in-memory snapshot of ~/dotfiles/wallpapers so
- * the wallpaper strip opens instantly without shelling out on demand. A
- * refresh first runs the thumbnail script (generating missing 512px previews
- * and pruning ones whose source is gone), then re-lists the directory
- * newest-first and finally re-reads the state file wallpaper.sh maintains, so
- * `current` always names the wallpaper on screen. Thumbnails land before the
- * list so strip delegates never bind to a not-yet-existing file; a refresh
- * arriving while the pipeline runs sets `pending` and replays once the state
- * lands. Applying routes through wallpaper.sh so the picker shares the exact
- * transition, palette and state path with the random keybind.
+ * Wallpaper list for the wallpaper strip. A refresh generates any missing 512px
+ * thumbnails, lists ~/dotfiles/wallpapers newest first, then re-reads
+ * ~/.cache/current_wallpaper so `current` names the wallpaper on screen. A
+ * refresh arriving mid-pipeline sets `pending` and replays once it finishes.
  *
- * Entries are plain objects: { path, name, mtime, thumb } where path is the
- * absolute source file, mtime its modification time in epoch seconds and
- * thumb the absolute path of the cached preview png.
+ * Entries are plain objects: { path, thumb } where path is the absolute source
+ * file and thumb the absolute path of the cached preview png.
  */
 Singleton {
     id: root
@@ -40,10 +33,8 @@ Singleton {
     }
 
     /**
-     * wallpaper.sh blocks through the whole transition (awww wave, matugen,
-     * reload), easily 1-2s; a pick landing in that window used to be silently
-     * swallowed. Now the newest request is queued and replayed once the
-     * running transition exits, so rapid iteration converges on the last pick.
+     * awww blocks through the whole transition, so a pick landing meanwhile is
+     * queued and replayed once it exits; rapid picks converge on the last one.
      */
     property string queuedApply: ""
 
@@ -52,10 +43,14 @@ Singleton {
             queuedApply = path;
             return;
         }
-        // save to ~/.cache/current_wallpaper and apply via awww
+        run(path);
+    }
+
+    /** Remember the pick in the state file and fade to it with awww. */
+    function run(path) {
         applyProc.command = ["bash", "-c",
-            "echo \"$1\" > ~/.cache/current_wallpaper; awww img \"$1\" --transition-type fade --transition-fps 60",
-            "_", path];
+            "echo \"$1\" > \"$2\"; awww img \"$1\" --transition-type fade --transition-fps 60",
+            "_", path, root.stateFile];
         applyProc.running = true;
     }
 
@@ -101,8 +96,6 @@ Singleton {
                     var name = path.substring(path.lastIndexOf("/") + 1);
                     out.push({
                         path: path,
-                        name: name,
-                        mtime: parseFloat(lines[i].substring(0, tab)),
                         thumb: root.thumbDir + name + ".png"
                     });
                 }
@@ -132,10 +125,7 @@ Singleton {
             if (root.queuedApply.length) {
                 var next = root.queuedApply;
                 root.queuedApply = "";
-                applyProc.command = ["bash", "-c",
-                    "echo \"$1\" > ~/.cache/current_wallpaper; awww img \"$1\" --transition-type fade --transition-fps 60",
-                    "_", next];
-                applyProc.running = true;
+                root.run(next);
                 return;
             }
             stateProc.running = true;

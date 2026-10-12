@@ -7,7 +7,6 @@ Singleton {
     id: root
 
     property alias dnd: adapter.dnd
-    property alias keepAwake: adapter.keepAwake
     property alias time12h: adapter.time12h
     property alias clockSeconds: adapter.clockSeconds
     property alias showGlyphs: adapter.showGlyphs
@@ -15,8 +14,6 @@ Singleton {
     property alias reduceMotion: adapter.reduceMotion
     property alias uiFont: adapter.uiFont
     property alias pillOpacity: adapter.pillOpacity
-    property alias pillBlur: adapter.pillBlur
-    property alias weatherCity: adapter.weatherCity
 
     FileView {
         id: file
@@ -35,7 +32,6 @@ Singleton {
         JsonAdapter {
             id: adapter
             property bool dnd: false
-            property bool keepAwake: false
             property bool time12h: false
             property bool clockSeconds: false
             property bool showGlyphs: false
@@ -43,8 +39,6 @@ Singleton {
             property bool reduceMotion: false
             property string uiFont: ""
             property real pillOpacity: 1.0
-            property bool pillBlur: false
-            property string weatherCity: ""
         }
     }
 }

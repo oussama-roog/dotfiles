@@ -3,14 +3,14 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import "Singletons"
-import "lib/fuzzy.js" as Fuzzy
+import "../services"
+import "../widgets"
 
 /**
  * Launcher surface: search field over a ranked application list, drawn as one
- * of the pill's surfaces. Desktop entries are ranked by fuzzy match and prior
- * launch frequency (usage file shared with the standalone launcher), the
- * chosen entry executes directly.
+ * of the pill's surfaces. Desktop entries are ranked by match quality (name
+ * prefix, then substring, then subsequence over name/generic name/keywords)
+ * and then by how often you launched them; the chosen entry executes directly.
  */
 PillSurface {
     id: root
@@ -42,7 +42,38 @@ PillSurface {
         return out;
     }
     readonly property int totalCount: allEntries.length
-    readonly property var results: Fuzzy.rank(allEntries, query, usage)
+    readonly property var results: rank(allEntries, query.trim().toLowerCase())
+
+    /** 0 = name prefix, 1 = substring, 2 = subsequence, 99 = no match. */
+    function score(e, q) {
+        if ((e.name || "").toLowerCase().indexOf(q) === 0)
+            return 0;
+        var fields = [e.name, e.genericName].concat(e.keywords || []);
+        var best = 99;
+        for (var i = 0; i < fields.length; i++) {
+            var f = String(fields[i] || "").toLowerCase();
+            if (f.indexOf(q) !== -1)
+                return 1;
+            var j = 0;
+            for (var k = 0; k < f.length && j < q.length; k++)
+                if (f[k] === q[j]) j++;
+            if (j === q.length)
+                best = 2;
+        }
+        return best;
+    }
+
+    function rank(entries, q) {
+        var scored = [];
+        for (var i = 0; i < entries.length; i++) {
+            var sc = q.length ? score(entries[i], q) : 0;
+            if (sc < 99)
+                scored.push({ e: entries[i], s: sc, u: usage[entries[i].id] || 0 });
+        }
+        scored.sort((a, b) => a.s - b.s || b.u - a.u
+            || (a.e.name || "").toLowerCase().localeCompare((b.e.name || "").toLowerCase()));
+        return scored.map(x => x.e);
+    }
 
     function focusField() { search.input.forceActiveFocus(); }
 
@@ -82,8 +113,8 @@ PillSurface {
         root.requestClose();
     }
 
-    onActiveChanged: {
-        if (active) {
+    onOpenChanged: {
+        if (open) {
             query = "";
             search.text = "";
             selectedIndex = 0;
@@ -141,7 +172,7 @@ PillSurface {
         anchors.centerIn: list
         visible: root.results.length === 0
         text: root.query.length ? "No matches" : "No apps found"
-        color: Theme.faint
+        color: Theme.textFaint
         font.family: Theme.font
         font.pixelSize: 10.5 * root.s
     }
@@ -181,7 +212,7 @@ PillSurface {
                 anchors.fill: parent
                 radius: 9 * root.s
                 visible: appRow.selected || rowArea.containsMouse
-                color: appRow.selected ? Theme.frameBg : Qt.rgba(0.94, 0.88, 0.84, 0.03)
+                color: appRow.selected ? Theme.frameBg : Qt.alpha(Theme.text, 0.03)
                 border.width: appRow.selected ? 1 : 0
                 border.color: Theme.frameBorder
             }
@@ -215,7 +246,7 @@ PillSurface {
                     width: 22 * root.s
                     height: 22 * root.s
                     radius: 5 * root.s
-                    color: Qt.rgba(1, 1, 1, 0.05)
+                    color: Theme.frameBg
                     visible: !(icon.status === Image.Ready && icon.source != "")
                 }
                 Image {
@@ -241,7 +272,7 @@ PillSurface {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.right: parent.right
                     text: retMetrics.text
-                    color: Theme.vermLit
+                    color: Theme.accent
                     font.family: Theme.font
                     font.pixelSize: 12 * root.s
                     visible: appRow.selected
@@ -267,7 +298,7 @@ PillSurface {
                         id: nameText
                         width: parent.width
                         text: appRow.entry ? appRow.entry.name : ""
-                        color: Theme.cream
+                        color: Theme.text
                         font.family: Theme.font
                         font.pixelSize: 13 * root.s
                         font.weight: appRow.selected ? Font.DemiBold : Font.Normal
@@ -278,7 +309,7 @@ PillSurface {
                         width: parent.width
                         visible: appRow.secondary.length > 0
                         text: appRow.secondary
-                        color: appRow.selected ? Theme.dim : Theme.faint
+                        color: appRow.selected ? Theme.textDim : Theme.textFaint
                         font.family: Theme.font
                         font.pixelSize: 10.5 * root.s
                         elide: Text.ElideRight

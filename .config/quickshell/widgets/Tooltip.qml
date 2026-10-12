@@ -1,24 +1,22 @@
 import QtQuick
 import QtQuick.Effects
-import "Singletons"
+import "../services"
 
 /**
- * Washi hint bubble for pill controls. Anchored to its parent control and
+ * Hint bubble for pill controls. Anchored to its parent control and
  * centred on it; `placement` decides whether the bubble floats above (pointer
  * down) or below (pointer up) so chips near the pill edge never clip off-screen.
  * The host sets `show` from the control's own HoverHandler; the bubble arms
  * after a hover delay, fades in slowly and out fast.
  *
  * Non-interactive by design: no MouseArea or HoverHandler lives here, so it
- * never steals pointer events from the controls or the mixer's hover tracker.
- * It is `visible: false` whenever fully faded, for the same reason.
+ * never steals pointer events from the control it describes.
  */
 Item {
     id: root
 
     property real s: 1
     property string title: ""
-    property string desc: ""
     property bool show: false
     property string placement: "above"
 
@@ -61,8 +59,8 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: root.below ? undefined : parent.top
         anchors.bottom: root.below ? parent.bottom : undefined
-        width: Math.max(titleText.implicitWidth, descText.implicitWidth) + 22 * root.s
-        height: column.implicitHeight + 14 * root.s
+        width: titleText.implicitWidth + 22 * root.s
+        height: titleText.implicitHeight + 14 * root.s
         radius: 9 * root.s
         border.width: 1
         border.color: Theme.frameBorder
@@ -80,29 +78,14 @@ Item {
         }
     }
 
-    Column {
-        id: column
+    Text {
+        id: titleText
         anchors.centerIn: bubble
-        spacing: 2 * root.s
-
-        Text {
-            id: titleText
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: root.title
-            color: Theme.cream
-            font.family: Theme.font
-            font.pixelSize: 11 * root.s
-            font.weight: Font.Bold
-        }
-        Text {
-            id: descText
-            anchors.horizontalCenter: parent.horizontalCenter
-            visible: root.desc.length > 0
-            text: root.desc
-            color: Theme.subtle
-            font.family: Theme.font
-            font.pixelSize: 10 * root.s
-        }
+        text: root.title
+        color: Theme.text
+        font.family: Theme.font
+        font.pixelSize: 11 * root.s
+        font.weight: Font.Bold
     }
 
     Canvas {
@@ -111,10 +94,12 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: root.below ? parent.top : undefined
         anchors.bottom: root.below ? undefined : parent.bottom
+        property color fill: Theme.cardBot
+        onFillChanged: requestPaint()
         onPaint: {
             var ctx = getContext("2d");
             ctx.reset();
-            ctx.fillStyle = Theme.cardBot;
+            ctx.fillStyle = fill;
             ctx.beginPath();
             if (root.below) {
                 ctx.moveTo(0, height);

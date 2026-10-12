@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Writes the base16 palette as the colour JSON that Quickshell's Dyn singleton
+# Writes the base16 palette as the colour JSON that Quickshell's Theme singleton
 # watches, so the shell recolours live without a restart.
 
 QUICKSHELL_COLORS="$CONFIG_DIR/quickshell/colors.json"
@@ -39,23 +39,19 @@ apply_quickshell_theme() {
     # Written in place (not tmp+mv) so the FileView watch keeps its inode
     cat >"$QUICKSHELL_COLORS" <<EOF
 {
-  "surface": "#${colors[base00]}",
-  "surface_container_low": "#${colors[base00]}",
-  "surface_container": "#${colors[base01]}",
-  "surface_container_high": "#${colors[base01]}",
-  "surface_container_highest": "#${colors[base02]}",
-  "primary": "#${accent}",
-  "primary_container": "#$(_qs_mix "$accent" "${colors[base00]}" 0.55)",
-  "on_primary_container": "#$(_qs_mix "$accent" "${colors[base07]}" 0.45)",
-  "outline": "#${colors[base03]}",
-  "outline_variant": "#${colors[base02]}",
-  "cream": "#${colors[base05]}",
-  "bright": "#${colors[base07]}",
-  "subtle": "#${colors[base04]}",
-  "dim": "#$(_qs_mix "${colors[base04]}" "${colors[base03]}" 0.5)",
-  "faint": "#${colors[base03]}",
-  "icon_dim": "#$(_qs_mix "${colors[base05]}" "${colors[base04]}" 0.5)",
-  "tick_rest": "#${colors[base04]}"
+  "background": "#${colors[base00]}",
+  "surface_low": "#${colors[base00]}",
+  "surface_high": "#${colors[base01]}",
+  "surface_highest": "#${colors[base02]}",
+  "border": "#${colors[base02]}",
+  "text_bright": "#${colors[base07]}",
+  "text": "#${colors[base05]}",
+  "text_subtle": "#${colors[base04]}",
+  "text_dim": "#$(_qs_mix "${colors[base04]}" "${colors[base03]}" 0.5)",
+  "text_faint": "#${colors[base03]}",
+  "icon": "#$(_qs_mix "${colors[base05]}" "${colors[base04]}" 0.5)",
+  "accent": "#${accent}",
+  "accent_container": "#$(_qs_mix "$accent" "${colors[base00]}" 0.55)"
 }
 EOF
 }

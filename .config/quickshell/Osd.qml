@@ -1,17 +1,21 @@
 import QtQuick
 import Quickshell.Widgets
-import Quickshell.Hyprland
 import Quickshell.Services.Pipewire
 import Quickshell.Io
-import "Singletons"
+import "services"
+import "widgets"
 
+/**
+ * On-screen display shown inside the pill when something changes: volume,
+ * screen brightness, battery starting to charge, or a media player starting or
+ * changing track. `flashing` is true while one is showing; Pill morphs to
+ * `desiredW` x `desiredH` for it.
+ */
 Item {
     id: root
 
     property real s: 1
-    property string screenName: ""
     property bool suppressed: false
-    property bool expanded: false
     property bool flashing: false
     property string kind: "volume"
     property bool armed: false
@@ -29,7 +33,7 @@ Item {
     readonly property bool subjectHas: subject !== null
     readonly property bool subjectPlaying: subjectHas && subject.isPlaying
     readonly property string subjectTitle: subjectHas && subject.trackTitle ? subject.trackTitle : ""
-    readonly property string subjectArtist: subjectHas ? Theme.joinArtists(subject.trackArtists, subject.trackArtist) : ""
+    readonly property string subjectArtist: subjectHas ? Players.artistsOf(subject.trackArtists, subject.trackArtist) : ""
     readonly property string subjectIcon: subjectHas ? Players.appIconFor(subject) : ""
 
     /** Subject art, live so a cover that lands a beat after the title still resolves; the key forces a reload when a browser reuses one file path. */
@@ -44,39 +48,14 @@ Item {
 
     property real brightness: 0
     property int lastBrightness: -1
-    property bool recordStarted: false
 
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property bool muted: sink && sink.audio ? sink.audio.muted : false
     readonly property real volume: sink && sink.audio ? Math.max(0, Math.min(1, sink.audio.volume)) : 0
 
-    readonly property real desiredW: kind === "workspace" ? Math.max(120 * s, wsIndicator.implicitWidth + 40 * s)
-        : (kind === "track" ? 344 * s : (kind === "record" ? 256 * s : 248 * s))
+    readonly property real desiredW: (kind === "track" ? 344 : 248) * s
     readonly property real desiredH: kind === "track" ? 64 * s : 44 * s
 
-    /**
-     * Active workspace name on this monitor. Any switch (Super+arrow,
-     * Super+wheel, clicking a dot) changes it, so flashing the workspace OSD
-     * here briefly morphs the pill open to show where you landed. The arm timer
-     * swallows the initial populate, so login doesn't flash. Skipped while the
-     * pill is expanded: the hover/surface pill already shows the live dots with
-     * the active one marked, so the OSD would only be a redundant morph.
-     */
-    readonly property string activeWsName: {
-        var mons = Hyprland.monitors.values;
-        for (var i = 0; i < mons.length; i++)
-            if (mons[i].name === screenName)
-                return mons[i].activeWorkspace ? mons[i].activeWorkspace.name : "";
-        return "";
-    }
-    onActiveWsNameChanged: if (activeWsName.length > 0 && !expanded) flash("workspace");
-
-    /**
-     * Wait for the track to settle before flashing. Hovering the YouTube grid
-     * autoplays a preview per thumbnail, so the active player's metadata churns
-     * as the cursor moves; the settle timer collapses that storm into the one
-     * track that actually sticks.
-     */
     /**
      * Leading-edge throttle. The first change flashes at once so a real track
      * switch feels instant, then the cooldown mutes the burst that hovering the
@@ -101,7 +80,7 @@ Item {
             holdExtends = 0;
         kind = which;
         flashing = true;
-        hideTimer.interval = (which === "battery" || which === "record") ? 2000 : 1800;
+        hideTimer.interval = which === "battery" ? 2000 : 1800;
         hideTimer.restart();
         return true;
     }
@@ -178,8 +157,6 @@ Item {
         }
     }
 
-
-
     Process {
         id: brightMonitor
         command: ["sh", "-c", "dev=$(ls /sys/class/backlight 2>/dev/null | head -n1); [ -n \"$dev\" ] || exit 0; max=$(cat /sys/class/backlight/$dev/max_brightness); last=\"\"; while true; do val=$(cat /sys/class/backlight/$dev/brightness); if [ \"$val\" != \"$last\" ]; then echo \"$(( val * 100 / max ))\"; last=\"$val\"; fi; sleep 0.4; done"]
@@ -198,32 +175,38 @@ Item {
         }
     }
 
-    Item {
-        id: volRow
+    /** Icon, level bar and percentage; one per kind, cross-faded by `kind`. */
+    component Meter: Item {
+        id: meter
+        property string forKind: ""
+        property string icon: ""
+        property real value: 0
+        property bool muted: false
+
         anchors.fill: parent
-        opacity: root.kind === "volume" ? 1 : 0
+        opacity: root.kind === forKind ? 1 : 0
         visible: opacity > 0.01
         Behavior on opacity { NumberAnimation { duration: 150 } }
 
         GlyphIcon {
-            id: volGlyph
+            id: meterGlyph
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             width: 17 * root.s
             height: 17 * root.s
-            name: root.muted ? "speaker-off" : "speaker"
-            color: root.muted ? Theme.dim : Theme.iconDim
+            name: meter.icon
+            color: meter.muted ? Theme.textDim : Theme.icon
             stroke: 1.7
         }
 
         Text {
-            id: volPct
+            id: meterPct
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             width: 32 * root.s
             horizontalAlignment: Text.AlignRight
-            text: Math.round(root.volume * 100) + "%"
-            color: root.muted ? Theme.dim : Theme.cream
+            text: Math.round(meter.value * 100) + "%"
+            color: meter.muted ? Theme.textDim : Theme.text
             font.family: Theme.font
             font.pixelSize: 11 * root.s
             font.weight: Font.DemiBold
@@ -231,26 +214,39 @@ Item {
         }
 
         Rectangle {
-            anchors.left: volGlyph.right
+            anchors.left: meterGlyph.right
             anchors.leftMargin: 12 * root.s
-            anchors.right: volPct.left
+            anchors.right: meterPct.left
             anchors.rightMargin: 12 * root.s
             anchors.verticalCenter: parent.verticalCenter
             height: 4 * root.s
             radius: 2 * root.s
-            color: Theme.threadBg
+            color: Theme.hair
 
             Rectangle {
                 anchors.left: parent.left
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
-                width: parent.width * root.volume
+                width: parent.width * meter.value
                 radius: parent.radius
-                color: root.muted ? Theme.vermDim : Theme.vermLit
+                color: meter.muted ? Theme.accentDim : Theme.accent
                 Behavior on width { NumberAnimation { duration: Motion.fast } }
                 Behavior on color { ColorAnimation { duration: Motion.fast } }
             }
         }
+    }
+
+    Meter {
+        forKind: "volume"
+        icon: root.muted ? "speaker-off" : "speaker"
+        value: root.volume
+        muted: root.muted
+    }
+
+    Meter {
+        forKind: "brightness"
+        icon: "sun"
+        value: root.brightness
     }
 
     Item {
@@ -290,7 +286,7 @@ Item {
                 width: parent.width * 0.42
                 height: width
                 name: "music"
-                color: Theme.subtle
+                color: Theme.textSubtle
                 visible: cover.status !== Image.Ready
             }
 
@@ -326,7 +322,7 @@ Item {
             width: 18 * root.s
             height: 18 * root.s
             name: root.subjectPlaying ? "play" : "pause"
-            color: root.subjectPlaying ? Theme.vermLit : Theme.iconDim
+            color: root.subjectPlaying ? Theme.accent : Theme.icon
         }
 
         Column {
@@ -340,7 +336,7 @@ Item {
             Text {
                 width: parent.width
                 text: root.subjectHas ? root.subjectTitle : "Nothing playing"
-                color: Theme.cream
+                color: Theme.text
                 font.family: Theme.font
                 font.pixelSize: 14 * root.s
                 font.weight: Font.DemiBold
@@ -351,66 +347,12 @@ Item {
             Text {
                 width: parent.width
                 text: root.subjectArtist
-                color: Theme.dim
+                color: Theme.textDim
                 font.family: Theme.font
                 font.pixelSize: 11 * root.s
                 maximumLineCount: 1
                 elide: Text.ElideRight
                 visible: text.length > 0
-            }
-        }
-    }
-
-    Item {
-        id: brightRow
-        anchors.fill: parent
-        opacity: root.kind === "brightness" ? 1 : 0
-        visible: opacity > 0.01
-        Behavior on opacity { NumberAnimation { duration: 150 } }
-
-        GlyphIcon {
-            id: brightGlyph
-            anchors.left: parent.left
-            anchors.verticalCenter: parent.verticalCenter
-            width: 17 * root.s
-            height: 17 * root.s
-            name: "sun"
-            color: Theme.iconDim
-            stroke: 1.7
-        }
-
-        Text {
-            id: brightPct
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            width: 32 * root.s
-            horizontalAlignment: Text.AlignRight
-            text: Math.round(root.brightness * 100) + "%"
-            color: Theme.cream
-            font.family: Theme.font
-            font.pixelSize: 11 * root.s
-            font.weight: Font.DemiBold
-            font.features: { "tnum": 1 }
-        }
-
-        Rectangle {
-            anchors.left: brightGlyph.right
-            anchors.leftMargin: 12 * root.s
-            anchors.right: brightPct.left
-            anchors.rightMargin: 12 * root.s
-            anchors.verticalCenter: parent.verticalCenter
-            height: 4 * root.s
-            radius: 2 * root.s
-            color: Theme.threadBg
-
-            Rectangle {
-                anchors.left: parent.left
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
-                width: parent.width * root.brightness
-                radius: parent.radius
-                color: Theme.vermLit
-                Behavior on width { NumberAnimation { duration: Motion.fast } }
             }
         }
     }
@@ -429,7 +371,7 @@ Item {
             width: 17 * root.s
             height: 17 * root.s
             name: "bolt"
-            color: Theme.flameGlow
+            color: Theme.accent
             stroke: 1.7
         }
 
@@ -440,7 +382,7 @@ Item {
             width: 40 * root.s
             horizontalAlignment: Text.AlignRight
             text: Battery.pct + "%"
-            color: Theme.cream
+            color: Theme.text
             font.family: Theme.font
             font.pixelSize: 11 * root.s
             font.weight: Font.DemiBold
@@ -455,7 +397,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             height: 4 * root.s
             radius: 2 * root.s
-            color: Theme.threadBg
+            color: Theme.hair
             clip: true
 
             Rectangle {
@@ -467,8 +409,8 @@ Item {
                 radius: parent.radius
                 gradient: Gradient {
                     orientation: Gradient.Horizontal
-                    GradientStop { position: 0.0; color: Theme.vermDeep }
-                    GradientStop { position: 1.0; color: Theme.flameGlow }
+                    GradientStop { position: 0.0; color: Theme.accentDeep }
+                    GradientStop { position: 1.0; color: Theme.accent }
                 }
                 Behavior on width { NumberAnimation { duration: Motion.fast } }
 
@@ -480,7 +422,7 @@ Item {
                     gradient: Gradient {
                         orientation: Gradient.Horizontal
                         GradientStop { position: 0.0; color: "transparent" }
-                        GradientStop { position: 0.5; color: Qt.alpha(Theme.bright, 0.33) }
+                        GradientStop { position: 0.5; color: Qt.alpha(Theme.textBright, 0.33) }
                         GradientStop { position: 1.0; color: "transparent" }
                     }
 
@@ -493,62 +435,6 @@ Item {
                     }
                 }
             }
-        }
-    }
-
-    Item {
-        id: workspaceRow
-        anchors.fill: parent
-        opacity: root.kind === "workspace" ? 1 : 0
-        visible: opacity > 0.01
-        Behavior on opacity { NumberAnimation { duration: 150 } }
-
-        Workspaces {
-            id: wsIndicator
-            anchors.centerIn: parent
-            screenName: root.screenName
-            s: root.s
-            gap: 8 * root.s
-            enabled: false
-        }
-    }
-
-    Item {
-        id: recordRow
-        anchors.fill: parent
-        opacity: root.kind === "record" ? 1 : 0
-        visible: opacity > 0.01
-        Behavior on opacity { NumberAnimation { duration: 150 } }
-
-        Rectangle {
-            id: recGlyph
-            anchors.left: parent.left
-            anchors.verticalCenter: parent.verticalCenter
-            width: 13 * root.s
-            height: 13 * root.s
-            radius: width / 2
-            color: root.recordStarted ? Theme.verm : Theme.dim
-
-            SequentialAnimation on opacity {
-                running: root.recordStarted && root.kind === "record"
-                loops: Animation.Infinite
-                NumberAnimation { to: 0.4; duration: 500; easing.type: Easing.InOutSine }
-                NumberAnimation { to: 1; duration: 500; easing.type: Easing.InOutSine }
-            }
-        }
-
-        Text {
-            anchors.left: recGlyph.right
-            anchors.leftMargin: 13 * root.s
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            text: root.recordStarted ? "Recording started" : "Recording stopped"
-            color: Theme.cream
-            font.family: Theme.font
-            font.pixelSize: 11.5 * root.s
-            font.weight: Font.DemiBold
-            elide: Text.ElideRight
-            maximumLineCount: 1
         }
     }
 }

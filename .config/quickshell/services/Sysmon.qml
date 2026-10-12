@@ -14,7 +14,6 @@ Singleton {
     property int cpu: 0
     property int memPct: 0
     property real memUsedGb: 0
-    property real memTotalGb: 0
 
     property real prevCpuTotal: 0
     property real prevCpuIdle: 0
@@ -42,7 +41,6 @@ Singleton {
                     } else if (p[0] === "MEM") {
                         var mt = parseFloat(p[1]);
                         var ma = parseFloat(p[2]);
-                        root.memTotalGb = mt / 1048576;
                         root.memUsedGb = (mt - ma) / 1048576;
                         root.memPct = mt > 0 ? Math.round(100 * (mt - ma) / mt) : 0;
                     }
