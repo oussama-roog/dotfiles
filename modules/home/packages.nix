@@ -12,7 +12,6 @@
     btop
     ghostty
     kitty
-    unstable.tuicr
 
     go
     nodejs

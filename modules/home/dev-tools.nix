@@ -39,5 +39,6 @@
     yamllint
     markdownlint-cli
     statix
+    lua54Packages.luacheck
   ];
 }

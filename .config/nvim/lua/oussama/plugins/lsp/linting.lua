@@ -9,7 +9,6 @@ return {
 			typescript = { "eslint_d" },
 			angularls = { "eslint_d" },
 			python = { "ruff" },
-			json = { "jsonlint" },
 			lua = { "luacheck" },
 			html = { "htmlhint" },
 			css = { "stylelint" },
@@ -53,11 +52,18 @@ return {
 			end,
 		}
 
+		-- nvim config: don't flag the `vim` global as undefined
+		lint.linters.luacheck.args = vim.list_extend({ "--globals", "vim" }, lint.linters.luacheck.args)
+
 		local lint_augroup = vim.api.nvim_create_augroup("lint", { clear = true })
 
 		vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
 			group = lint_augroup,
-			callback = function()
+			callback = function(args)
+				-- only lint real files, not diffview:// or other special buffers
+				if vim.bo[args.buf].buftype ~= "" or vim.api.nvim_buf_get_name(args.buf):match("^%a+://") then
+					return
+				end
 				lint.try_lint()
 			end,
 		})

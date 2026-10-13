@@ -107,10 +107,12 @@ This document outlines all the keymaps configured in your Neovim setup, extracte
 
 ## `lua/oussama/plugins/git.lua`
 
-- **`<leader>do`**: Open diffview (Normal mode)
-- **`<leader>dx`**: Close diffview (Normal mode)
-- **`<leader>df`**: Toggle files (Normal mode)
-- **`<leader>dh`**: File history (Normal mode)
+- **`<leader>go`**: Open diffview (Normal mode)
+- **`<leader>gx`**: Close diffview (Normal mode)
+- **`<leader>gt`**: Toggle diffview (Normal mode)
+- **`<leader>gf`**: Toggle files (Normal mode)
+- **`<leader>gl`**: Toggle repo commit history (Normal mode)
+- **`<leader>gh`**: Toggle current file history (Normal mode)
 - **`]h`**: Next Hunk (Normal mode)
 - **`[h`**: Prev Hunk (Normal mode)
 - **`<leader>hs`**: Stage hunk (Normal mode)

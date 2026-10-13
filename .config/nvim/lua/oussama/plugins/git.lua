@@ -1,14 +1,28 @@
+-- close the diffview/file-history in the current tab, or open it with `cmd`
+local function toggle(cmd)
+	return function()
+		if require("diffview.lib").get_current_view() then
+			vim.cmd("DiffviewClose")
+		else
+			vim.cmd(cmd)
+		end
+	end
+end
+
 return {
 	{
-		"sindrets/diffview.nvim",
+		"dlyongemallo/diffview-plus.nvim",
+		version = "*",
 		config = function()
 			require("diffview").setup()
 		end,
 		keys = {
 			{ "<leader>go", "<cmd>DiffviewOpen<cr>", desc = "Open diffview" },
 			{ "<leader>gx", "<cmd>DiffviewClose<cr>", desc = "Close diffview" },
+			{ "<leader>gt", toggle("DiffviewOpen"), desc = "Toggle diffview" },
 			{ "<leader>gf", "<cmd>DiffviewToggleFiles<cr>", desc = "Toggle files" },
-			{ "<leader>gh", "<cmd>DiffviewFileHistory<cr>", desc = "File history" },
+			{ "<leader>gl", toggle("DiffviewFileHistory"), desc = "Toggle repo commit history" },
+			{ "<leader>gh", toggle("DiffviewFileHistory %"), desc = "Toggle current file history" },
 		},
 	},
 	{
