@@ -235,7 +235,7 @@ PillSurface {
                     : srow.ss.status === "question" ? Icons.question
                     : srow.ss.status === "done" ? Icons.checkCircle
                     : Icons.terminal
-                color: srow.hot ? Theme.accent : srow.ss.status === "ended" ? Theme.textFaint : Theme.textSubtle
+                color: srow.hot ? Theme.accent : Theme.textSubtle
                 SequentialAnimation on opacity {
                     running: srow.hot && root.open
                     loops: Animation.Infinite
@@ -275,7 +275,7 @@ PillSurface {
             y: 7 * root.s
             width: chip.x - x - 10 * root.s
             text: Claude.title(srow.ss)
-            color: srow.ss.status === "ended" ? Theme.textDim : Theme.textBright
+            color: Theme.textBright
             font.family: Theme.font
             font.pixelSize: 11.5 * root.s
             font.weight: Font.DemiBold
@@ -324,7 +324,7 @@ PillSurface {
             Meta {
                 /** Running sessions count up from their start; the rest show how long ago. */
                 text: srow.live ? Claude.span(Claude.now - (srow.ss.started || Claude.now))
-                    : Claude.span(Claude.now - (srow.ss.ended || srow.ss.updated || Claude.now)) + " ago"
+                    : Claude.span(Claude.now - (srow.ss.updated || Claude.now)) + " ago"
                 color: Theme.textFaint
             }
         }

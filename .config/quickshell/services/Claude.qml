@@ -10,8 +10,10 @@ import Quickshell.Io
  * line). The file is watched, so the dot and the agents surface update the
  * moment a session starts working, asks for a permission or finishes.
  *
- * `sessions` is sorted for the list: sessions that need you first, then
- * working ones, then idle, done and ended, newest first within each.
+ * Only open sessions are listed: the bridge drops a session once it ends or
+ * its process exits. A claude that only shows a background job (`viewer`) is
+ * left out, so a job counts once. `sessions` is sorted: sessions that need you first, then
+ * working ones, then idle and done, newest first within each.
  */
 Singleton {
     id: root
@@ -24,14 +26,14 @@ Singleton {
     /** Wall clock in ms, ticking so ages and reset countdowns stay live. */
     property double now: Date.now()
 
-    readonly property var rank: ({ waiting: 0, question: 0, working: 1, idle: 2, done: 3, ended: 4 })
+    readonly property var rank: ({ waiting: 0, question: 0, working: 1, idle: 2, done: 3 })
 
     readonly property var sessions: {
         var map = data.sessions || {};
-        var out = Object.keys(map).map(function(k) { return map[k]; });
+        var out = Object.keys(map).map(function(k) { return map[k]; }).filter(function(s) { return !s.viewer; });
         out.sort(function(a, b) {
-            var ra = root.rank[a.status] !== undefined ? root.rank[a.status] : 5;
-            var rb = root.rank[b.status] !== undefined ? root.rank[b.status] : 5;
+            var ra = root.rank[a.status] !== undefined ? root.rank[a.status] : 4;
+            var rb = root.rank[b.status] !== undefined ? root.rank[b.status] : 4;
             return ra !== rb ? ra - rb : (b.updated || 0) - (a.updated || 0);
         });
         return out;
@@ -139,7 +141,6 @@ Singleton {
         case "working": return "working";
         case "idle": return "idle";
         case "done": return "done";
-        case "ended": return "ended";
         }
         return s.status || "";
     }

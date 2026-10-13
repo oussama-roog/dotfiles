@@ -14,12 +14,19 @@ folds what it learns into one state file that services/Claude.qml watches:
 Subcommands:
     hook          a Claude Code hook (event JSON on stdin); never prints, never blocks
     statusline    Claude Code's status line (session JSON on stdin); prints the line
-    sweep         marks sessions whose process died as ended, drops old ones
+    sweep         drops sessions whose claude process is gone
     focus <id>    focuses the terminal window (niri) running that session
     forget <id>   removes a session from the list
 
 Statuses: idle (started, no prompt yet), working, waiting (permission prompt),
-question (AskUserQuestion), done (turn finished), ended (session closed).
+question (AskUserQuestion), done (turn finished).
+
+Only open sessions are kept: a session leaves the list on SessionEnd, when its
+process dies, or when its process moves on to another session (/clear, a
+resume), since one claude process only ever runs one session at a time.
+
+A claude that is only showing a background job (attached to the claude daemon)
+still starts a session of its own; it is flagged `viewer` and left off the list.
 """
 
 import fcntl
@@ -33,8 +40,6 @@ DIR = os.path.join(os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.ca
 STATE = os.path.join(DIR, "state.json")
 LOCK = os.path.join(DIR, ".lock")
 
-# Ended sessions linger this long in the list before the sweep drops them.
-KEEP_ENDED_S = 3 * 3600
 # Token counts read off the transcript at most this often while tools run.
 TOKENS_EVERY_S = 20
 
@@ -245,11 +250,49 @@ def tmux_where(pane):
 
 
 def alive(pid):
+    """True while `pid` is still a claude process (a recycled pid doesn't count)."""
     try:
-        os.kill(int(pid), 0)
-        return True
+        with open(f"/proc/{int(pid)}/comm") as f:
+            return "claude" in f.read()
     except (OSError, ValueError, TypeError):
         return False
+
+
+def daemon_peers():
+    """Socket inodes of the processes attached to a claude daemon's control socket."""
+    peers = set()
+    for line in run(["ss", "-xH"]).splitlines():
+        cols = line.split()
+        # u_str ESTAB 0 0 /tmp/cc-daemon-1000/…/control.sock <inode> * <peer inode>
+        if len(cols) >= 8 and "/cc-daemon-" in cols[4] and cols[4].endswith("/control.sock"):
+            peers.add(cols[7])
+    return peers
+
+
+def is_viewer(pid, peers):
+    """True when `pid` is a claude client attached to the daemon, showing a background job."""
+    if not peers:
+        return False
+    try:
+        fds = os.listdir(f"/proc/{int(pid)}/fd")
+    except (OSError, ValueError, TypeError):
+        return False
+    for fd in fds:
+        try:
+            link = os.readlink(f"/proc/{int(pid)}/fd/{fd}")
+        except OSError:
+            continue
+        if link.startswith("socket:[") and link[8:-1] in peers:
+            return True
+    return False
+
+
+def drop_superseded(sessions, sid, pid):
+    """Removes the other sessions that `pid` ran before `sid`; True if any went."""
+    old = [k for k, o in sessions.items() if k != sid and o.get("pid") == pid]
+    for k in old:
+        del sessions[k]
+    return bool(old)
 
 
 # ─── hook ────────────────────────────────────────────────────────────────────
@@ -269,10 +312,12 @@ def hook():
 
     with State() as st:
         sessions = st.data["sessions"]
+        if event == "SessionEnd":
+            if sessions.pop(sid, None) is not None:
+                st.dirty = True
+            return
         s = sessions.get(sid)
         if s is None:
-            if event == "SessionEnd":
-                return
             cwd = ev.get("cwd") or os.getcwd()
             s = sessions[sid] = {
                 "id": sid,
@@ -290,24 +335,23 @@ def hook():
         st.dirty = True
         s["updated"] = t
         s["transcript"] = ev.get("transcript_path") or s.get("transcript", "")
-        if event != "SessionEnd":
-            s["pid"] = claude_pid()
-            pane = os.environ.get("TMUX_PANE")
-            if pane:
-                s["tmuxPane"] = pane
-                if not s.get("where") or event in ("SessionStart", "UserPromptSubmit"):
-                    s["where"] = tmux_where(pane) or s.get("where", "")
+        s["pid"] = claude_pid()
+        drop_superseded(sessions, sid, s["pid"])
+        pane = os.environ.get("TMUX_PANE")
+        if pane:
+            s["tmuxPane"] = pane
+            if not s.get("where") or event in ("SessionStart", "UserPromptSubmit"):
+                s["where"] = tmux_where(pane) or s.get("where", "")
 
         if event == "SessionStart":
             s["status"] = "idle"
-            s.pop("ended", None)
+            s["viewer"] = is_viewer(s["pid"], daemon_peers())
         elif event == "UserPromptSubmit":
             s["status"] = "working"
             s["prompt"] = one_line(ev.get("prompt", ""))
             s["action"] = ""
             s["last"] = ""
             s["agents"] = 0
-            s.pop("ended", None)
         elif event == "PreToolUse":
             s["status"] = "question" if tool == "AskUserQuestion" else "working"
             if tool == "AskUserQuestion":
@@ -340,13 +384,9 @@ def hook():
             s["status"] = "done"
             s["agents"] = 0
             s["last"] = one_line(ev.get("last_assistant_message", "")) or s.get("last", "")
-        elif event == "SessionEnd":
-            s["status"] = "ended"
-            s["ended"] = t
-            s["agents"] = 0
 
         # Token counts: on every turn boundary, and at most every few seconds mid-turn.
-        boundary = event in ("Stop", "SessionEnd", "UserPromptSubmit", "SessionStart")
+        boundary = event in ("Stop", "UserPromptSubmit", "SessionStart")
         stale = t - s.get("tokensAt", 0) > TOKENS_EVERY_S * 1000
         if s["transcript"] and (boundary or (event == "PostToolUse" and stale)):
             scan = scan_transcript(s["transcript"])
@@ -421,16 +461,25 @@ def statusline():
 
 def sweep():
     t = now_ms()
+    peers = daemon_peers()
     with State() as st:
         sessions = st.data["sessions"]
-        for sid in list(sessions):
-            s = sessions[sid]
-            if mark_if_interrupted(s, t):
+        # Newest first, so a process keeps the session it runs now.
+        for sid in sorted(sessions, key=lambda k: sessions[k].get("updated", 0), reverse=True):
+            s = sessions.get(sid)
+            if s is None:
+                continue
+            if not alive(s.get("pid")):
+                del sessions[sid]
                 st.dirty = True
-            if s.get("status") != "ended" and not alive(s.get("pid")):
-                s["status"] = "ended"
-                s["ended"] = t
-                s["agents"] = 0
+                continue
+            if drop_superseded(sessions, sid, s.get("pid")):
+                st.dirty = True
+            viewer = is_viewer(s["pid"], peers)
+            if s.get("viewer", False) != viewer:
+                s["viewer"] = viewer
+                st.dirty = True
+            if mark_if_interrupted(s, t):
                 st.dirty = True
             # Sessions picked up mid-way (resumed before the hooks existed) get their title once.
             if not s.get("title") and not s.get("titleScanned") and s.get("transcript"):
@@ -441,14 +490,11 @@ def sweep():
                     s["ctx"], s["out"] = scan[0] or s.get("ctx", 0), scan[1] or s.get("out", 0)
                     if scan[2]:
                         s["title"] = scan[2]
-            if s.get("tmuxPane") and not s.get("where") and s.get("status") != "ended":
+            if s.get("tmuxPane") and not s.get("where"):
                 where = tmux_where(s["tmuxPane"])
                 if where:
                     s["where"] = where
                     st.dirty = True
-            if s.get("status") == "ended" and t - s.get("ended", t) > KEEP_ENDED_S * 1000:
-                del sessions[sid]
-                st.dirty = True
 
 
 def forget(sid):
