@@ -108,20 +108,29 @@ Singleton {
         return p ? ((p.dbusName || "") + "|" + (p.trackTitle || "") + "|" + artUrlFor(p)) : "";
     }
 
-    /** The player's own app icon, matched off its desktop entry. */
+    /**
+     * The player's own app icon, matched off its desktop entry (heuristically,
+     * so "brave" finds brave-browser.desktop). Empty when no real icon exists,
+     * so callers hide the badge instead of drawing a missing-icon placeholder.
+     */
     function appIconFor(p) {
         if (!p)
             return "";
         var id = (p.desktopEntry && p.desktopEntry.length > 0) ? p.desktopEntry : (p.identity || "");
         if (id.length === 0)
             return "";
-        var apps = DesktopEntries.applications.values;
-        for (var i = 0; i < apps.length; i++) {
-            var e = apps[i];
-            if (e && e.id && e.id.toLowerCase() === id.toLowerCase() && e.icon)
-                return Quickshell.iconPath(e.icon, "application-x-executable");
+        var e = DesktopEntries.heuristicLookup(id);
+        var names = [e ? e.icon : "", id.toLowerCase()];
+        for (var i = 0; i < names.length; i++) {
+            if (!names[i])
+                continue;
+            if (names[i].indexOf("/") === 0)
+                return names[i];
+            var path = Quickshell.iconPath(names[i], true);
+            if (path.length > 0)
+                return path;
         }
-        return Quickshell.iconPath(id.toLowerCase(), "application-x-executable");
+        return "";
     }
 
     /** MPRIS art, else a thumbnail derived from a YouTube or Twitch page url. */

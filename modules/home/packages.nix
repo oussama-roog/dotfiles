@@ -52,7 +52,6 @@
 
     # Desktop/Wayland utilities
     quickshell
-    waybar
     awww
     rofi
     libqalculate

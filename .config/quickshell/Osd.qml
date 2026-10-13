@@ -1,5 +1,4 @@
 import QtQuick
-import Quickshell.Widgets
 import Quickshell.Services.Pipewire
 import Quickshell.Io
 import "services"
@@ -21,7 +20,6 @@ Item {
     property bool armed: false
     property bool dirty: false
     property bool cooling: false
-    property int holdExtends: 0
 
     /**
      * The player the current flash speaks for. Normally the active source, but an
@@ -36,15 +34,8 @@ Item {
     readonly property string subjectArtist: subjectHas ? Players.artistsOf(subject.trackArtists, subject.trackArtist) : ""
     readonly property string subjectIcon: subjectHas ? Players.appIconFor(subject) : ""
 
-    /** Subject art, live so a cover that lands a beat after the title still resolves; the key forces a reload when a browser reuses one file path. */
-    readonly property string liveArt: {
-        if (!subjectHas)
-            return "";
-        var u = Players.artUrlFor(subject);
-        if (!u)
-            return "";
-        return u.indexOf("file:") === 0 ? u + "#" + Players.keyFor(subject) : u;
-    }
+    /** The rest pill's width: a track flash never gets narrower, so it only widens. */
+    property real minW: 0
 
     property real brightness: 0
     property int lastBrightness: -1
@@ -53,8 +44,15 @@ Item {
     readonly property bool muted: sink && sink.audio ? sink.audio.muted : false
     readonly property real volume: sink && sink.audio ? Math.max(0, Math.min(1, sink.audio.volume)) : 0
 
-    readonly property real desiredW: (kind === "track" ? 344 : 248) * s
-    readonly property real desiredH: kind === "track" ? 64 * s : 44 * s
+    /**
+     * Every flash keeps the rest pill's height and only ever widens: a track
+     * grows sideways to fit its line, the meters (volume, brightness, battery)
+     * take the rest width, or a little more on a narrow bar.
+     */
+    readonly property real desiredW: kind === "track"
+        ? Math.max(minW, Math.min(trackLine.implicitWidth + 36 * s, 600 * s))
+        : Math.max(minW, 280 * s)
+    readonly property real desiredH: 38 * s
 
     /**
      * Leading-edge throttle. The first change flashes at once so a real track
@@ -76,8 +74,6 @@ Item {
     function flash(which) {
         if (!armed || suppressed)
             return false;
-        if (which === "track")
-            holdExtends = 0;
         kind = which;
         flashing = true;
         hideTimer.interval = which === "battery" ? 2000 : 1800;
@@ -110,23 +106,10 @@ Item {
         }
     }
 
-    /**
-     * Hold a track flash open until its cover decodes, so a cold remote thumbnail
-     * that arrives after the base window still gets seen. Capped so a dead art url
-     * never pins the OSD.
-     */
     Timer {
         id: hideTimer
         interval: 1800
-        onTriggered: {
-            if (root.kind === "track" && cover.status !== Image.Ready && root.liveArt.length > 0 && root.holdExtends < 5) {
-                root.holdExtends++;
-                hideTimer.interval = 350;
-                hideTimer.restart();
-            } else {
-                root.flashing = false;
-            }
-        }
+        onTriggered: root.flashing = false
     }
 
     PwObjectTracker {
@@ -247,6 +230,11 @@ Item {
         value: root.brightness
     }
 
+    /**
+     * Track flash, one line at the notch's own height: a state glyph (equaliser
+     * bars while playing, pause when paused), the title, the artist dimmed, and
+     * the player's app icon. No cover; the agents centre shows that.
+     */
     Item {
         id: trackRow
         anchors.fill: parent
@@ -254,107 +242,79 @@ Item {
         visible: opacity > 0.01
         Behavior on opacity { NumberAnimation { duration: 150 } }
 
-        ClippingRectangle {
-            id: coverBox
-            anchors.left: parent.left
-            anchors.verticalCenter: parent.verticalCenter
-            width: 44 * root.s
-            height: 44 * root.s
-            radius: 9 * root.s
-            color: Theme.tileBg
+        Row {
+            id: trackLine
+            anchors.centerIn: parent
+            spacing: 10 * root.s
 
-            Image {
-                id: cover
-                anchors.fill: parent
-                source: root.liveArt
-                sourceSize: Qt.size(Math.ceil(width * 2), Math.ceil(height * 2))
-                fillMode: Image.PreserveAspectCrop
-                asynchronous: true
-                cache: String(source).indexOf("file:") !== 0
-                opacity: status === Image.Ready ? 1 : 0
-                /** Art that arrives late still earns a moment on screen, so a cover
-                 *  decoded near the end of the flash is actually seen. */
-                onStatusChanged: if (status === Image.Ready && root.flashing && root.kind === "track") {
-                    hideTimer.interval = 1300;
-                    hideTimer.restart();
-                }
-            }
-            Icon {
-                anchors.centerIn: parent
-                size: parent.width * 0.42
-                text: Icons.music
-                color: Theme.textSubtle
-                visible: cover.status !== Image.Ready
-            }
+            readonly property real titleW: Math.min(trackTitle.implicitWidth, 280 * root.s)
+            readonly property real artistW: Math.min(trackArtist.implicitWidth, 180 * root.s)
 
-            /** The source's own app icon, sat as a small badge on the art corner. */
-            Rectangle {
-                anchors.right: parent.right
-                anchors.bottom: parent.bottom
-                anchors.margins: 3 * root.s
-                width: 18 * root.s
-                height: 18 * root.s
-                radius: width / 2
-                color: Qt.alpha(Theme.cardBot, 0.8)
-                visible: srcIcon.status === Image.Ready
+            Item {
+                anchors.verticalCenter: parent.verticalCenter
+                width: 14 * root.s
+                height: 14 * root.s
 
-                Image {
-                    id: srcIcon
+                EqBars {
                     anchors.centerIn: parent
-                    width: 12 * root.s
-                    height: 12 * root.s
-                    sourceSize: Qt.size(Math.ceil(width * 2), Math.ceil(height * 2))
-                    fillMode: Image.PreserveAspectFit
-                    asynchronous: true
-                    smooth: true
-                    source: root.subjectIcon
+                    s: root.s
+                    visible: root.subjectPlaying
+                    running: trackRow.visible
+                }
+
+                Icon {
+                    anchors.centerIn: parent
+                    size: 14 * root.s
+                    visible: !root.subjectPlaying
+                    text: root.subjectHas ? Icons.pause : Icons.music
+                    color: Theme.icon
                 }
             }
-        }
-
-        Icon {
-            id: trackCtrl
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            size: 18 * root.s
-            text: root.subjectPlaying ? Icons.play : Icons.pause
-            color: root.subjectPlaying ? Theme.accent : Theme.icon
-        }
-
-        Column {
-            anchors.left: coverBox.right
-            anchors.leftMargin: 12 * root.s
-            anchors.right: trackCtrl.left
-            anchors.rightMargin: 12 * root.s
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: 3 * root.s
 
             Text {
-                width: parent.width
+                id: trackTitle
+                anchors.verticalCenter: parent.verticalCenter
+                width: trackLine.titleW
                 text: root.subjectHas ? root.subjectTitle : "Nothing playing"
-                color: Theme.text
+                color: root.subjectPlaying ? Theme.text : Theme.textSubtle
                 font.family: Theme.font
-                font.pixelSize: 14 * root.s
+                font.pixelSize: 13 * root.s
                 font.weight: Font.DemiBold
                 maximumLineCount: 1
                 elide: Text.ElideRight
+                textFormat: Text.PlainText
             }
 
             Text {
-                width: parent.width
+                id: trackArtist
+                anchors.verticalCenter: parent.verticalCenter
+                width: visible ? trackLine.artistW : 0
                 text: root.subjectArtist
+                visible: text.length > 0
                 color: Theme.textDim
                 font.family: Theme.font
-                font.pixelSize: 11 * root.s
+                font.pixelSize: 11.5 * root.s
                 maximumLineCount: 1
                 elide: Text.ElideRight
-                visible: text.length > 0
+                textFormat: Text.PlainText
+            }
+
+            Image {
+                anchors.verticalCenter: parent.verticalCenter
+                width: visible ? 15 * root.s : 0
+                height: 15 * root.s
+                sourceSize: Qt.size(Math.ceil(15 * root.s * 2), Math.ceil(15 * root.s * 2))
+                fillMode: Image.PreserveAspectFit
+                asynchronous: true
+                smooth: true
+                source: root.subjectIcon
+                visible: status === Image.Ready
+                opacity: 0.85
             }
         }
     }
 
     Item {
-        id: batteryRow
         anchors.fill: parent
         opacity: root.kind === "battery" ? 1 : 0
         visible: opacity > 0.01

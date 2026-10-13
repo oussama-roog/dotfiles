@@ -1,0 +1,538 @@
+#!/usr/bin/env python3
+"""
+Bridge between Claude Code and the quickshell agents dot.
+
+Claude Code calls this as a hook and as its status line command; every call
+folds what it learns into one state file that services/Claude.qml watches:
+
+    ~/.cache/qs-claude/state.json
+    {
+      "sessions": { "<session_id>": { name, cwd, status, action, ... } },
+      "usage":    { "five_hour": {used_percentage, resets_at}, "seven_day": {...}, "updated": ms }
+    }
+
+Subcommands:
+    hook          a Claude Code hook (event JSON on stdin); never prints, never blocks
+    statusline    Claude Code's status line (session JSON on stdin); prints the line
+    sweep         marks sessions whose process died as ended, drops old ones
+    focus <id>    focuses the terminal window (niri) running that session
+    forget <id>   removes a session from the list
+
+Statuses: idle (started, no prompt yet), working, waiting (permission prompt),
+question (AskUserQuestion), done (turn finished), ended (session closed).
+"""
+
+import fcntl
+import json
+import os
+import subprocess
+import sys
+import time
+
+DIR = os.path.join(os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache"), "qs-claude")
+STATE = os.path.join(DIR, "state.json")
+LOCK = os.path.join(DIR, ".lock")
+
+# Ended sessions linger this long in the list before the sweep drops them.
+KEEP_ENDED_S = 3 * 3600
+# Token counts read off the transcript at most this often while tools run.
+TOKENS_EVERY_S = 20
+
+
+def now_ms():
+    return int(time.time() * 1000)
+
+
+class State:
+    """The state file, held under an exclusive lock for a read-modify-write."""
+
+    def __enter__(self):
+        os.makedirs(DIR, exist_ok=True)
+        self.lock = open(LOCK, "w")
+        fcntl.flock(self.lock, fcntl.LOCK_EX)
+        try:
+            with open(STATE) as f:
+                self.data = json.load(f)
+        except (OSError, ValueError):
+            self.data = {}
+        self.data.setdefault("sessions", {})
+        self.data.setdefault("usage", {})
+        self.dirty = False
+        return self
+
+    def __exit__(self, *exc):
+        if self.dirty:
+            tmp = STATE + ".tmp"
+            with open(tmp, "w") as f:
+                json.dump(self.data, f, separators=(",", ":"))
+            os.replace(tmp, STATE)
+        fcntl.flock(self.lock, fcntl.LOCK_UN)
+        self.lock.close()
+
+
+def one_line(text, limit=140):
+    """First non-empty line of `text`, stripped of Markdown markers, cut to `limit`."""
+    lines = [l.strip() for l in (text or "").splitlines() if l.strip()]
+    # A reply that opens with a heading reads better from its first sentence.
+    if len(lines) > 1 and lines[0].startswith("#"):
+        lines = lines[1:]
+    for line in lines:
+        line = line.lstrip("#>*- ").replace("**", "").replace("`", "")
+        if line:
+            return line if len(line) <= limit else line[: limit - 1] + "…"
+    return ""
+
+
+def describe_tool(name, inp):
+    """A short label for a tool call: 'Edit Pill.qml', 'Bash nix build .#…'."""
+    inp = inp if isinstance(inp, dict) else {}
+    path = inp.get("file_path") or inp.get("notebook_path") or inp.get("path")
+    if name == "Bash":
+        return "Bash " + one_line(inp.get("command", ""), 80)
+    if path and name in ("Read", "Edit", "Write", "MultiEdit", "NotebookEdit"):
+        return name + " " + os.path.basename(path.rstrip("/"))
+    if name in ("Grep", "Glob"):
+        return name + " " + one_line(inp.get("pattern", ""), 60)
+    if name in ("WebFetch",):
+        return "Fetch " + one_line(inp.get("url", ""), 60)
+    if name in ("WebSearch",):
+        return "Search " + one_line(inp.get("query", ""), 60)
+    if name in ("Task", "Agent"):
+        return "Agent " + one_line(inp.get("description", ""), 60)
+    if name.startswith("mcp__"):
+        parts = name.split("__")
+        return "MCP " + (parts[-1] if len(parts) > 2 else name)
+    return name
+
+
+def edit_counts(name, inp):
+    """(+added, −removed) line counts for an edit tool call, or None."""
+    if not isinstance(inp, dict):
+        return None
+
+    def lines(s):
+        return len(s.splitlines()) if s else 0
+
+    if name == "Edit":
+        return lines(inp.get("new_string")), lines(inp.get("old_string"))
+    if name == "MultiEdit":
+        edits = inp.get("edits") or []
+        return (sum(lines(e.get("new_string")) for e in edits),
+                sum(lines(e.get("old_string")) for e in edits))
+    if name == "Write":
+        return lines(inp.get("content")), 0
+    return None
+
+
+def scan_transcript(path):
+    """
+    (context, output, title) from a session transcript: `context` is the tokens
+    the latest turn sent (input + cache reads + cache writes), `output` the sum
+    of every reply's output, counting each message id once (the transcript
+    writes one line per content block of the same message), and `title` the
+    session's name: a /rename wins over the generated one.
+    """
+    ctx, out, seen = 0, 0, set()
+    ai_title, custom_title = "", ""
+    try:
+        with open(path, errors="replace") as f:
+            for line in f:
+                if '-title"' in line:
+                    try:
+                        entry = json.loads(line)
+                    except ValueError:
+                        continue
+                    if entry.get("type") == "custom-title":
+                        custom_title = entry.get("customTitle") or entry.get("title") or custom_title
+                    elif entry.get("type") == "ai-title":
+                        ai_title = entry.get("aiTitle") or ai_title
+                    continue
+                if '"usage"' not in line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                except ValueError:
+                    continue
+                if entry.get("isSidechain"):
+                    continue
+                msg = entry.get("message") or {}
+                usage = msg.get("usage")
+                if not isinstance(usage, dict):
+                    continue
+                ctx = (usage.get("input_tokens", 0) + usage.get("cache_read_input_tokens", 0)
+                       + usage.get("cache_creation_input_tokens", 0))
+                mid = msg.get("id")
+                if mid not in seen:
+                    seen.add(mid)
+                    out += usage.get("output_tokens", 0)
+    except OSError:
+        return None
+    return ctx, out, custom_title or ai_title
+
+
+def was_interrupted(path):
+    """
+    True when the transcript's last real message is Claude Code's interrupt
+    marker. Ctrl+C (or Esc at a permission prompt) fires no Stop hook, so this
+    is the only trace that the turn ended. Reads just the file's tail.
+    """
+    try:
+        with open(path, "rb") as f:
+            f.seek(0, os.SEEK_END)
+            f.seek(max(0, f.tell() - 65536))
+            tail = f.read().decode("utf-8", "replace").splitlines()
+    except OSError:
+        return False
+    for line in reversed(tail):
+        if '"type":"user"' not in line and '"type":"assistant"' not in line:
+            continue
+        try:
+            entry = json.loads(line)
+        except ValueError:
+            continue  # the first line of the tail may be cut
+        if entry.get("isSidechain") or entry.get("type") not in ("user", "assistant"):
+            continue
+        content = (entry.get("message") or {}).get("content")
+        if isinstance(content, list):
+            return any(isinstance(c, dict) and str(c.get("text", "")).startswith("[Request interrupted")
+                       for c in content)
+        return isinstance(content, str) and content.startswith("[Request interrupted")
+    return False
+
+
+def mark_if_interrupted(s, t):
+    """Moves a busy session to done when its turn was interrupted; True if it did."""
+    if s.get("status") not in ("working", "waiting", "question") or not s.get("transcript"):
+        return False
+    if not was_interrupted(s["transcript"]):
+        return False
+    s["status"] = "done"
+    s["last"] = "Interrupted"
+    s["agents"] = 0
+    s["updated"] = t
+    return True
+
+
+def claude_pid():
+    """Walks up from the hook to the claude process; falls back to the parent."""
+    pid = os.getppid()
+    for _ in range(6):
+        try:
+            with open(f"/proc/{pid}/comm") as f:
+                comm = f.read().strip()
+            if "claude" in comm:
+                return pid
+            with open(f"/proc/{pid}/stat") as f:
+                pid = int(f.read().rsplit(")", 1)[1].split()[1])
+        except (OSError, ValueError, IndexError):
+            break
+        if pid <= 1:
+            break
+    return os.getppid()
+
+
+def tmux_where(pane):
+    """'main:2.1 nvim' — tmux session, window and pane, plus the window's name."""
+    try:
+        out = subprocess.run(
+            ["tmux", "display-message", "-p", "-t", pane,
+             "#{session_name}:#{window_index}.#{pane_index}\t#{window_name}"],
+            capture_output=True, text=True, timeout=1).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    loc, _, name = out.partition("\t")
+    return loc + (" " + name if name else "")
+
+
+def alive(pid):
+    try:
+        os.kill(int(pid), 0)
+        return True
+    except (OSError, ValueError, TypeError):
+        return False
+
+
+# ─── hook ────────────────────────────────────────────────────────────────────
+
+def hook():
+    try:
+        ev = json.load(sys.stdin)
+    except ValueError:
+        return
+    sid = ev.get("session_id")
+    if not sid:
+        return
+    event = ev.get("hook_event_name", "")
+    tool = ev.get("tool_name", "")
+    inp = ev.get("tool_input")
+    t = now_ms()
+
+    with State() as st:
+        sessions = st.data["sessions"]
+        s = sessions.get(sid)
+        if s is None:
+            if event == "SessionEnd":
+                return
+            cwd = ev.get("cwd") or os.getcwd()
+            s = sessions[sid] = {
+                "id": sid,
+                "cwd": cwd,
+                "name": os.path.basename(cwd.rstrip("/")) or cwd,
+                "status": "idle",
+                "started": t,
+                "action": "",
+                "prompt": "",
+                "last": "",
+                "ctx": 0,
+                "out": 0,
+                "agents": 0,
+            }
+        st.dirty = True
+        s["updated"] = t
+        s["transcript"] = ev.get("transcript_path") or s.get("transcript", "")
+        if event != "SessionEnd":
+            s["pid"] = claude_pid()
+            pane = os.environ.get("TMUX_PANE")
+            if pane:
+                s["tmuxPane"] = pane
+                if not s.get("where") or event in ("SessionStart", "UserPromptSubmit"):
+                    s["where"] = tmux_where(pane) or s.get("where", "")
+
+        if event == "SessionStart":
+            s["status"] = "idle"
+            s.pop("ended", None)
+        elif event == "UserPromptSubmit":
+            s["status"] = "working"
+            s["prompt"] = one_line(ev.get("prompt", ""))
+            s["action"] = ""
+            s["last"] = ""
+            s["agents"] = 0
+            s.pop("ended", None)
+        elif event == "PreToolUse":
+            s["status"] = "question" if tool == "AskUserQuestion" else "working"
+            if tool == "AskUserQuestion":
+                qs = (inp or {}).get("questions") or [{}]
+                s["action"] = one_line(qs[0].get("question", "Has a question"))
+            else:
+                s["action"] = describe_tool(tool, inp)
+            if tool in ("Task", "Agent"):
+                s["agents"] = s.get("agents", 0) + 1
+        elif event == "PermissionRequest":
+            s["status"] = "waiting"
+            s["action"] = describe_tool(tool, inp)
+        elif event in ("PostToolUse", "PostToolUseFailure"):
+            s["status"] = "working"
+            counts = edit_counts(tool, inp)
+            if counts:
+                s["action"] = describe_tool(tool, inp) + f"  +{counts[0]} −{counts[1]}"
+            if tool in ("Task", "Agent"):
+                s["agents"] = max(0, s.get("agents", 0) - 1)
+        elif event == "Notification":
+            kind = ev.get("notification_type", "")
+            msg = ev.get("message", "")
+            if kind == "permission_prompt" or (not kind and "permission" in msg.lower()):
+                s["status"] = "waiting"
+                if not s.get("action"):
+                    s["action"] = one_line(msg)
+            elif kind == "idle_prompt" and s["status"] in ("waiting", "question", "working"):
+                s["status"] = "done"
+        elif event == "Stop":
+            s["status"] = "done"
+            s["agents"] = 0
+            s["last"] = one_line(ev.get("last_assistant_message", "")) or s.get("last", "")
+        elif event == "SessionEnd":
+            s["status"] = "ended"
+            s["ended"] = t
+            s["agents"] = 0
+
+        # Token counts: on every turn boundary, and at most every few seconds mid-turn.
+        boundary = event in ("Stop", "SessionEnd", "UserPromptSubmit", "SessionStart")
+        stale = t - s.get("tokensAt", 0) > TOKENS_EVERY_S * 1000
+        if s["transcript"] and (boundary or (event == "PostToolUse" and stale)):
+            scan = scan_transcript(s["transcript"])
+            if scan:
+                s["ctx"], s["out"] = scan[0], scan[1]
+                if scan[2]:
+                    s["title"] = scan[2]
+                s["tokensAt"] = t
+
+
+# ─── status line ─────────────────────────────────────────────────────────────
+
+def statusline():
+    try:
+        ev = json.load(sys.stdin)
+    except ValueError:
+        ev = {}
+
+    limits = ev.get("rate_limits") if isinstance(ev.get("rate_limits"), dict) else None
+    sid = ev.get("session_id")
+    model = (ev.get("model") or {}).get("display_name", "")
+    cw = ev.get("context_window") if isinstance(ev.get("context_window"), dict) else {}
+    cur = cw.get("current_usage") if isinstance(cw.get("current_usage"), dict) else None
+
+    with State() as st:
+        if limits:
+            usage = {k: v for k, v in limits.items() if isinstance(v, dict)}
+            old = {k: v for k, v in st.data["usage"].items() if k != "updated"}
+            # Rewrite when the numbers move, and every minute so "updated" stays honest.
+            if usage != old or now_ms() - st.data["usage"].get("updated", 0) > 60_000:
+                usage["updated"] = now_ms()
+                st.data["usage"] = usage
+                st.dirty = True
+        s = st.data["sessions"].get(sid) if sid else None
+        if s is not None:
+            cost = ev.get("cost") if isinstance(ev.get("cost"), dict) else {}
+            fresh = {
+                "model": model,
+                "title": ev.get("session_name") or s.get("title", ""),
+                "ctxPct": cw.get("used_percentage"),
+                "added": cost.get("total_lines_added"),
+                "removed": cost.get("total_lines_removed"),
+            }
+            for k, v in fresh.items():
+                if v not in (None, "") and s.get(k) != v:
+                    s[k] = v
+                    st.dirty = True
+            if mark_if_interrupted(s, now_ms()):
+                st.dirty = True
+            if cur:
+                ctx = (cur.get("input_tokens", 0) + cur.get("cache_read_input_tokens", 0)
+                       + cur.get("cache_creation_input_tokens", 0))
+                if ctx and ctx != s.get("ctx"):
+                    s["ctx"] = ctx
+                    st.dirty = True
+        usage = st.data["usage"]
+
+    parts = []
+    if model:
+        parts.append(model)
+    cwd = (ev.get("workspace") or {}).get("current_dir") or ev.get("cwd")
+    if cwd:
+        parts.append(os.path.basename(cwd.rstrip("/")))
+    for key, label in (("five_hour", "5h"), ("seven_day", "wk")):
+        w = usage.get(key)
+        if isinstance(w, dict) and isinstance(w.get("used_percentage"), (int, float)):
+            parts.append(f"{label} {round(w['used_percentage'])}%")
+    print(" · ".join(parts))
+
+
+# ─── sweep / focus / forget ──────────────────────────────────────────────────
+
+def sweep():
+    t = now_ms()
+    with State() as st:
+        sessions = st.data["sessions"]
+        for sid in list(sessions):
+            s = sessions[sid]
+            if mark_if_interrupted(s, t):
+                st.dirty = True
+            if s.get("status") != "ended" and not alive(s.get("pid")):
+                s["status"] = "ended"
+                s["ended"] = t
+                s["agents"] = 0
+                st.dirty = True
+            # Sessions picked up mid-way (resumed before the hooks existed) get their title once.
+            if not s.get("title") and not s.get("titleScanned") and s.get("transcript"):
+                scan = scan_transcript(s["transcript"])
+                s["titleScanned"] = True
+                st.dirty = True
+                if scan:
+                    s["ctx"], s["out"] = scan[0] or s.get("ctx", 0), scan[1] or s.get("out", 0)
+                    if scan[2]:
+                        s["title"] = scan[2]
+            if s.get("tmuxPane") and not s.get("where") and s.get("status") != "ended":
+                where = tmux_where(s["tmuxPane"])
+                if where:
+                    s["where"] = where
+                    st.dirty = True
+            if s.get("status") == "ended" and t - s.get("ended", t) > KEEP_ENDED_S * 1000:
+                del sessions[sid]
+                st.dirty = True
+
+
+def forget(sid):
+    with State() as st:
+        if st.data["sessions"].pop(sid, None) is not None:
+            st.dirty = True
+
+
+def ancestors(pid):
+    out = []
+    for _ in range(32):
+        out.append(pid)
+        try:
+            with open(f"/proc/{pid}/stat") as f:
+                pid = int(f.read().rsplit(")", 1)[1].split()[1])
+        except (OSError, ValueError, IndexError):
+            break
+        if pid <= 1:
+            break
+    return out
+
+
+def run(argv):
+    try:
+        return subprocess.run(argv, capture_output=True, text=True, timeout=3).stdout
+    except (OSError, subprocess.SubprocessError):
+        return ""
+
+
+def focus(sid):
+    """
+    Focuses the niri window whose process is an ancestor of the session. Under
+    tmux the claude process hangs off the tmux server, so the pane is selected
+    first and the walk starts from a client attached to that session instead.
+    """
+    with State() as st:
+        s = dict(st.data["sessions"].get(sid) or {})
+    if not s:
+        return
+    start = s.get("pid")
+    pane = s.get("tmuxPane")
+    if pane:
+        session = run(["tmux", "display-message", "-p", "-t", pane, "#{session_name}"]).strip()
+        if session:
+            run(["tmux", "select-window", "-t", pane])
+            run(["tmux", "select-pane", "-t", pane])
+            for line in run(["tmux", "list-clients", "-F", "#{client_pid} #{client_session}"]).splitlines():
+                cpid, _, csession = line.partition(" ")
+                if csession == session and cpid.isdigit():
+                    start = int(cpid)
+                    break
+    if not start:
+        return
+    try:
+        windows = json.loads(run(["niri", "msg", "-j", "windows"]) or "[]")
+    except ValueError:
+        return
+    by_pid = {w.get("pid"): w.get("id") for w in windows if w.get("pid")}
+    for pid in ancestors(int(start)):
+        if pid in by_pid:
+            run(["niri", "msg", "action", "focus-window", "--id", str(by_pid[pid])])
+            return
+
+
+def main():
+    cmd = sys.argv[1] if len(sys.argv) > 1 else ""
+    try:
+        if cmd == "hook":
+            hook()
+        elif cmd == "statusline":
+            statusline()
+        elif cmd == "sweep":
+            sweep()
+        elif cmd == "focus" and len(sys.argv) > 2:
+            focus(sys.argv[2])
+        elif cmd == "forget" and len(sys.argv) > 2:
+            forget(sys.argv[2])
+        else:
+            print(__doc__.strip(), file=sys.stderr)
+            sys.exit(2)
+    except Exception as e:  # a broken bridge must never break Claude Code
+        if cmd != "statusline":
+            print(f"claude-qs: {e}", file=sys.stderr)
+
+
+if __name__ == "__main__":
+    main()

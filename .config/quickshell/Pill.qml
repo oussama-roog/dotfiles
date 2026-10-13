@@ -37,7 +37,7 @@ Item {
     /** Side columns share one width so the stats stay dead centre. */
     readonly property real restSideW: Math.max(ws.implicitWidth, restClock.implicitWidth)
     readonly property real restW: 2 * restSideW + stats.implicitWidth + 2 * restGap + 2 * restPad
-    /** Shared width of the list surfaces (launcher, clipboard, web, themes, notifications). */
+    /** Shared width of the list surfaces (launcher, clipboard, web, themes, notifications, claude). */
     readonly property real listW: 460 * s
 
     /**
@@ -52,7 +52,8 @@ Item {
         wallpaper:     () => Qt.size(1000 * s, 222 * s),
         power:         () => Qt.size(340 * s, 106 * s),
         web:           () => Qt.size(listW, web.implicitHeight + 29 * s),
-        notifications: () => Qt.size(listW, notifications.implicitHeight + 26 * s)
+        notifications: () => Qt.size(listW, notifications.implicitHeight + 26 * s),
+        claude:        () => Qt.size(listW, agents.implicitHeight + 26 * s)
     })
 
     readonly property string mode: surfaceOpen && surfaces[surface] !== undefined ? surface
@@ -207,6 +208,7 @@ Item {
     Power         { host: pill; name: "power" }
     Web           { id: web; host: pill; name: "web" }
     Notifications { id: notifications; host: pill; name: "notifications" }
+    Agents        { id: agents; host: pill; name: "claude" }
 
     Osd {
         id: osd
@@ -216,6 +218,7 @@ Item {
         anchors.rightMargin: 18 * pill.s
         anchors.bottomMargin: 12 * pill.s
         s: pill.s
+        minW: pill.restW
         suppressed: pill.surfaceOpen
         enabled: pill.mode === "osd"
         opacity: pill.mode === "osd" ? 1 : 0

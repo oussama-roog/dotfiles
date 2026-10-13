@@ -14,7 +14,7 @@ import "services"
  *                pill anchored at top-centre.
  *
  * Surfaces open via `qs ipc call pill <name>`: launcher, web, clipboard,
- * wallpaper, power, themes, notifications. `hide` closes whatever is open.
+ * wallpaper, power, themes, notifications, claude. `hide` closes whatever is open.
  */
 ShellRoot {
     id: root
@@ -33,6 +33,7 @@ ShellRoot {
         function power(): void         { root.toggle("power"); }
         function themes(): void        { root.toggle("themes"); }
         function notifications(): void { root.toggle("notifications"); }
+        function claude(): void        { root.toggle("claude"); }
         function hide(): void          { root.close(); }
     }
 
@@ -94,11 +95,15 @@ ShellRoot {
             mask: surfaceOpen ? fullRegion : barRegion
             Region {
                 id: barRegion
-                regions: [pillRegion, notifRegion]
+                regions: [pillRegion, notifRegion, claudeRegion]
             }
             Region {
                 id: notifRegion
                 item: notifPill
+            }
+            Region {
+                id: claudeRegion
+                item: claudePill
             }
             Region {
                 id: pillRegion
@@ -161,6 +166,25 @@ ShellRoot {
                     s: overlay.s
                     merged: overlay.surface === "notifications"
                     onBellClicked: root.toggle("notifications")
+                }
+
+                /**
+                 * The bell's mirror on the left: Claude sessions and media.
+                 * With the agents centre open it docks its sparkle in the
+                 * centre's header slot (Agents.dotSlot), left of the title.
+                 */
+                ClaudePill {
+                    id: claudePill
+                    z: 1
+                    readonly property real restRight: 26 * overlay.s
+                    readonly property real dockRight: -(16 + 12) * overlay.s - dotW / 2
+                    anchors.top: parent.top
+                    anchors.topMargin: (4 + 4 * mergeT) * overlay.s
+                    anchors.right: pill.left
+                    anchors.rightMargin: restRight + (dockRight - restRight) * mergeT
+                    s: overlay.s
+                    merged: overlay.surface === "claude"
+                    onDotClicked: root.toggle("claude")
                 }
             }
 

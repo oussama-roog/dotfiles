@@ -4,9 +4,9 @@ import Quickshell
 import Quickshell.Io
 
 /**
- * CPU and RAM usage for the rest pill. Polls /proc every 2s. CPU load is a
- * two-sample delta of /proc/stat (busy vs total jiffies); memory is
- * MemTotal - MemAvailable from /proc/meminfo.
+ * CPU and RAM usage for the rest pill, read straight from /proc every 2s (no
+ * subprocess). CPU load is a two-sample delta of /proc/stat's first line
+ * (busy vs total jiffies); memory is MemTotal - MemAvailable.
  */
 Singleton {
     id: root
@@ -15,37 +15,34 @@ Singleton {
     property int memPct: 0
     property real memUsedGb: 0
 
-    property real prevCpuTotal: 0
-    property real prevCpuIdle: 0
+    property real prevTotal: 0
+    property real prevIdle: 0
 
-    Process {
-        id: proc
-        command: ["sh", "-c",
-            "read -r _ a b c d e f g h _ < /proc/stat; echo \"CPU $((a+b+c+d+e+f+g+h)) $((d+e))\"; "
-            + "awk '/^MemTotal:/{mt=$2}/^MemAvailable:/{ma=$2}END{print \"MEM\",mt,ma}' /proc/meminfo"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                var lines = this.text.split("\n");
-                for (var i = 0; i < lines.length; i++) {
-                    var p = lines[i].trim().split(/\s+/);
-                    if (p[0] === "CPU") {
-                        var total = parseFloat(p[1]);
-                        var idle = parseFloat(p[2]);
-                        if (root.prevCpuTotal > 0) {
-                            var dt = total - root.prevCpuTotal;
-                            var di = idle - root.prevCpuIdle;
-                            root.cpu = dt > 0 ? Math.max(0, Math.min(100, Math.round(100 * (dt - di) / dt))) : 0;
-                        }
-                        root.prevCpuTotal = total;
-                        root.prevCpuIdle = idle;
-                    } else if (p[0] === "MEM") {
-                        var mt = parseFloat(p[1]);
-                        var ma = parseFloat(p[2]);
-                        root.memUsedGb = (mt - ma) / 1048576;
-                        root.memPct = mt > 0 ? Math.round(100 * (mt - ma) / mt) : 0;
-                    }
-                }
-            }
+    FileView {
+        id: stat
+        path: "/proc/stat"
+        onLoaded: {
+            // cpu  user nice system idle iowait irq softirq steal ...
+            const f = text().split("\n", 1)[0].trim().split(/\s+/).slice(1, 9).map(Number);
+            const total = f.reduce((a, b) => a + b, 0);
+            const idle = f[3] + f[4];
+            const dt = total - root.prevTotal;
+            if (root.prevTotal > 0 && dt > 0)
+                root.cpu = Math.max(0, Math.min(100, Math.round(100 * (dt - (idle - root.prevIdle)) / dt)));
+            root.prevTotal = total;
+            root.prevIdle = idle;
+        }
+    }
+
+    FileView {
+        id: meminfo
+        path: "/proc/meminfo"
+        onLoaded: {
+            const kb = (key) => Number((text().match(new RegExp("^" + key + ":\\s+(\\d+)", "m")) || [0, 0])[1]);
+            const total = kb("MemTotal");
+            const used = total - kb("MemAvailable");
+            root.memUsedGb = used / 1048576;
+            root.memPct = total > 0 ? Math.round(100 * used / total) : 0;
         }
     }
 
@@ -54,6 +51,9 @@ Singleton {
         running: true
         repeat: true
         triggeredOnStart: true
-        onTriggered: if (!proc.running) proc.running = true
+        onTriggered: {
+            stat.reload();
+            meminfo.reload();
+        }
     }
 }

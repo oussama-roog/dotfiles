@@ -26,11 +26,6 @@
   services.blueman.enable = true;
 
   # Window managers
-  programs.hyprland = {
-    enable = true;
-    xwayland.enable = true;
-  };
-
   programs.niri.enable = true;
 
   # i3 (X11)

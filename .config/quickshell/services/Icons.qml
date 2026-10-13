@@ -26,7 +26,6 @@ Singleton {
 
     // Surfaces
     readonly property string search: ""
-    readonly property string clipboard: ""
     readonly property string globe: ""
     readonly property string palette: ""
     readonly property string shuffle: ""
@@ -45,6 +44,13 @@ Singleton {
     readonly property string note: ""
     readonly property string envelope: ""
     readonly property string brain: ""
+
+    // Agents
+    readonly property string checkCircle: "\ue184"
+    readonly property string warning: "\ue4e2"
+    readonly property string question: "\ue3e8"
+    readonly property string circleNotch: "\ueb44"
+    readonly property string terminal: "\ueae8"
 
     // OSD
     readonly property string speaker: ""

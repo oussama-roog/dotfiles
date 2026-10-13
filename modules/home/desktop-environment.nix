@@ -32,7 +32,7 @@
 
     hypridle = {
       Unit = {
-        Description = "Hyprland idle daemon";
+        Description = "Idle daemon (dim, lock, screen off, suspend)";
         PartOf = [ "graphical-session.target" ];
         After = [ "graphical-session.target" ];
       };
@@ -73,7 +73,6 @@
         i3 = "i3";
         polybar = "polybar";
         nvim = "nvim";
-        waybar = "waybar";
         quickshell = "quickshell";
         rofi = "rofi";
         ghostty = "ghostty";

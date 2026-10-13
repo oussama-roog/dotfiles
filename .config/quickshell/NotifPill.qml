@@ -1,7 +1,6 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Effects
 import "services"
 import "widgets"
 
@@ -45,42 +44,10 @@ Item {
     height: dotW
     Behavior on width { NumberAnimation { duration: Motion.morph; easing.type: root.active ? Motion.easeOpen : Motion.easeClose; easing.overshoot: Motion.overshoot } }
 
-    Rectangle {
-        id: body
+    DotBody {
         anchors.fill: parent
-        radius: height / 2
-        opacity: 1 - root.dissolve
-        scale: 1 - 0.4 * root.dissolve
-        visible: opacity > 0.01
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: Qt.alpha(Theme.cardTop, Flags.pillOpacity) }
-            GradientStop { position: 1.0; color: Qt.alpha(Theme.cardBot, Flags.pillOpacity) }
-        }
-
-        layer.enabled: true
-        layer.effect: MultiEffect {
-            shadowEnabled: true
-            shadowColor: Theme.shadow
-            shadowBlur: 0.7
-            shadowVerticalOffset: 3 * root.s
-        }
-
-        Rectangle {
-            anchors.fill: parent
-            radius: parent.radius
-            color: "transparent"
-            border.width: 1
-            border.color: Theme.border
-        }
-
-        /** Inner sheen along the top. */
-        Rectangle {
-            x: body.radius * 0.6
-            y: 1
-            width: Math.max(0, body.width - body.radius * 1.2)
-            height: 1
-            color: Theme.sheen
-        }
+        s: root.s
+        dissolve: root.dissolve
     }
 
     Item {

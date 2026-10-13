@@ -1,4 +1,5 @@
 singleton Battery Battery.qml
+singleton Claude Claude.qml
 singleton Cliphist Cliphist.qml
 singleton Flags Flags.qml
 singleton Icons Icons.qml

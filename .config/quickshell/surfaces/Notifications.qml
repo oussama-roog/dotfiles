@@ -217,7 +217,6 @@ PillSurface {
     }
 
     Item {
-        id: mainView
         anchors.fill: parent
         enabled: root.open
 
@@ -380,7 +379,6 @@ PillSurface {
                                 }
 
                                 Rectangle {
-                                    id: groupHead
                                     width: parent.width
                                     height: 32 * root.s
                                     radius: 8 * root.s

@@ -306,7 +306,6 @@ PillSurface {
     }
 
     MouseArea {
-        id: wheelArea
         anchors.fill: parent
         z: 20
         acceptedButtons: Qt.NoButton

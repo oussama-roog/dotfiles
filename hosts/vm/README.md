@@ -246,7 +246,7 @@ Opens fzf with: home, Downloads, .config, dotfiles, projects, notes, share
 
 ## 7. Audio
 
-VMware passes audio through to Windows automatically. PipeWire in the VM handles the virtual sound card. Volume controls in niri/waybar work normally.
+VMware passes audio through to Windows automatically. PipeWire in the VM handles the virtual sound card. Volume controls in niri work normally.
 
 ---
 

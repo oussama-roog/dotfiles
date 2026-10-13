@@ -25,6 +25,10 @@ parse_yaml_color() {
     grep "^  $key:" "$file" | sed -E 's/^  [^:]+: *"?#?([0-9a-fA-F]{6})"?.*/\1/' | head -1
 }
 
+current_theme() {
+    cat "$CURRENT_THEME_FILE" 2>/dev/null || echo "black-metal-bathory"
+}
+
 apply_theme() {
     local theme_name="$1"
     local base16_dir=$(get_base16_dir)
@@ -42,7 +46,6 @@ apply_theme() {
 
     source "$THEMES_DIR/hypr.sh"
     source "$THEMES_DIR/nix.sh"
-    source "$THEMES_DIR/waybar.sh"
     source "$THEMES_DIR/rofi.sh"
     source "$THEMES_DIR/kitty.sh"
     source "$THEMES_DIR/ghostty.sh"
@@ -55,9 +58,8 @@ apply_theme() {
     source "$THEMES_DIR/polybar.sh"
     source "$THEMES_DIR/quickshell.sh"
 
-    apply_hypr_theme "${colors[@]}"
+    apply_hypr_theme "${colors[@]}" # hyprlock colors
     apply_nix_theme "${colors[@]}"
-    apply_waybar_theme "${colors[@]}"
     apply_rofi_theme "${colors[@]}"
     apply_kitty_theme "${colors[@]}"
     apply_ghostty_theme "${colors[@]}"
@@ -69,8 +71,6 @@ apply_theme() {
     apply_polybar_theme "${colors[@]}"
     apply_quickshell_theme
 
-    reload_hypr
-    reload_waybar
     reload_dunst
     reload_nvim "$theme_name"
     reload_i3
@@ -93,11 +93,10 @@ apply)
     apply_theme "$2"
     ;;
 current)
-    if [[ -f "$CURRENT_THEME_FILE" ]]; then
-        cat "$CURRENT_THEME_FILE"
-    else
-        echo "black-metal-bathory"
-    fi
+    current_theme
+    ;;
+restore)
+    apply_theme "$(current_theme)"
     ;;
 random)
     themes=($(get_themes))
@@ -109,7 +108,7 @@ random)
     apply_theme "$random_theme"
     ;;
 *)
-    echo "Usage: $0 {list|apply <theme>|current|random}"
+    echo "Usage: $0 {list|apply <theme>|current|restore|random}"
     exit 1
     ;;
 esac

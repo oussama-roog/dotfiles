@@ -36,7 +36,7 @@ exec_always --no-startup-id setxkbmap -layout us,ara -option grp:alt_shift_toggl
 # ──────────────────────────────────────────────
 # Autostart
 # ──────────────────────────────────────────────
-exec --no-startup-id ~/dotfiles/scripts/theme-restore.sh
+exec --no-startup-id ~/dotfiles/scripts/theme-switcher.sh restore
 exec --no-startup-id ~/.config/polybar/launch.sh
 exec --no-startup-id dunst
 

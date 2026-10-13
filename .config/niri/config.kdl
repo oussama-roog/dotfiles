@@ -78,13 +78,11 @@ layout {
     }
 }
 
-spawn-at-startup "~/dotfiles/scripts/theme-restore.sh"
-// spawn-at-startup "waybar"
+spawn-at-startup "~/dotfiles/scripts/theme-switcher.sh" "restore"
 spawn-at-startup "quickshell"
 spawn-at-startup "awww-daemon"
-spawn-sh-at-startup "[[ -f ~/.cache/current_wallpaper ]] && swww img \"$(cat ~/.cache/current_wallpaper)\" || swww img ~/dotfiles/wallpapers/wall.png"
+spawn-sh-at-startup "[[ -f ~/.cache/current_wallpaper ]] && awww img \"$(cat ~/.cache/current_wallpaper)\" || awww img ~/dotfiles/wallpapers/wall.png"
 spawn-at-startup "wl-paste" "--type" "text" "--watch" "cliphist" "store"
-// spawn-sh-at-startup "vicinae server"
 
 hotkey-overlay {
     skip-at-startup
@@ -132,10 +130,10 @@ binds {
     Mod+Return { spawn "kitty"; }
     Mod+E { spawn "nautilus"; }
     Mod+Shift+Space { spawn "~/.config/rofi/launcher/launcher.sh"; }
-    // Mod+Space repeat=false { spawn "vicinae" "toggle"; }
     Mod+P { spawn "qs" "ipc" "call" "pill" "power"; }
     Mod+V { spawn "qs" "ipc" "call" "pill" "clipboard"; }
     Mod+N { spawn "qs" "ipc" "call" "pill" "notifications"; }
+    Mod+A { spawn "qs" "ipc" "call" "pill" "claude"; }
     Mod+C { spawn "~/.config/rofi/launcher/calc.sh"; }
     Mod+W { spawn "qs" "ipc" "call" "pill" "web"; }
     Mod+Shift+W { spawn "qs" "ipc" "call" "pill" "wallpaper"; }

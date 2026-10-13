@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Colors for hyprlock (sourced by .config/hypr/hyprlock.conf).
+
 apply_hypr_theme() {
     cat > "$CONFIG_DIR/hypr/colors.conf" << EOF
 \$base00 = ${colors[base00]}ff
@@ -19,8 +21,4 @@ apply_hypr_theme() {
 \$base0E = ${colors[base0E]}ff
 \$base0F = ${colors[base0F]}ff
 EOF
-}
-
-reload_hypr() {
-    hyprctl reload 2>/dev/null || true
 }

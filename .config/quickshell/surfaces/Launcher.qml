@@ -289,7 +289,6 @@ PillSurface {
                     spacing: 1 * root.s
 
                     Text {
-                        id: nameText
                         width: parent.width
                         text: appRow.entry ? appRow.entry.name : ""
                         color: appRow.selected ? Theme.onAccent : Theme.text
