@@ -12,9 +12,7 @@ import "surfaces"
  * grow out of the pill in place. Surfaces are stacked absolutely and cross-fade.
  *
  * The rest pill is a three-part bar: workspace dots on the left, CPU % and
- * used RAM dead centre, the clock on the right. Hovering it (`peek`) widens it
- * in place, same height, to add volume and battery to the stats and the date
- * before the clock. Surfaces only open via IPC.
+ * used RAM dead centre, the clock on the right. Surfaces only open via IPC.
  *
  * Drawn as an Ambxst-style notch hanging from the top edge, with concave
  * "ears" joining it to the screen.
@@ -29,19 +27,6 @@ Item {
 
     readonly property bool osdActive: osd.flashing
 
-    /**
-     * Hover peek: on after a short hover so passing the cursor across the top
-     * edge doesn't flicker it, off a beat after leaving.
-     */
-    property bool peek: false
-    HoverHandler { id: restHover }
-    Timer {
-        interval: restHover.hovered ? 150 : 250
-        running: (restHover.hovered && pill.mode === "rest") !== pill.peek
-        onTriggered: pill.peek = restHover.hovered && pill.mode === "rest"
-    }
-    onModeChanged: if (mode !== "rest") peek = false
-
     readonly property real restCorner: 18 * s
     readonly property real openCorner: 24 * s
 
@@ -50,7 +35,7 @@ Item {
     readonly property real restPad: 22 * s
     readonly property real restGap: 22 * s
     /** Side columns share one width so the stats stay dead centre. */
-    readonly property real restSideW: Math.max(ws.implicitWidth, clockRow.implicitWidth)
+    readonly property real restSideW: Math.max(ws.implicitWidth, restClock.implicitWidth)
     readonly property real restW: 2 * restSideW + stats.implicitWidth + 2 * restGap + 2 * restPad
     /** Shared width of the list surfaces (launcher, clipboard, web, themes, notifications, agents). */
     readonly property real listW: 460 * s
@@ -156,13 +141,8 @@ Item {
         property string icon: ""
         property string text: ""
         property bool hot: false
-        /** Shown only while peeking. */
-        property bool extra: false
 
         spacing: 5 * pill.s
-        visible: !extra || pill.peek
-        opacity: !extra || pill.peek ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard } }
 
         Icon {
             anchors.verticalCenter: parent.verticalCenter
@@ -219,48 +199,18 @@ Item {
                 text: Sysmon.memUsedGb.toFixed(1) + "G"
                 hot: Sysmon.memPct >= 90
             }
-            Stat {
-                anchors.verticalCenter: parent.verticalCenter
-                extra: true
-                icon: osd.muted ? Icons.speakerOff : Icons.speaker
-                text: osd.muted ? "mute" : Math.round(osd.volume * 100) + "%"
-            }
-            Stat {
-                anchors.verticalCenter: parent.verticalCenter
-                extra: Battery.present
-                visible: Battery.present && pill.peek
-                icon: Battery.charging ? Icons.lightning : Battery.pct > 60 ? Icons.batteryHigh : Battery.pct > 25 ? Icons.batteryMedium : Icons.batteryLow
-                text: Battery.pct + "%"
-                hot: Battery.pct <= 15 && !Battery.charging
-            }
         }
 
-        Row {
-            id: clockRow
+        Text {
+            id: restClock
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            spacing: 10 * pill.s
-
-            Text {
-                anchors.verticalCenter: parent.verticalCenter
-                visible: pill.peek
-                opacity: pill.peek ? 1 : 0
-                Behavior on opacity { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard } }
-                text: Qt.formatDate(clock.now, "ddd d MMM")
-                color: Theme.textSubtle
-                font.family: Theme.font
-                font.pixelSize: 13 * pill.s
-                font.weight: Font.Medium
-            }
-            Text {
-                anchors.verticalCenter: parent.verticalCenter
-                text: clock.hhmm
-                color: Theme.text
-                font.family: Theme.font
-                font.pixelSize: 16 * pill.s
-                font.weight: Font.DemiBold
-                font.features: { "tnum": 1 }
-            }
+            text: clock.hhmm
+            color: Theme.text
+            font.family: Theme.font
+            font.pixelSize: 16 * pill.s
+            font.weight: Font.DemiBold
+            font.features: { "tnum": 1 }
         }
     }
 

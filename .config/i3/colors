@@ -1,20 +1,20 @@
 # Base16 colors for i3 — managed by theme-switcher
-set $base00 #000000
-set $base01 #121212
-set $base02 #222222
-set $base03 #333333
-set $base04 #999999
-set $base05 #c1c1c1
-set $base06 #999999
-set $base07 #c1c1c1
-set $base08 #5f8787
-set $base09 #aaaaaa
-set $base0A #e78a53
-set $base0B #fbcb97
-set $base0C #aaaaaa
-set $base0D #888888
-set $base0E #999999
-set $base0F #444444
+set $base00 #171D23
+set $base01 #1D252C
+set $base02 #28323A
+set $base03 #526270
+set $base04 #B7C5D3
+set $base05 #D8E2EC
+set $base06 #F6F6F8
+set $base07 #FBFBFD
+set $base08 #F7768E
+set $base09 #FF9E64
+set $base0A #B7C5D3
+set $base0B #9ECE6A
+set $base0C #89DDFF
+set $base0D #7AA2F7
+set $base0E #BB9AF7
+set $base0F #BB9AF7
 
 # class                 border  backgr  text    indicator child_border
 client.focused          $base0A $base0A $base00 $base0B   $base0A

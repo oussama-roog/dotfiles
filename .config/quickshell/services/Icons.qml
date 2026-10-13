@@ -45,11 +45,6 @@ Singleton {
     readonly property string envelope: ""
     readonly property string brain: ""
 
-    // Hover peek
-    readonly property string batteryHigh: "\ue0c2"
-    readonly property string batteryMedium: "\ue0c6"
-    readonly property string batteryLow: "\ue0c4"
-
     // Launcher modes and actions
     readonly property string image: "\ue2ca"
     readonly property string camera: "\ue10e"
