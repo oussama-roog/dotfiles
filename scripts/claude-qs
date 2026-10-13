@@ -526,14 +526,36 @@ def run(argv):
 
 def focus(sid):
     """
-    Focuses the niri window whose process is an ancestor of the session. Under
-    tmux the claude process hangs off the tmux server, so the pane is selected
-    first and the walk starts from a client attached to that session instead.
+    Focuses the terminal running a session. A background job has no terminal
+    of its own, so it is shown through a viewer (a claude attached to the
+    daemon) instead, the most recently used one first.
     """
     with State() as st:
-        s = dict(st.data["sessions"].get(sid) or {})
+        sessions = {k: dict(v) for k, v in st.data["sessions"].items()}
+    s = sessions.get(sid)
     if not s:
         return
+    try:
+        windows = json.loads(run(["niri", "msg", "-j", "windows"]) or "[]")
+    except ValueError:
+        return
+    by_pid = {w.get("pid"): w.get("id") for w in windows if w.get("pid")}
+    if focus_session(s, by_pid) or s.get("viewer"):
+        return
+    viewers = sorted((v for v in sessions.values() if v.get("viewer") and alive(v.get("pid"))),
+                     key=lambda v: v.get("updated", 0), reverse=True)
+    for v in viewers:
+        if focus_session(v, by_pid):
+            return
+
+
+def focus_session(s, by_pid):
+    """
+    Focuses the niri window whose process is an ancestor of the session; True
+    if one was found. Under tmux the claude process hangs off the tmux server,
+    so the pane is selected first and the walk starts from a client showing
+    that tmux session, or, when none is, from a client switched over to it.
+    """
     start = s.get("pid")
     pane = s.get("tmuxPane")
     if pane:
@@ -541,22 +563,22 @@ def focus(sid):
         if session:
             run(["tmux", "select-window", "-t", pane])
             run(["tmux", "select-pane", "-t", pane])
-            for line in run(["tmux", "list-clients", "-F", "#{client_pid} #{client_session}"]).splitlines():
-                cpid, _, csession = line.partition(" ")
-                if csession == session and cpid.isdigit():
-                    start = int(cpid)
-                    break
+            clients = [l.split(" ", 2) for l in run(
+                ["tmux", "list-clients", "-F", "#{client_pid} #{client_session} #{client_name}"]).splitlines()]
+            clients = [c for c in clients if len(c) == 3 and c[0].isdigit()]
+            here = [c for c in clients if c[1] == session]
+            if not here and clients:
+                run(["tmux", "switch-client", "-c", clients[0][2], "-t", pane])
+                here = clients[:1]
+            if here:
+                start = int(here[0][0])
     if not start:
-        return
-    try:
-        windows = json.loads(run(["niri", "msg", "-j", "windows"]) or "[]")
-    except ValueError:
-        return
-    by_pid = {w.get("pid"): w.get("id") for w in windows if w.get("pid")}
+        return False
     for pid in ancestors(int(start)):
         if pid in by_pid:
             run(["niri", "msg", "action", "focus-window", "--id", str(by_pid[pid])])
-            return
+            return True
+    return False
 
 
 def main():
