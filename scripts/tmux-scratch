@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Floating scratchpad: a tmux popup over a "scratch" session running a quick
+# agent in ~/dotfiles/scratch, one window per agent. Closing the popup only
+# detaches, so the agent stays as it is; if its window is gone, a new one starts.
+#
+#   tmux-scratch [claude|agy]   (run from a tmux key binding)
+
+agent=${1:-claude}
+session=scratch
+dir=~/dotfiles/scratch
+
+case $agent in
+  claude) cmd="claude --model haiku" ;;
+  agy) cmd="agy --model gemini-3.8-flash-low" ;;
+  *) tmux display-message "tmux-scratch: unknown agent '$agent'"; exit 1 ;;
+esac
+
+# Pressed inside the popup: the same key closes it, the other key switches agent
+if [[ $(tmux display-message -p '#S') == "$session" && $(tmux display-message -p '#W') == "$agent" ]]; then
+  tmux detach-client
+  exit 0
+fi
+
+if ! tmux has-session -t "=$session" 2>/dev/null; then
+  tmux new-session -d -s "$session" -n "$agent" -c "$dir" "$cmd"
+elif ! tmux list-windows -t "=$session" -F '#W' | grep -qx "$agent"; then
+  tmux new-window -t "=$session:" -n "$agent" -c "$dir" "$cmd"
+fi
+tmux select-window -t "=$session:$agent"
+
+[[ $(tmux display-message -p '#S') == "$session" ]] && exit 0
+
+tmux display-popup -w 85% -h 85% -b rounded -T " scratch " -E \
+  "env -u TMUX tmux attach-session -t =$session"

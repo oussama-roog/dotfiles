@@ -52,3 +52,11 @@ certs/
 # Python cache
 __pycache__/
 *.pyc
+
+# Scratchpad: keep only its agent instructions
+scratch/*
+!scratch/CLAUDE.md
+!scratch/GEMINI.md
+!scratch/.claude/
+scratch/.claude/*
+!scratch/.claude/settings.json

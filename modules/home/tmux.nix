@@ -40,6 +40,10 @@
       unbind -T copy-mode-vi MouseDragEnd1Pane
       
       bind-key -r f run-shell "tmux neww ~/dotfiles/scripts/tmux-sessionizer"
+
+      # Scratchpad popup with a quick agent (scripts/tmux-scratch); same key closes it
+      bind-key a run-shell "~/dotfiles/scripts/tmux-scratch claude"
+      bind-key A run-shell "~/dotfiles/scripts/tmux-scratch agy"
     '';
 
     plugins = with pkgs.tmuxPlugins; [
