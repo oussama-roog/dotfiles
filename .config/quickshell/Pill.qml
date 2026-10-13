@@ -11,8 +11,9 @@ import "surfaces"
  * (rest, osd, or an open surface) with a no-overshoot easing so surfaces
  * grow out of the pill in place. Surfaces are stacked absolutely and cross-fade.
  *
- * The rest pill is a three-part bar: workspace dots on the left, CPU % and
- * used RAM dead centre, the clock on the right. Surfaces only open via IPC.
+ * The rest pill is symmetric: the clock dead centre, CPU % on the left and used
+ * RAM on the right, mirrored so their icons sit on the outer edges and the
+ * values face the clock. Surfaces only open via IPC.
  *
  * Drawn as an Ambxst-style notch hanging from the top edge, with concave
  * "ears" joining it to the screen.
@@ -32,11 +33,17 @@ Item {
 
     // ─── Size constants ───────────────────────────────────────────────────────
     readonly property real restH: 38 * s
-    readonly property real restPad: 22 * s
-    readonly property real restGap: 22 * s
-    /** Side columns share one width so the stats stay dead centre. */
-    readonly property real restSideW: Math.max(ws.implicitWidth, restClock.implicitWidth)
-    readonly property real restW: 2 * restSideW + stats.implicitWidth + 2 * restGap + 2 * restPad
+    readonly property real restPad: 20 * s
+    readonly property real restGap: 18 * s
+    readonly property real statIconSize: 15 * s
+    readonly property real statSpacing: 6 * s
+    /**
+     * Both stat slots are sized for their widest value, so the clock stays dead
+     * centre and the notch doesn't twitch as the numbers change.
+     */
+    readonly property real restSideW: statIconSize + statSpacing
+        + Math.max(widestCpu.advanceWidth, widestRam.advanceWidth)
+    readonly property real restW: 2 * restSideW + restClock.implicitWidth + 2 * restGap + 2 * restPad
     /** Shared width of the list surfaces (launcher, clipboard, web, themes, notifications, agents). */
     readonly property real listW: 460 * s
 
@@ -135,18 +142,34 @@ Item {
         Behavior on opacity { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard } }
     }
 
-    /** One CPU/RAM readout: dim glyph, tabular value; turns hot when `hot`. */
+    TextMetrics { id: widestCpu; font: statFont.font; text: "100%" }
+    TextMetrics { id: widestRam; font: statFont.font; text: "88.8G" }
+    Text {
+        id: statFont
+        visible: false
+        font.family: Theme.font
+        font.pixelSize: 13 * pill.s
+        font.weight: Font.DemiBold
+        font.features: { "tnum": 1 }
+    }
+
+    /**
+     * One CPU/RAM readout: dim glyph, tabular value; turns hot when `hot`.
+     * `mirrored` puts the glyph on the right, for the right-hand slot.
+     */
     component Stat: Row {
         id: stat
         property string icon: ""
         property string text: ""
         property bool hot: false
+        property bool mirrored: false
 
-        spacing: 5 * pill.s
+        spacing: pill.statSpacing
+        layoutDirection: mirrored ? Qt.RightToLeft : Qt.LeftToRight
 
         Icon {
             anchors.verticalCenter: parent.verticalCenter
-            size: 15 * pill.s
+            size: pill.statIconSize
             text: stat.icon
             color: stat.hot ? Theme.accent : Theme.icon
         }
@@ -154,10 +177,8 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             text: stat.text
             color: stat.hot ? Theme.accent : Theme.text
-            font.family: Theme.font
-            font.pixelSize: 13 * pill.s
-            font.weight: Font.DemiBold
-            font.features: { "tnum": 1 }
+            font: statFont.font
+            Behavior on color { ColorAnimation { duration: Motion.standard } }
         }
     }
 
@@ -173,44 +194,32 @@ Item {
         scale: pill.mode === "rest" ? 1 : 0.86
         Behavior on scale { NumberAnimation { duration: Motion.morph; easing.type: pill.mode === "rest" ? Motion.easeOpen : Motion.easeClose; easing.overshoot: Motion.overshoot } }
 
-        Workspaces {
-            id: ws
+        Stat {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            width: implicitWidth
-            s: pill.s
-            gap: 8 * pill.s
-        }
-
-        Row {
-            id: stats
-            anchors.centerIn: parent
-            spacing: 12 * pill.s
-
-            Stat {
-                anchors.verticalCenter: parent.verticalCenter
-                icon: Icons.cpu
-                text: Sysmon.cpu + "%"
-                hot: Sysmon.cpu >= 90
-            }
-            Stat {
-                anchors.verticalCenter: parent.verticalCenter
-                icon: Icons.ram
-                text: Sysmon.memUsedGb.toFixed(1) + "G"
-                hot: Sysmon.memPct >= 90
-            }
+            icon: Icons.cpu
+            text: Sysmon.cpu + "%"
+            hot: Sysmon.cpu >= 90
         }
 
         Text {
             id: restClock
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
+            anchors.centerIn: parent
             text: clock.hhmm
             color: Theme.text
             font.family: Theme.font
             font.pixelSize: 16 * pill.s
             font.weight: Font.DemiBold
             font.features: { "tnum": 1 }
+        }
+
+        Stat {
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            mirrored: true
+            icon: Icons.ram
+            text: Sysmon.memUsedGb.toFixed(1) + "G"
+            hot: Sysmon.memPct >= 90
         }
     }
 

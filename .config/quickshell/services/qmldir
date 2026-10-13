@@ -5,7 +5,6 @@ singleton Cliphist Cliphist.qml
 singleton Flags Flags.qml
 singleton Icons Icons.qml
 singleton Motion Motion.qml
-singleton NiriSpaces NiriSpaces.qml
 singleton Notifs Notifs.qml
 singleton Players Players.qml
 singleton Sysmon Sysmon.qml
