@@ -35,6 +35,8 @@ home-manager-result
 .config/gtk-3.0/colors.css
 .config/gtk-4.0/colors.css
 .config/nvim/lua/oussama/core/theme.lua
+.config/i3/colors
+.config/polybar/colors.ini
 
 # Database connection configs (contain passwords)
 .config/db_connections.json
