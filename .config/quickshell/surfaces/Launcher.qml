@@ -7,10 +7,20 @@ import "../services"
 import "../widgets"
 
 /**
- * Launcher surface: search field over a ranked application list, drawn as one
- * of the pill's surfaces. Desktop entries are ranked by match quality (name
- * prefix, then substring, then subsequence over name/generic name/keywords)
- * and then by how often you launched them; the chosen entry executes directly.
+ * Launcher surface: search field over a ranked list, drawn as one of the
+ * pill's surfaces. A leading character picks what the list holds:
+ *
+ *   (none)  applications, ranked by match quality (name prefix, substring,
+ *           subsequence over name / generic name / keywords), then by how
+ *           often you launched them
+ *   =       calculator (qalc); Enter copies the result
+ *   >       shell actions: open a surface, lock, screenshot, random theme…
+ *   :       niri keybinds read from config.kdl; Enter runs the bind
+ *   .       emoji, from Unicode's emoji-test.txt (the unicode-emoji package,
+ *           linked into ~/.local/share by home-manager); Enter copies
+ *
+ * Every mode turns into the same row shape — { title, sub, glyph | emoji |
+ * entry, run } — so one list and one delegate draw them all.
  */
 PillSurface {
     id: root
@@ -34,6 +44,17 @@ PillSurface {
 
     readonly property string usageFile: (Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")) + "/quickshell/launcher-usage.json"
 
+    readonly property var modes: ({
+        "=": { name: "calc", icon: Icons.equals, hint: "Calculate" },
+        ">": { name: "actions", icon: Icons.actions, hint: "Run an action" },
+        ":": { name: "binds", icon: Icons.keyboard, hint: "Search keybinds" },
+        ".": { name: "emoji", icon: Icons.smiley, hint: "Search emoji" }
+    })
+    readonly property var modeInfo: modes[query.charAt(0)] || null
+    readonly property string mode: modeInfo ? modeInfo.name : "apps"
+    /** The query without its prefix. */
+    readonly property string term: (modeInfo ? query.slice(1) : query).trim().toLowerCase()
+
     readonly property var allEntries: {
         var src = DesktopEntries.applications.values;
         var out = [];
@@ -41,14 +62,25 @@ PillSurface {
             if (src[i] && !src[i].noDisplay) out.push(src[i]);
         return out;
     }
-    readonly property int totalCount: allEntries.length
-    readonly property var results: rank(allEntries, query.trim().toLowerCase())
 
-    /** 0 = name prefix, 1 = substring, 2 = subsequence, 99 = no match. */
-    function score(e, q) {
-        if ((e.name || "").toLowerCase().indexOf(q) === 0)
+    readonly property var results: {
+        switch (mode) {
+        case "calc": return calcItems;
+        case "actions": return rank(actionItems, term, a => [a.title, a.sub], () => 0);
+        case "binds": return rank(bindItems, term, b => [b.title, b.sub], () => 0);
+        case "emoji": return term.length ? rank(emojiItems, term, e => [e.title, e.sub], () => 0).slice(0, 80) : emojiItems.slice(0, 80);
+        }
+        return rank(allEntries, term, e => [e.name, e.genericName].concat(e.keywords || []), e => usage[e.id] || 0)
+            .map(e => ({ entry: e, title: e.name, sub: secondaryOf(e) }));
+    }
+
+    readonly property string counter: mode === "apps" ? results.length + " / " + allEntries.length
+        : mode === "calc" ? "" : String(results.length)
+
+    /** 0 = first field starts with q, 1 = a field contains q, 2 = subsequence, 99 = no match. */
+    function score(fields, q) {
+        if (String(fields[0] || "").toLowerCase().indexOf(q) === 0)
             return 0;
-        var fields = [e.name, e.genericName].concat(e.keywords || []);
         var best = 99;
         for (var i = 0; i < fields.length; i++) {
             var f = String(fields[i] || "").toLowerCase();
@@ -63,19 +95,25 @@ PillSurface {
         return best;
     }
 
-    function rank(entries, q) {
+    /** Matches by `fieldsOf`, ordered by score, then `weightOf` (higher first), then title. */
+    function rank(items, q, fieldsOf, weightOf) {
         var scored = [];
-        for (var i = 0; i < entries.length; i++) {
-            var sc = q.length ? score(entries[i], q) : 0;
+        for (var i = 0; i < items.length; i++) {
+            var sc = q.length ? score(fieldsOf(items[i]), q) : 0;
             if (sc < 99)
-                scored.push({ e: entries[i], s: sc, u: usage[entries[i].id] || 0 });
+                scored.push({ it: items[i], s: sc, w: weightOf(items[i]), n: String(fieldsOf(items[i])[0] || "").toLowerCase() });
         }
-        scored.sort((a, b) => a.s - b.s || b.u - a.u
-            || (a.e.name || "").toLowerCase().localeCompare((b.e.name || "").toLowerCase()));
-        return scored.map(x => x.e);
+        scored.sort((a, b) => a.s - b.s || b.w - a.w || a.n.localeCompare(b.n));
+        return scored.map(x => x.it);
     }
 
     function focusField() { search.input.forceActiveFocus(); }
+
+    function secondaryOf(e) {
+        if (e.genericName && e.genericName.length > 0)
+            return e.genericName;
+        return e.categories && e.categories.length > 0 ? mapCategory(e.categories) : "";
+    }
 
     function mapCategory(raw) {
         const order = [
@@ -100,17 +138,27 @@ PillSurface {
     }
 
     function activate() {
-        if (results.length === 0 || selectedIndex < 0 || selectedIndex >= results.length)
+        var item = results[selectedIndex];
+        if (!item)
             return;
-        var entry = results[selectedIndex];
-        if (entry) {
-            if (entry.id) {
-                root.usage[entry.id] = (root.usage[entry.id] || 0) + 1;
-                usageStore.setText(JSON.stringify(root.usage));
+        if (item.entry) {
+            if (item.entry.id) {
+                usage[item.entry.id] = (usage[item.entry.id] || 0) + 1;
+                usageStore.setText(JSON.stringify(usage));
             }
-            entry.execute();
+            item.entry.execute();
+        } else if (item.run) {
+            item.run();
         }
         root.requestClose();
+    }
+
+    function copy(text) {
+        Quickshell.execDetached(["wl-copy", "--", text]);
+    }
+
+    function openSurface(name) {
+        Quickshell.execDetached(["qs", "ipc", "call", "pill", name]);
     }
 
     onOpenChanged: {
@@ -140,6 +188,150 @@ PillSurface {
         }
     }
 
+    // ─── = calculator ────────────────────────────────────────────────────────
+    property var calcItems: []
+
+    /** Debounced so qalc runs once you pause typing, not on every key. */
+    Timer {
+        id: calcDebounce
+        interval: 120
+        onTriggered: {
+            if (root.term.length === 0) {
+                root.calcItems = [];
+                return;
+            }
+            calc.running = false;
+            calc.command = ["qalc", "-t", "--", root.term];
+            calc.running = true;
+        }
+    }
+    onTermChanged: if (mode === "calc") calcDebounce.restart()
+    onModeChanged: {
+        if (mode === "calc")
+            calcDebounce.restart();
+        // The list may have appeared after the shell started (first rebuild).
+        if (mode === "emoji" && emojiItems.length === 0)
+            emojiFile.reload();
+    }
+
+    Process {
+        id: calc
+        stdout: StdioCollector {
+            onStreamFinished: {
+                var out = this.text.trim().split("\n").pop() || "";
+                root.calcItems = out.length && !/^error/i.test(out)
+                    ? [{ title: out, sub: root.term + "   ·   Enter copies", glyph: Icons.equals, run: () => root.copy(out) }]
+                    : [];
+            }
+        }
+    }
+
+    // ─── > actions ───────────────────────────────────────────────────────────
+    readonly property var actionItems: [
+        { title: "Lock screen", sub: "loginctl lock-session", glyph: Icons.lock, run: () => Quickshell.execDetached(["loginctl", "lock-session"]) },
+        { title: "Power menu", sub: "sleep, logout, restart, shutdown", glyph: Icons.shutdown, run: () => openSurface("power") },
+        { title: "Screenshot", sub: "region, saved and copied", glyph: Icons.camera, run: () => Quickshell.execDetached([Quickshell.env("HOME") + "/dotfiles/scripts/screenshot.sh"]) },
+        { title: "Clipboard history", sub: "Mod+V", glyph: Icons.clipboardText, run: () => openSurface("clipboard") },
+        { title: "Notifications", sub: "Mod+N", glyph: Icons.bell, run: () => openSurface("notifications") },
+        { title: "Agents", sub: "Claude sessions and plan usage · Mod+A", glyph: Icons.sparkle, run: () => openSurface("claude") },
+        { title: "Web apps", sub: "Mod+W", glyph: Icons.globe, run: () => openSurface("web") },
+        { title: "Themes", sub: "Mod+T", glyph: Icons.palette, run: () => openSurface("themes") },
+        { title: "Random theme", sub: "base16", glyph: Icons.shuffle, run: () => Quickshell.execDetached([Quickshell.env("HOME") + "/dotfiles/scripts/theme-switcher.sh", "random"]) },
+        { title: "Wallpapers", sub: "Mod+Shift+W", glyph: Icons.image, run: () => openSurface("wallpaper") },
+        { title: Flags.dnd ? "Turn off do not disturb" : "Turn on do not disturb", sub: "notifications", glyph: Flags.dnd ? Icons.bell : Icons.bellSlash, run: () => Flags.dnd = !Flags.dnd },
+        { title: "Reload shell", sub: "quickshell", glyph: Icons.reload, run: () => Quickshell.reload(true) }
+    ]
+
+    // ─── : niri binds ────────────────────────────────────────────────────────
+    property var bindItems: []
+
+    FileView {
+        path: Quickshell.env("HOME") + "/.config/niri/config.kdl"
+        watchChanges: true
+        printErrors: false
+        onFileChanged: reload()
+        onLoaded: root.bindItems = root.parseBinds(text())
+    }
+
+    /** Splits `"a" "b c" d` into ["a", "b c", "d"]. */
+    function words(s) {
+        var out = [], m, re = /"((?:[^"\\]|\\.)*)"|(\S+)/g;
+        while ((m = re.exec(s)) !== null)
+            out.push(m[1] !== undefined ? m[1].replace(/\\"/g, '"') : m[2]);
+        return out;
+    }
+
+    /** One row per line of the `binds { }` block: `Keys [props] { action args; }`. */
+    function parseBinds(kdl) {
+        var block = kdl.match(/^binds\s*\{([\s\S]*?)^\}/m);
+        if (!block)
+            return [];
+        var items = [];
+        var lines = block[1].split("\n");
+        for (var i = 0; i < lines.length; i++) {
+            var m = lines[i].match(/^\s*([^\s\/{][^{]*?)\s*\{\s*([^;}]+);?\s*\}/);
+            if (!m)
+                continue;
+            var keys = m[1].replace(/\s+[\w-]+=\S+/g, "");
+            var w = words(m[2]);
+            items.push({ title: describeBind(w), sub: keys, glyph: Icons.keyboard, run: runBind(w) });
+        }
+        return items;
+    }
+
+    function describeBind(w) {
+        var action = w[0], args = w.slice(1);
+        if (action === "spawn" && args.slice(0, 4).join(" ") === "qs ipc call pill")
+            return "Open " + args[4];
+        if (action === "spawn")
+            return "Run " + args.map(a => a.replace(/^~\/(dotfiles\/)?(\.config\/)?/, "")).join(" ");
+        if (action === "spawn-sh")
+            return "Run " + args.join(" ");
+        var text = action.replace(/-/g, " ") + (args.length ? " " + args.join(" ") : "");
+        return text.charAt(0).toUpperCase() + text.slice(1);
+    }
+
+    function runBind(w) {
+        var action = w[0], args = w.slice(1);
+        if (action === "spawn")
+            return () => Quickshell.execDetached(args.map(a => a.replace(/^~\//, Quickshell.env("HOME") + "/")));
+        if (action === "spawn-sh")
+            return () => Quickshell.execDetached(["sh", "-c", args.join(" ")]);
+        // `--` keeps values like "-10%" from reading as flags.
+        return () => Quickshell.execDetached(["niri", "msg", "action", action].concat(args.length ? ["--"].concat(args) : []));
+    }
+
+    // ─── . emoji ─────────────────────────────────────────────────────────────
+    property var emojiItems: []
+
+    /**
+     * Fully-qualified emoji from emoji-test.txt, without the skin-tone variants
+     * and the bare components. Lines look like:
+     *   1F525 ; fully-qualified # 🔥 E0.6 fire
+     */
+    FileView {
+        id: emojiFile
+        path: (Quickshell.env("XDG_DATA_HOME") || Quickshell.env("HOME") + "/.local/share") + "/unicode/emoji/emoji-test.txt"
+        printErrors: false
+        onLoaded: {
+            const items = [];
+            let group = "";
+            for (const line of text().split("\n")) {
+                if (line.startsWith("# group:")) {
+                    group = line.slice(8).trim();
+                    continue;
+                }
+                const m = line.match(/^[0-9A-F ]+;\s*fully-qualified\s*#\s*(\S+)\s+E[\d.]+\s+(.+)$/);
+                if (!m || group === "Component" || m[2].indexOf("skin tone") >= 0)
+                    continue;
+                const emoji = m[1];
+                items.push({ emoji: emoji, title: m[2], sub: group, run: () => root.copy(emoji) });
+            }
+            root.emojiItems = items;
+        }
+    }
+
+    // ─── View ────────────────────────────────────────────────────────────────
     SearchField {
         id: search
         anchors.top: parent.top
@@ -147,8 +339,9 @@ PillSurface {
         anchors.right: parent.right
         s: root.s
         kanji: "探"
-        placeholder: "Search apps"
-        counterText: root.results.length + " / " + root.totalCount
+        icon: root.modeInfo ? root.modeInfo.icon : Icons.search
+        placeholder: "Search apps   ·   = calc   > actions   : binds   . emoji"
+        counterText: root.counter
         onTextChanged: {
             root.query = text;
             root.selectedIndex = 0;
@@ -161,7 +354,10 @@ PillSurface {
     Text {
         anchors.centerIn: list
         visible: root.results.length === 0
-        text: root.query.length ? "No matches" : "No apps found"
+        text: root.mode === "emoji" && root.emojiItems.length === 0 ? "Emoji list missing: rebuild so home-manager links emoji-test.txt"
+            : root.mode === "calc" ? (root.term.length ? "No result" : "Type an expression: 2^10, 15% * 80, 5 km to mi")
+            : root.modeInfo && root.term.length === 0 ? root.modeInfo.hint
+            : root.query.length ? "No matches" : "No apps found"
         color: Theme.textFaint
         font.family: Theme.font
         font.pixelSize: 10.5 * root.s
@@ -193,23 +389,13 @@ PillSurface {
         }
 
         delegate: Item {
-            id: appRow
+            id: row
             required property int index
             width: list.width
             height: list.rowH
 
-            readonly property var entry: root.results[index]
+            readonly property var item: root.results[index]
             readonly property bool selected: index === root.selectedIndex
-
-            readonly property string secondary: {
-                if (!entry)
-                    return "";
-                if (entry.genericName && entry.genericName.length > 0)
-                    return entry.genericName;
-                if (entry.categories && entry.categories.length > 0)
-                    return root.mapCategory(entry.categories);
-                return "";
-            }
 
             MouseArea {
                 id: rowArea
@@ -220,11 +406,11 @@ PillSurface {
                     var g = rowArea.mapToItem(null, m.x, m.y);
                     if (g.x !== root.lastPointer.x || g.y !== root.lastPointer.y) {
                         root.lastPointer = Qt.point(g.x, g.y);
-                        root.selectedIndex = appRow.index;
+                        root.selectedIndex = row.index;
                     }
                 }
                 onClicked: {
-                    root.selectedIndex = appRow.index;
+                    root.selectedIndex = row.index;
                     root.activate();
                 }
             }
@@ -234,17 +420,25 @@ PillSurface {
                 anchors.leftMargin: 11 * root.s
                 anchors.rightMargin: 11 * root.s
 
+                /** App icon, emoji, or a glyph tile — whichever the row carries. */
                 Rectangle {
                     id: iconBg
                     anchors.verticalCenter: parent.verticalCenter
                     width: 22 * root.s
                     height: 22 * root.s
                     radius: 5 * root.s
-                    color: Theme.frameBg
-                    visible: !(icon.status === Image.Ready && icon.source != "")
+                    color: row.selected ? Qt.alpha(Theme.onAccent, 0.12) : Theme.frameBg
+                    visible: !appIcon.visible && !(row.item && row.item.emoji)
+
+                    Icon {
+                        anchors.centerIn: parent
+                        size: 13 * root.s
+                        text: row.item && row.item.glyph ? row.item.glyph : ""
+                        color: row.selected ? Theme.onAccent : Theme.icon
+                    }
                 }
                 Image {
-                    id: icon
+                    id: appIcon
                     anchors.fill: iconBg
                     sourceSize.width: Math.round(40 * root.s)
                     sourceSize.height: Math.round(40 * root.s)
@@ -252,7 +446,13 @@ PillSurface {
                     asynchronous: true
                     smooth: true
                     visible: status === Image.Ready && source != ""
-                    source: appRow.entry && appRow.entry.icon ? Quickshell.iconPath(appRow.entry.icon, true) : ""
+                    source: row.item && row.item.entry && row.item.entry.icon ? Quickshell.iconPath(row.item.entry.icon, true) : ""
+                }
+                Text {
+                    anchors.centerIn: iconBg
+                    visible: !!(row.item && row.item.emoji)
+                    text: row.item && row.item.emoji ? row.item.emoji : ""
+                    font.pixelSize: 17 * root.s
                 }
 
                 TextMetrics {
@@ -269,16 +469,15 @@ PillSurface {
                     color: Theme.onAccent
                     font.family: Theme.font
                     font.pixelSize: 12 * root.s
-                    visible: appRow.selected
+                    visible: row.selected
                     width: visible ? retMetrics.advanceWidth + 6 * root.s : 0
                     horizontalAlignment: Text.AlignRight
                 }
 
                 /**
-                 * Name over description, each clipped on its own line, so a long
-                 * comment can no longer bleed into the name the way one shared row
-                 * let it. The block centres on the icon whether it shows one line or
-                 * two, and an app with no description just reads as a centred name.
+                 * Title over description, each clipped on its own line, so a long
+                 * description can't bleed into the title. The block centres on the
+                 * icon whether it shows one line or two.
                  */
                 Column {
                     anchors.left: iconBg.right
@@ -290,22 +489,23 @@ PillSurface {
 
                     Text {
                         width: parent.width
-                        text: appRow.entry ? appRow.entry.name : ""
-                        color: appRow.selected ? Theme.onAccent : Theme.text
+                        text: row.item ? row.item.title : ""
+                        color: row.selected ? Theme.onAccent : Theme.text
                         font.family: Theme.font
                         font.pixelSize: 13 * root.s
-                        font.weight: appRow.selected ? Font.DemiBold : Font.Normal
+                        font.weight: row.selected ? Font.DemiBold : Font.Normal
                         elide: Text.ElideRight
+                        textFormat: Text.PlainText
                     }
                     Text {
-                        id: sec
                         width: parent.width
-                        visible: appRow.secondary.length > 0
-                        text: appRow.secondary
-                        color: appRow.selected ? Qt.alpha(Theme.onAccent, 0.65) : Theme.textFaint
-                        font.family: Theme.font
+                        visible: text.length > 0
+                        text: row.item && row.item.sub ? row.item.sub : ""
+                        color: row.selected ? Qt.alpha(Theme.onAccent, 0.65) : Theme.textFaint
+                        font.family: root.mode === "binds" ? "monospace" : Theme.font
                         font.pixelSize: 10.5 * root.s
                         elide: Text.ElideRight
+                        textFormat: Text.PlainText
                     }
                 }
             }

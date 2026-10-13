@@ -62,6 +62,12 @@
     };
   };
 
+  # Unicode's emoji list for the quickshell launcher's emoji mode. Linked by
+  # hand: NixOS only links an allow-list of share/ folders into the user
+  # profile, and share/unicode isn't on it.
+  xdg.dataFile."unicode/emoji/emoji-test.txt".source =
+    "${pkgs.unicode-emoji}/share/unicode/emoji/emoji-test.txt";
+
   # Symlink config files from dotfiles
   xdg.configFile =
     let
