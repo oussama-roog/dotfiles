@@ -8,9 +8,11 @@ import "widgets"
  * Floating dot left of the notch, the bell's mirror. It always shows the most
  * important thing going on, in this order:
  *
- *   needs you   a Claude session waits on a permission or a question: accent
+ *   needs you   an agent session (Claude, Antigravity) waits on a permission
+ *               or a question: accent
  *               sparkle with a pulsing halo, and the dot stretches left into a
- *               one-line pill naming the session and what it wants
+ *               one-line pill naming the session (and the agent, when more
+ *               than one has sessions open) and what it wants
  *   working     a spinning ring round the sparkle (round equaliser bars when
  *               music plays too), a count when several run
  *   just done   a check for a few seconds, with the reply's first line
@@ -38,15 +40,15 @@ Item {
     readonly property bool showBars: mode === "media" || (mode === "working" && mediaPlaying)
 
     /** "attention" | "working" | "done" | "media" | "idle" */
-    readonly property string mode: Claude.needsYou ? "attention"
-        : Claude.working > 0 ? "working"
-        : Claude.justDone ? "done"
+    readonly property string mode: AgentHub.needsYou ? "attention"
+        : AgentHub.working > 0 ? "working"
+        : AgentHub.justDone ? "done"
         : mediaPlaying ? "media"
         : "idle"
 
     /** The session the stretched pill speaks for. */
-    readonly property var subject: mode === "attention" ? Claude.attention[0]
-        : mode === "done" ? Claude.justDone : null
+    readonly property var subject: mode === "attention" ? AgentHub.attention[0]
+        : mode === "done" ? AgentHub.justDone : null
     readonly property bool active: subject !== null && !merged
 
     readonly property real dotW: 34 * s
@@ -88,22 +90,16 @@ Item {
             }
         }
 
-        /** Spinning ring while a session works. */
-        Icon {
+        /** Spinning ring while a session works, split between the working agents' colours. */
+        AgentRing {
             anchors.centerIn: parent
-            size: 24 * root.s
-            text: Icons.circleNotch
-            color: Qt.alpha(Theme.accent, 0.85)
+            size: 22 * root.s
+            thickness: 2.4 * root.s
+            colors: AgentHub.workingColors
+            spinning: root.mode === "working"
             opacity: root.mode === "working" ? 1 : 0
             visible: opacity > 0.01
             Behavior on opacity { NumberAnimation { duration: Motion.standard } }
-            RotationAnimation on rotation {
-                running: root.mode === "working"
-                loops: Animation.Infinite
-                from: 0
-                to: 360
-                duration: 1100
-            }
         }
 
         Icon {
@@ -135,13 +131,13 @@ Item {
             height: 12 * root.s
             radius: height / 2
             color: Theme.accent
-            scale: Claude.running > 1 && !root.merged ? 1 : 0
+            scale: AgentHub.running > 1 && !root.merged ? 1 : 0
             Behavior on scale { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeOpen; easing.overshoot: Motion.overshoot } }
 
             Text {
                 id: countText
                 anchors.centerIn: parent
-                text: Claude.running
+                text: AgentHub.running
                 color: Theme.onAccent
                 font.family: Theme.font
                 font.pixelSize: 8 * root.s
@@ -188,7 +184,9 @@ Item {
         }
         Component.onCompleted: shown = root.subject
 
-        readonly property string title: shown ? (shown.where ? shown.name + " · " + shown.where.split(" ")[0] : Claude.title(shown)) : ""
+        readonly property string title: !shown ? ""
+            : (AgentHub.mixed ? AgentHub.labelOf(shown) + " · " : "")
+              + (shown.where ? shown.name + " · " + shown.where.split(" ")[0] : AgentHub.title(shown))
         readonly property string line: !shown ? ""
             : shown.status === "waiting" ? (shown.action || "needs permission")
             : shown.status === "question" ? (shown.action || "has a question")
@@ -227,7 +225,7 @@ Item {
             anchors.fill: parent
             enabled: root.active
             cursorShape: Qt.PointingHandCursor
-            onClicked: if (bubble.shown) Claude.focus(bubble.shown.id)
+            onClicked: if (bubble.shown) AgentHub.focus(bubble.shown)
         }
     }
 }

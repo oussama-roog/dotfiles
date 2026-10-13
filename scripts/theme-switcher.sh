@@ -8,14 +8,23 @@ THEMES_DIR="$DOTFILES/scripts/themes"
 
 mkdir -p "$CACHE_DIR"
 
-get_base16_dir() {
-    nix eval --raw nixpkgs#base16-schemes.outPath 2>/dev/null
+# base16-schemes is installed in the user profile; nix eval is only a fallback
+get_themes_dir() {
+    local dir
+    for dir in "/etc/profiles/per-user/$USER/share/themes" "$HOME/.nix-profile/share/themes"; do
+        if compgen -G "$dir/*.yaml" >/dev/null; then
+            echo "$dir"
+            return
+        fi
+    done
+    local out
+    out=$(nix eval --raw nixpkgs#base16-schemes.outPath 2>/dev/null) && echo "$out/share/themes"
 }
 
 get_themes() {
-    local base16_dir=$(get_base16_dir)
-    if [[ -n "$base16_dir" && -d "$base16_dir/share/themes" ]]; then
-        find "$base16_dir/share/themes" -name "*.yaml" -exec basename {} .yaml \; | sort
+    local themes_dir=$(get_themes_dir)
+    if [[ -n "$themes_dir" ]]; then
+        find -L "$themes_dir" -maxdepth 1 -name "*.yaml" -exec basename {} .yaml \; | sort
     fi
 }
 
@@ -31,8 +40,7 @@ current_theme() {
 
 apply_theme() {
     local theme_name="$1"
-    local base16_dir=$(get_base16_dir)
-    local theme_file="$base16_dir/share/themes/$theme_name.yaml"
+    local theme_file="$(get_themes_dir)/$theme_name.yaml"
 
     if [[ ! -f "$theme_file" ]]; then
         echo "Error: Theme file not found: $theme_file"
@@ -45,7 +53,6 @@ apply_theme() {
     done
 
     source "$THEMES_DIR/hypr.sh"
-    source "$THEMES_DIR/nix.sh"
     source "$THEMES_DIR/rofi.sh"
     source "$THEMES_DIR/kitty.sh"
     source "$THEMES_DIR/ghostty.sh"
@@ -57,9 +64,9 @@ apply_theme() {
     source "$THEMES_DIR/i3.sh"
     source "$THEMES_DIR/polybar.sh"
     source "$THEMES_DIR/quickshell.sh"
+    source "$THEMES_DIR/gtk.sh"
 
     apply_hypr_theme "${colors[@]}" # hyprlock colors
-    apply_nix_theme "${colors[@]}"
     apply_rofi_theme "${colors[@]}"
     apply_kitty_theme "${colors[@]}"
     apply_ghostty_theme "${colors[@]}"
@@ -70,7 +77,12 @@ apply_theme() {
     apply_i3_theme "${colors[@]}"
     apply_polybar_theme "${colors[@]}"
     apply_quickshell_theme
+    apply_tmux_theme
+    apply_gtk_theme
 
+    reload_kitty
+    reload_ghostty
+    reload_tmux
     reload_dunst
     reload_nvim "$theme_name"
     reload_i3

@@ -24,16 +24,16 @@
       "image/*" = "imv.desktop";
 
       # Browser/web applications
-      "text/html" = "zen-beta.desktop";
-      "x-scheme-handler/http" = "zen-beta.desktop";
-      "x-scheme-handler/https" = "zen-beta.desktop";
-      "x-scheme-handler/chrome" = "zen-beta.desktop";
-      "application/x-extension-htm" = "zen-beta.desktop";
-      "application/x-extension-html" = "zen-beta.desktop";
-      "application/x-extension-shtml" = "zen-beta.desktop";
-      "application/xhtml+xml" = "zen-beta.desktop";
-      "application/x-extension-xhtml" = "zen-beta.desktop";
-      "application/x-extension-xht" = "zen-beta.desktop";
+      "text/html" = "brave-browser.desktop";
+      "x-scheme-handler/http" = "brave-browser.desktop";
+      "x-scheme-handler/https" = "brave-browser.desktop";
+      "x-scheme-handler/chrome" = "brave-browser.desktop";
+      "application/x-extension-htm" = "brave-browser.desktop";
+      "application/x-extension-html" = "brave-browser.desktop";
+      "application/x-extension-shtml" = "brave-browser.desktop";
+      "application/xhtml+xml" = "brave-browser.desktop";
+      "application/x-extension-xhtml" = "brave-browser.desktop";
+      "application/x-extension-xht" = "brave-browser.desktop";
 
       # PDF viewer
       "application/pdf" = "org.pwmt.zathura.desktop";

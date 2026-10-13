@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 apply_dunst_theme() {
+    mkdir -p "$CONFIG_DIR/dunst"
     cat >"$CONFIG_DIR/dunst/dunstrc" <<EOF
 [global]
     font = JetBrainsMono Nerd Font Propo 12

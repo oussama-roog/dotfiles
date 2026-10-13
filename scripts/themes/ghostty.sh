@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 apply_ghostty_theme() {
+    mkdir -p "$CONFIG_DIR/ghostty"
     cat > "$CONFIG_DIR/ghostty/config" << EOF
 font-size = 14
 
@@ -31,4 +32,9 @@ palette = 13=#${colors[base0E]}
 palette = 14=#${colors[base0C]}
 palette = 15=#${colors[base05]}
 EOF
+}
+
+reload_ghostty() {
+    # Ghostty 1.2+ reloads its config on SIGUSR2
+    pkill -USR2 -x '(\.ghostty-wrapped|ghostty)' 2>/dev/null || true
 }

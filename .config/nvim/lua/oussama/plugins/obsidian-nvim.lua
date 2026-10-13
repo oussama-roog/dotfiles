@@ -5,9 +5,12 @@ return {
 	event = {
 		"BufReadPre ~/data/Notes/*.md",
 		"BufNewFile ~/data/Notes/*.md",
+		"BufReadPre ~/share/Notes/*.md",
+		"BufNewFile ~/share/Notes/*.md",
 	},
 	cond = function()
 		return vim.fn.isdirectory(vim.fn.expand("~/data/Notes")) == 1
+			or vim.fn.isdirectory(vim.fn.expand("~/share/Notes")) == 1
 	end,
 	dependencies = {
 		"nvim-lua/plenary.nvim",
@@ -20,6 +23,10 @@ return {
 			{
 				name = "Notes",
 				path = "~/data/Notes",
+			},
+			{
+				name = "Notes",
+				path = "~/share/Notes",
 			},
 		},
 		ui = {

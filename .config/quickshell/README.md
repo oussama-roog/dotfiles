@@ -32,6 +32,7 @@ surfaces/           what opens inside the pill (one file each)
   Power.qml           lock / logout / sleep / restart / shutdown
   Notifications.qml   notification inbox
   Agents.qml          now playing, Claude plan usage, Claude Code sessions
+  Tasks.qml           Taskwarrior: task list + details/notes, quick add
 
 widgets/            small reusable pieces
   Icon.qml            Phosphor icon glyph
@@ -54,6 +55,7 @@ services/           singletons holding state and talking to the system
   Walls.qml           wallpaper list, apply, trash
   Themes.qml          base16 theme list, apply
   Players.qml         MPRIS now-playing for the OSD
+  Taskwarrior.qml     tasks (via `task export`) and changes to them
   Battery.qml         UPower battery
   Sysmon.qml          CPU / RAM
   NiriSpaces.qml      niri workspaces
@@ -72,11 +74,12 @@ All go through `qs ipc call pill <surface>` (`hide` closes the open one).
 | `Mod+Space`   | `launcher`      |
 | `Mod+W`       | `web`           |
 | `Mod+V`       | `clipboard`     |
-| `Mod+T`       | `themes`        |
+| `Mod+Shift+T` | `themes`        |
 | `Mod+Shift+W` | `wallpaper`     |
 | `Mod+P`       | `power`         |
 | `Mod+N`       | `notifications` |
 | `Mod+A`       | `claude`        |
+| `Mod+T`       | `tasks`         |
 
 Inside a surface: type to search, `Up`/`Down` or `Ctrl+K`/`Ctrl+J` to move
 (also in the wallpaper strip and power row, where down moves right), `Enter` to pick, `Esc` or a click
@@ -115,3 +118,23 @@ so the shell recolours live.
 | `reduceMotion` | faster animations                        |
 | `uiFont`       | font family (default Inter)              |
 | `pillOpacity`  | background opacity of the pill           |
+
+## Tasks
+
+`Mod+T` opens a two-column tasks centre over Taskwarrior 3
+(`modules/home/taskwarrior.nix`). The tasks live in `~/.local/share/task`, one
+database per machine, outside the repo, so rebuilds never touch them. The
+centre reads them with `task export` each time it opens and after every change;
+nothing is watched, and `task` in a terminal keeps working alongside it.
+
+- Type to filter; with text in the field the first row is "Add …" and Enter
+  adds it, Taskwarrior syntax included: `renew cert due:fri +work pri:H`.
+- Left/Right (with the field empty), Ctrl+H/Ctrl+L or Tab switch between
+  All / Today / projects / Done. All ends with this week's done tasks, folded.
+- Enter ticks the selected task, Ctrl+D done/reopen, Ctrl+S start/stop,
+  Ctrl+E edit title, Ctrl+M modify (`due:mon -work project:x`), Ctrl+N note,
+  Ctrl+X delete, Ctrl+Z undo.
+- In the launcher, `+ text` adds a task without opening the centre.
+- While a task is started (Ctrl+S) a thin accent bar runs along
+  the bottom of the resting notch.
+  The list is read at startup too, so this shows right after login.

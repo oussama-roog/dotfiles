@@ -11,6 +11,17 @@
   # Host-specific settings
   networking.hostName = "vm";
 
+  security.pki.certificateFiles = [
+    /etc/nixos/certs/FG1.cer
+    /etc/nixos/certs/FG2.cer
+    /etc/nixos/certs/FG3.cer
+    /etc/nixos/certs/kaspersky.cer
+  ];
+
+  environment.sessionVariables = {
+    NODE_EXTRA_CA_CERTS = "/etc/ssl/certs/ca-certificates.crt";
+  };
+
   # User configuration
   users.users.oussama = {
     isNormalUser = true;

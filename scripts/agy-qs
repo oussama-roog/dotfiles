@@ -1,0 +1,392 @@
+#!/usr/bin/env python3
+"""
+Bridge between the Antigravity CLI (agy) and the quickshell agents dot.
+
+agy runs this from its hooks (~/.gemini/config/hooks.json, group
+"quickshell") and as its status line; every call folds what it learns into
+~/.cache/qs-agy/state.json, which services/Agents.qml watches. The file has
+the same shape as Claude Code's (see qs_agent.py).
+
+Subcommands:
+    hook <Event>  an agy hook (event JSON on stdin); prints nothing, so agy's
+                  own permission rules stay in charge
+    statusline    agy's status line (session JSON on stdin); prints the line
+    sweep         drops sessions whose agy process is gone
+    focus <id>    focuses the terminal window (niri) running that conversation
+    forget <id>   removes a conversation from the list
+
+agy's hooks are SessionStart (on the first prompt), PreInvocation (before
+each model call; invocationNum 0 starts a turn), PreToolUse, PostToolUse and
+Stop. They carry no event name, so it comes as an argument. There is no
+permission hook: the status line reports `tool_confirmation_pending`, and
+that is what turns a session to "waiting". It also carries the plan quota
+(Gemini models, and third-party models), so usage comes from there, and its
+`agent_state` catches a turn stopped with Esc, which fires no Stop.
+
+A conversation started without a prompt yet only shows up through the status
+line, as idle. Leaving agy fires nothing; sweep drops it once its process is
+gone.
+"""
+
+import calendar
+import json
+import os
+import re
+import sqlite3
+import sys
+import time
+
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+import qs_agent as qa  # noqa: E402
+from qs_agent import now_ms, one_line  # noqa: E402
+
+DIR = qa.cache_dir("agy")
+COMM = "agy"
+HOME = os.path.expanduser("~/.gemini/antigravity-cli")
+SUMMARIES = os.path.join(HOME, "conversation_summaries.db")
+
+# Quota buckets from the status line, stored under these window names.
+QUOTA = {
+    "gemini-5h": "gemini_5h",
+    "gemini-weekly": "gemini_week",
+    "3p-5h": "other_5h",
+    "3p-weekly": "other_week",
+}
+
+# Transcript scans (tokens, title) at most this often while tools run.
+SCAN_EVERY_S = 20
+
+
+def State():
+    return qa.State(DIR)
+
+
+def describe_tool(name, args):
+    """A short label for a tool call, in Claude Code's words where one fits: 'Bash ls', 'Edit Pill.qml'."""
+    args = args if isinstance(args, dict) else {}
+    path = args.get("AbsolutePath") or args.get("TargetFile") or args.get("FilePath") or args.get("DirectoryPath")
+    base = os.path.basename(str(path).rstrip("/")) if path else ""
+    if name == "run_command":
+        return "Bash " + one_line(str(args.get("CommandLine", "")), 80)
+    if name == "view_file" and base:
+        return "Read " + base
+    if name == "write_to_file" and base:
+        return "Write " + base
+    if name in ("replace_file_content", "multi_replace_file_content") and base:
+        return "Edit " + base
+    if name in ("grep_search", "find_by_name") and (args.get("Query") or args.get("Pattern")):
+        return "Grep " + one_line(str(args.get("Query") or args.get("Pattern")), 60)
+    if name == "read_url_content" and args.get("Url"):
+        return "Fetch " + one_line(str(args["Url"]), 60)
+    if name == "search_web" and (args.get("query") or args.get("Query")):
+        return "Search " + one_line(str(args.get("query") or args.get("Query")), 60)
+    if name.startswith("mcp_"):
+        return "MCP " + name.split("_", 2)[-1]
+    # Every agy tool call says what it does in a few words.
+    return one_line(str(args.get("toolAction") or ""), 80) or name
+
+
+def question_of(args):
+    """The question an ask_question call puts to the user."""
+    args = args if isinstance(args, dict) else {}
+    for k, v in args.items():
+        if "question" in k.lower():
+            if isinstance(v, list) and v:
+                v = v[0].get("question", "") if isinstance(v[0], dict) else v[0]
+            if isinstance(v, str) and v.strip():
+                return one_line(v)
+    return one_line(str(args.get("toolAction") or "")) or "Has a question"
+
+
+def user_request(content):
+    """What the user typed, out of agy's wrapped USER_INPUT step."""
+    m = re.search(r"<USER_REQUEST>(.*?)</USER_REQUEST>", content or "", re.S)
+    return one_line(m.group(1) if m else content)
+
+
+def scan_transcript(path):
+    """(context, output, prompt, last reply) from a conversation's transcript_full.jsonl, or None."""
+    ctx, out, prompt, last = 0, 0, "", ""
+    try:
+        with open(path, errors="replace") as f:
+            for line in f:
+                try:
+                    step = json.loads(line)
+                except ValueError:
+                    continue
+                kind = step.get("type")
+                if kind == "USER_INPUT":
+                    prompt = user_request(step.get("content", ""))
+                    last = ""
+                elif kind == "PLANNER_RESPONSE":
+                    if step.get("input_tokens"):
+                        ctx = step.get("input_tokens", 0) + step.get("cache_read_tokens", 0)
+                    out += step.get("output_tokens", 0)
+                    if step.get("content"):
+                        last = step["content"]
+    except OSError:
+        return None
+    return ctx, out, prompt, one_line(last)
+
+
+def title_of(sid):
+    """The title agy generated for a conversation, read from its summaries database."""
+    try:
+        db = sqlite3.connect(f"file:{SUMMARIES}?mode=ro", uri=True, timeout=0.5)
+        try:
+            row = db.execute("SELECT title, preview FROM conversation_summaries WHERE conversation_id = ?",
+                             (sid,)).fetchone()
+        finally:
+            db.close()
+    except sqlite3.Error:
+        return ""
+    return (row[0] or row[1] or "") if row else ""
+
+
+def epoch_of(stamp):
+    """Seconds since the epoch for an RFC 3339 UTC time ('2026-10-13T15:49:48Z'), or 0."""
+    try:
+        return calendar.timegm(time.strptime(stamp[:19], "%Y-%m-%dT%H:%M:%S"))
+    except (TypeError, ValueError):
+        return 0
+
+
+def new_session(sid, cwd, t):
+    return {
+        "id": sid,
+        "cwd": cwd,
+        "name": os.path.basename(cwd.rstrip("/")) or cwd,
+        "status": "idle",
+        "started": t,
+        "action": "",
+        "prompt": "",
+        "last": "",
+        "ctx": 0,
+        "out": 0,
+        "agents": 0,
+    }
+
+
+def refresh_scan(s, t):
+    """Updates tokens, prompt and title from the transcript; returns the latest reply's first line."""
+    scan = scan_transcript(s.get("transcript", ""))
+    title = title_of(s["id"])
+    if title:
+        s["title"] = title
+    s["scannedAt"] = t
+    if not scan:
+        return ""
+    s["ctx"], s["out"] = scan[0] or s.get("ctx", 0), scan[1]
+    if scan[2]:
+        s["prompt"] = scan[2]
+    return scan[3]
+
+
+# ─── hook ────────────────────────────────────────────────────────────────────
+
+def hook(event):
+    try:
+        ev = json.load(sys.stdin)
+    except ValueError:
+        return
+    sid = ev.get("conversationId") or os.environ.get("ANTIGRAVITY_CONVERSATION_ID")
+    # Subagents run conversations of their own; they show through their parent.
+    if not sid or ev.get("parentConversationId"):
+        return
+    call = ev.get("toolCall") if isinstance(ev.get("toolCall"), dict) else {}
+    tool, args = call.get("name", ""), call.get("args")
+    t = now_ms()
+
+    with State() as st:
+        sessions = st.data["sessions"]
+        s = sessions.get(sid)
+        if s is None:
+            paths = ev.get("workspacePaths") or []
+            s = sessions[sid] = new_session(sid, (paths[0] if paths else "") or os.getcwd(), t)
+        st.dirty = True
+        s["updated"] = t
+        s["transcript"] = ev.get("transcriptPath") or s.get("transcript", "")
+        s["pid"] = qa.agent_pid(COMM)
+        qa.drop_superseded(sessions, sid, s["pid"])
+        turn = event == "SessionStart" or (event == "PreInvocation" and ev.get("invocationNum") == 0)
+        qa.note_tmux(s, turn)
+
+        if event == "SessionStart":
+            s["status"] = "idle"
+        elif event == "PreInvocation":
+            s["status"] = "working"
+            if ev.get("invocationNum") == 0:
+                s["action"] = ""
+                s["last"] = ""
+                s["agents"] = 0
+                s["started"] = t
+        elif event == "PreToolUse":
+            if tool == "ask_question":
+                s["status"] = "question"
+                s["action"] = question_of(args)
+            else:
+                s["status"] = "working"
+                s["action"] = describe_tool(tool, args)
+            if "subagent" in tool:
+                s["agents"] = s.get("agents", 0) + 1
+        elif event == "PostToolUse":
+            s["status"] = "working"
+            if ev.get("error"):
+                s["action"] = describe_tool(tool, args) + "  failed"
+            if "subagent" in tool:
+                s["agents"] = max(0, s.get("agents", 0) - 1)
+        elif event == "Stop":
+            s["status"] = "done"
+            s["agents"] = 0
+
+        stale = t - s.get("scannedAt", 0) > SCAN_EVERY_S * 1000
+        reply = ""
+        if s["transcript"] and (turn or event == "Stop" or (event == "PostToolUse" and stale)):
+            reply = refresh_scan(s, t)
+        if event == "Stop":
+            err = ev.get("error") or ""
+            s["last"] = ("Error: " + one_line(err, 120)) if err else (reply or "done")
+
+
+# ─── status line ─────────────────────────────────────────────────────────────
+
+def statusline():
+    try:
+        ev = json.load(sys.stdin)
+    except ValueError:
+        ev = {}
+
+    sid = ev.get("session_id") or ev.get("conversation_id")
+    model = (ev.get("model") or {}).get("display_name", "")
+    cw = ev.get("context_window") if isinstance(ev.get("context_window"), dict) else {}
+    quota = ev.get("quota") if isinstance(ev.get("quota"), dict) else {}
+    state = ev.get("agent_state", "")
+    pending = bool(ev.get("tool_confirmation_pending"))
+    cwd = (ev.get("workspace") or {}).get("current_dir") or ev.get("cwd") or ""
+    t = now_ms()
+
+    with State() as st:
+        usage = {}
+        for key, name in QUOTA.items():
+            b = quota.get(key)
+            if isinstance(b, dict) and isinstance(b.get("remaining_fraction"), (int, float)):
+                usage[name] = {
+                    "used_percentage": round((1 - b["remaining_fraction"]) * 100, 1),
+                    "resets_at": epoch_of(b.get("reset_time")),
+                }
+        if usage:
+            if ev.get("plan_tier"):
+                usage["plan"] = ev["plan_tier"]
+            old = {k: v for k, v in st.data["usage"].items() if k != "updated"}
+            # Rewrite when the numbers move, and every minute so "updated" stays honest.
+            if usage != old or t - st.data["usage"].get("updated", 0) > 60_000:
+                usage["updated"] = t
+                st.data["usage"] = usage
+                st.dirty = True
+
+        sessions = st.data["sessions"]
+        s = sessions.get(sid) if sid else None
+        if s is None and sid and cwd:
+            # A fresh agy before its first prompt: no hook has run yet.
+            s = sessions[sid] = new_session(sid, cwd, t)
+            s["updated"] = t
+            s["pid"] = qa.agent_pid(COMM)
+            qa.drop_superseded(sessions, sid, s["pid"])
+            qa.note_tmux(s, True)
+            st.dirty = True
+        if s is not None:
+            fresh = {"model": model, "ctxPct": cw.get("used_percentage")}
+            settled = t - s.get("updated", 0) > 1500
+            if state == "idle" and s["status"] in ("working", "waiting", "question") and settled:
+                # Stopped without a Stop hook: Esc mid-turn. (Not right after a
+                # hook: a status line rendered just before it may land after it.)
+                fresh.update(status="done", last="Interrupted", agents=0, updated=t)
+            elif pending and s["status"] != "waiting":
+                fresh.update(status="waiting", updated=t)
+            elif not pending and state in ("working", "tool_use") and s["status"] == "waiting":
+                fresh.update(status="working", updated=t)
+            cur = cw.get("current_usage") if isinstance(cw.get("current_usage"), dict) else None
+            if cur:
+                fresh["ctx"] = cur.get("input_tokens", 0) + cur.get("cache_read_input_tokens", 0)
+            for k, v in fresh.items():
+                if v not in (None, "", 0) and s.get(k) != v:
+                    s[k] = v
+                    st.dirty = True
+        usage = st.data["usage"]
+
+    parts = []
+    if model:
+        parts.append(model)
+    if cwd:
+        parts.append(os.path.basename(cwd.rstrip("/")))
+    if isinstance(cw.get("used_percentage"), (int, float)) and cw["used_percentage"] >= 1:
+        parts.append(f"ctx {round(cw['used_percentage'])}%")
+    for key, label in (("gemini_5h", "5h"), ("gemini_week", "wk")):
+        w = usage.get(key)
+        if isinstance(w, dict) and isinstance(w.get("used_percentage"), (int, float)):
+            parts.append(f"{label} {round(w['used_percentage'])}%")
+    print(" · ".join(parts))
+
+
+# ─── sweep / focus ───────────────────────────────────────────────────────────
+
+def sweep():
+    t = now_ms()
+    with State() as st:
+        sessions = st.data["sessions"]
+        # Newest first, so a process keeps the conversation it runs now.
+        for sid in sorted(sessions, key=lambda k: sessions[k].get("updated", 0), reverse=True):
+            s = sessions.get(sid)
+            if s is None:
+                continue
+            if not qa.alive(s.get("pid"), COMM):
+                del sessions[sid]
+                st.dirty = True
+                continue
+            if qa.drop_superseded(sessions, sid, s.get("pid")):
+                st.dirty = True
+            # The title is generated a little after the first turn.
+            if not s.get("title") and s.get("transcript") and t - s.get("scannedAt", 0) > SCAN_EVERY_S * 1000:
+                title = title_of(sid)
+                s["scannedAt"] = t
+                st.dirty = True
+                if title:
+                    s["title"] = title
+            if s.get("tmuxPane") and not s.get("where"):
+                where = qa.tmux_where(s["tmuxPane"])
+                if where:
+                    s["where"] = where
+                    st.dirty = True
+
+
+def focus(sid):
+    with State() as st:
+        s = dict(st.data["sessions"].get(sid) or {})
+    by_pid = qa.niri_windows()
+    if s and by_pid is not None:
+        qa.focus_session(s, by_pid)
+
+
+def main():
+    cmd = sys.argv[1] if len(sys.argv) > 1 else ""
+    try:
+        if cmd == "hook" and len(sys.argv) > 2:
+            hook(sys.argv[2])
+        elif cmd == "statusline":
+            statusline()
+        elif cmd == "sweep":
+            sweep()
+        elif cmd == "focus" and len(sys.argv) > 2:
+            focus(sys.argv[2])
+        elif cmd == "forget" and len(sys.argv) > 2:
+            qa.forget(DIR, sys.argv[2])
+        else:
+            print(__doc__.strip(), file=sys.stderr)
+            sys.exit(2)
+    except Exception as e:  # a broken bridge must never break agy
+        if cmd != "statusline":
+            print(f"agy-qs: {e}", file=sys.stderr)
+
+
+if __name__ == "__main__":
+    main()

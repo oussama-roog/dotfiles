@@ -29,63 +29,22 @@ A claude that is only showing a background job (attached to the claude daemon)
 still starts a session of its own; it is flagged `viewer` and left off the list.
 """
 
-import fcntl
 import json
 import os
-import subprocess
 import sys
-import time
 
-DIR = os.path.join(os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache"), "qs-claude")
-STATE = os.path.join(DIR, "state.json")
-LOCK = os.path.join(DIR, ".lock")
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+import qs_agent as qa  # noqa: E402
+from qs_agent import now_ms, one_line, run  # noqa: E402
+
+DIR = qa.cache_dir("claude")
 
 # Token counts read off the transcript at most this often while tools run.
 TOKENS_EVERY_S = 20
 
 
-def now_ms():
-    return int(time.time() * 1000)
-
-
-class State:
-    """The state file, held under an exclusive lock for a read-modify-write."""
-
-    def __enter__(self):
-        os.makedirs(DIR, exist_ok=True)
-        self.lock = open(LOCK, "w")
-        fcntl.flock(self.lock, fcntl.LOCK_EX)
-        try:
-            with open(STATE) as f:
-                self.data = json.load(f)
-        except (OSError, ValueError):
-            self.data = {}
-        self.data.setdefault("sessions", {})
-        self.data.setdefault("usage", {})
-        self.dirty = False
-        return self
-
-    def __exit__(self, *exc):
-        if self.dirty:
-            tmp = STATE + ".tmp"
-            with open(tmp, "w") as f:
-                json.dump(self.data, f, separators=(",", ":"))
-            os.replace(tmp, STATE)
-        fcntl.flock(self.lock, fcntl.LOCK_UN)
-        self.lock.close()
-
-
-def one_line(text, limit=140):
-    """First non-empty line of `text`, stripped of Markdown markers, cut to `limit`."""
-    lines = [l.strip() for l in (text or "").splitlines() if l.strip()]
-    # A reply that opens with a heading reads better from its first sentence.
-    if len(lines) > 1 and lines[0].startswith("#"):
-        lines = lines[1:]
-    for line in lines:
-        line = line.lstrip("#>*- ").replace("**", "").replace("`", "")
-        if line:
-            return line if len(line) <= limit else line[: limit - 1] + "…"
-    return ""
+def State():
+    return qa.State(DIR)
 
 
 def describe_tool(name, inp):
@@ -218,44 +177,9 @@ def mark_if_interrupted(s, t):
     return True
 
 
-def claude_pid():
-    """Walks up from the hook to the claude process; falls back to the parent."""
-    pid = os.getppid()
-    for _ in range(6):
-        try:
-            with open(f"/proc/{pid}/comm") as f:
-                comm = f.read().strip()
-            if "claude" in comm:
-                return pid
-            with open(f"/proc/{pid}/stat") as f:
-                pid = int(f.read().rsplit(")", 1)[1].split()[1])
-        except (OSError, ValueError, IndexError):
-            break
-        if pid <= 1:
-            break
-    return os.getppid()
-
-
-def tmux_where(pane):
-    """'main:2.1 nvim' — tmux session, window and pane, plus the window's name."""
-    try:
-        out = subprocess.run(
-            ["tmux", "display-message", "-p", "-t", pane,
-             "#{session_name}:#{window_index}.#{pane_index}\t#{window_name}"],
-            capture_output=True, text=True, timeout=1).stdout.strip()
-    except (OSError, subprocess.SubprocessError):
-        return ""
-    loc, _, name = out.partition("\t")
-    return loc + (" " + name if name else "")
-
-
 def alive(pid):
     """True while `pid` is still a claude process (a recycled pid doesn't count)."""
-    try:
-        with open(f"/proc/{int(pid)}/comm") as f:
-            return "claude" in f.read()
-    except (OSError, ValueError, TypeError):
-        return False
+    return qa.alive(pid, "claude")
 
 
 def daemon_peers():
@@ -285,14 +209,6 @@ def is_viewer(pid, peers):
         if link.startswith("socket:[") and link[8:-1] in peers:
             return True
     return False
-
-
-def drop_superseded(sessions, sid, pid):
-    """Removes the other sessions that `pid` ran before `sid`; True if any went."""
-    old = [k for k, o in sessions.items() if k != sid and o.get("pid") == pid]
-    for k in old:
-        del sessions[k]
-    return bool(old)
 
 
 # ─── hook ────────────────────────────────────────────────────────────────────
@@ -335,13 +251,9 @@ def hook():
         st.dirty = True
         s["updated"] = t
         s["transcript"] = ev.get("transcript_path") or s.get("transcript", "")
-        s["pid"] = claude_pid()
-        drop_superseded(sessions, sid, s["pid"])
-        pane = os.environ.get("TMUX_PANE")
-        if pane:
-            s["tmuxPane"] = pane
-            if not s.get("where") or event in ("SessionStart", "UserPromptSubmit"):
-                s["where"] = tmux_where(pane) or s.get("where", "")
+        s["pid"] = qa.agent_pid("claude")
+        qa.drop_superseded(sessions, sid, s["pid"])
+        qa.note_tmux(s, event in ("SessionStart", "UserPromptSubmit"))
 
         if event == "SessionStart":
             s["status"] = "idle"
@@ -473,7 +385,7 @@ def sweep():
                 del sessions[sid]
                 st.dirty = True
                 continue
-            if drop_superseded(sessions, sid, s.get("pid")):
+            if qa.drop_superseded(sessions, sid, s.get("pid")):
                 st.dirty = True
             viewer = is_viewer(s["pid"], peers)
             if s.get("viewer", False) != viewer:
@@ -491,37 +403,10 @@ def sweep():
                     if scan[2]:
                         s["title"] = scan[2]
             if s.get("tmuxPane") and not s.get("where"):
-                where = tmux_where(s["tmuxPane"])
+                where = qa.tmux_where(s["tmuxPane"])
                 if where:
                     s["where"] = where
                     st.dirty = True
-
-
-def forget(sid):
-    with State() as st:
-        if st.data["sessions"].pop(sid, None) is not None:
-            st.dirty = True
-
-
-def ancestors(pid):
-    out = []
-    for _ in range(32):
-        out.append(pid)
-        try:
-            with open(f"/proc/{pid}/stat") as f:
-                pid = int(f.read().rsplit(")", 1)[1].split()[1])
-        except (OSError, ValueError, IndexError):
-            break
-        if pid <= 1:
-            break
-    return out
-
-
-def run(argv):
-    try:
-        return subprocess.run(argv, capture_output=True, text=True, timeout=3).stdout
-    except (OSError, subprocess.SubprocessError):
-        return ""
 
 
 def focus(sid):
@@ -535,50 +420,16 @@ def focus(sid):
     s = sessions.get(sid)
     if not s:
         return
-    try:
-        windows = json.loads(run(["niri", "msg", "-j", "windows"]) or "[]")
-    except ValueError:
+    by_pid = qa.niri_windows()
+    if by_pid is None:
         return
-    by_pid = {w.get("pid"): w.get("id") for w in windows if w.get("pid")}
-    if focus_session(s, by_pid) or s.get("viewer"):
+    if qa.focus_session(s, by_pid) or s.get("viewer"):
         return
     viewers = sorted((v for v in sessions.values() if v.get("viewer") and alive(v.get("pid"))),
                      key=lambda v: v.get("updated", 0), reverse=True)
     for v in viewers:
-        if focus_session(v, by_pid):
+        if qa.focus_session(v, by_pid):
             return
-
-
-def focus_session(s, by_pid):
-    """
-    Focuses the niri window whose process is an ancestor of the session; True
-    if one was found. Under tmux the claude process hangs off the tmux server,
-    so the pane is selected first and the walk starts from a client showing
-    that tmux session, or, when none is, from a client switched over to it.
-    """
-    start = s.get("pid")
-    pane = s.get("tmuxPane")
-    if pane:
-        session = run(["tmux", "display-message", "-p", "-t", pane, "#{session_name}"]).strip()
-        if session:
-            run(["tmux", "select-window", "-t", pane])
-            run(["tmux", "select-pane", "-t", pane])
-            clients = [l.split(" ", 2) for l in run(
-                ["tmux", "list-clients", "-F", "#{client_pid} #{client_session} #{client_name}"]).splitlines()]
-            clients = [c for c in clients if len(c) == 3 and c[0].isdigit()]
-            here = [c for c in clients if c[1] == session]
-            if not here and clients:
-                run(["tmux", "switch-client", "-c", clients[0][2], "-t", pane])
-                here = clients[:1]
-            if here:
-                start = int(here[0][0])
-    if not start:
-        return False
-    for pid in ancestors(int(start)):
-        if pid in by_pid:
-            run(["niri", "msg", "action", "focus-window", "--id", str(by_pid[pid])])
-            return True
-    return False
 
 
 def main():
@@ -593,7 +444,7 @@ def main():
         elif cmd == "focus" and len(sys.argv) > 2:
             focus(sys.argv[2])
         elif cmd == "forget" and len(sys.argv) > 2:
-            forget(sys.argv[2])
+            qa.forget(DIR, sys.argv[2])
         else:
             print(__doc__.strip(), file=sys.stderr)
             sys.exit(2)

@@ -68,6 +68,22 @@ Singleton {
     readonly property string circleNotch: "\ueb44"
     readonly property string terminal: "\ueae8"
 
+    // Tasks
+    readonly property string listChecks: ""
+    readonly property string circle: ""
+    readonly property string plus: ""
+    readonly property string pencil: ""
+    readonly property string notePencil: ""
+    readonly property string sliders: ""
+    readonly property string calendar: ""
+    readonly property string calendarCheck: ""
+    readonly property string tag: ""
+    readonly property string folder: ""
+    readonly property string flag: ""
+    readonly property string undo: ""
+    readonly property string clock: ""
+    readonly property string hourglass: ""
+
     // OSD
     readonly property string speaker: ""
     readonly property string speakerOff: ""

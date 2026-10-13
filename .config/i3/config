@@ -25,8 +25,9 @@ hide_edge_borders none
 # Cursor theme (Bibata) there is no need for this since nix handles it.
 # exec_always --no-startup-id bash -c 'echo -e "Xcursor.theme: Bibata-Modern-Classic\nXcursor.size: 24" | xrdb -merge; xsetroot -cursor_name left_ptr'
 
-# Natural scrolling for touchpad (matching niri)
-exec_always --no-startup-id bash -c 'for id in $(xinput list --id-only 2>/dev/null); do xinput set-prop "$id" "libinput Natural Scrolling Enabled" 1 2>/dev/null; done'
+exec_always xrandr --output Virtual-1 --mode 1920x1080
+
+# Natural scrolling for touchpad is handled by NixOS (services.libinput.touchpad)
 
 # ──────────────────────────────────────────────
 # Keyboard layout: us,ara with alt+shift toggle, caps→ctrl
@@ -40,7 +41,7 @@ exec --no-startup-id ~/dotfiles/scripts/theme-switcher.sh restore
 exec --no-startup-id ~/.config/polybar/launch.sh
 exec --no-startup-id dunst
 
-exec --no-startup-id bash -c '[[ -f ~/.cache/current_wallpaper ]] && feh --bg-fill "$(cat ~/.cache/current_wallpaper)" || feh --bg-fill ~/dotfiles/wallpapers/wall.png'
+exec --no-startup-id bash -c 'sleep 1; [[ -f ~/.cache/current_wallpaper ]] && feh --no-xinerama --bg-fill "$(cat ~/.cache/current_wallpaper)" || feh --no-xinerama --bg-fill ~/dotfiles/wallpapers/wall.png'
 exec --no-startup-id vicinae server
 
 # ──────────────────────────────────────────────
@@ -60,10 +61,10 @@ bindsym $mod+Shift+space exec ~/.config/rofi/launcher/launcher.sh
 bindsym $mod+space exec vicinae toggle
 
 # Power menu
-bindsym $mod+p exec ~/.config/rofi/horizontal/powermenu.sh
+bindsym $mod+p exec vicinae "vicinae://launch/power"
 
 # Clipboard history
-bindsym $mod+v exec vicinae "vicinae://extensions/vicinae/clipboard/history"
+bindsym $mod+v exec vicinae "vicinae://launch/clipboard/history"
 
 # Calculator
 bindsym $mod+c exec ~/.config/rofi/launcher/calc.sh
@@ -86,7 +87,7 @@ bindsym $mod+q kill
 # ──────────────────────────────────────────────
 # Audio controls
 # ──────────────────────────────────────────────
-bindsym XF86AudioRaiseVolume exec --no-startup-id wpctl set-volume -l 3 @DEFAULT_AUDIO_SINK@ 5%+
+bindsym XF86AudioRaiseVolume exec --no-startup-id wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+
 bindsym XF86AudioLowerVolume exec --no-startup-id wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
 bindsym XF86AudioMute exec --no-startup-id wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
 bindsym XF86AudioMicMute exec --no-startup-id wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
@@ -197,6 +198,7 @@ for_window [class="mpv"] floating enable
 for_window [class="imv"] floating enable
 for_window [class="org.gnome.Calculator"] floating enable
 for_window [title="^Picture-in-Picture$"] floating enable
+for_window [class="(?i)vicinae"] floating enable, move position center
 
 # ──────────────────────────────────────────────
 # Exit / Reload

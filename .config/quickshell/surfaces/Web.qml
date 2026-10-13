@@ -29,7 +29,8 @@ PillSurface {
         { name: "X",          url: "https://x.com/",                           icon: Icons.xLogo },
         { name: "Reddit",     url: "https://reddit.com/",                      icon: Icons.reddit },
         { name: "Keep",       url: "https://keep.google.com/",                 icon: Icons.note },
-        { name: "Gmail",      url: "https://mail.google.com/",                 icon: Icons.envelope }
+        { name: "Gmail",      url: "https://mail.google.com/",                 icon: Icons.envelope },
+        { name: "Satim Mail", url: "https://mail.satim.dz/",                   icon: Icons.envelope }
     ]
 
     property string query: ""

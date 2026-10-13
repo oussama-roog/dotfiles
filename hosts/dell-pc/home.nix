@@ -6,9 +6,12 @@
     ../../modules/home/bash.nix
     ../../modules/home/tmux.nix
     ../../modules/home/packages.nix
+    ../../modules/home/taskwarrior.nix
     ../../modules/home/dev-tools.nix
     ../../modules/home/xdg.nix
     ../../modules/home/desktop-environment.nix
+    ../../modules/home/claude.nix
+    ../../modules/home/antigravity.nix
   ];
 
   # User-specific settings

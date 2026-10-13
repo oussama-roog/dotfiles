@@ -9,9 +9,9 @@ rules = [
     { mime = "text/*", use = "edit" },
     { mime = "inode/directory", use = "change_dir" },  # Directory rule
     { mime = "application/pdf", use = "view_pdf" },
-    { name = "*.zip", use = "extract_zip" },
-    { name = "*.rar", use = "extract_rar" },
-    { name = "*", use = "edit" }  # Fallback rule
+    { url = "*.zip", use = "extract_zip" },
+    { url = "*.rar", use = "extract_rar" },
+    { url = "*", use = "edit" }  # Fallback rule
 ]
 
 [opener]

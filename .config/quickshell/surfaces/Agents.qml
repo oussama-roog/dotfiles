@@ -7,18 +7,23 @@ import "../services"
 import "../widgets"
 
 /**
- * Agents centre, opened from the left dot (or `qs ipc call pill claude`).
- * Three blocks, top to bottom:
+ * Agents centre, opened from the left dot (or `qs ipc call pill agents`).
+ * Top to bottom:
  *
  *   now playing   cover, title, artist and a live progress bar; no buttons,
  *                 the media keys drive playback. Hidden when nothing plays.
- *   plan usage    the 5-hour and weekly Claude limits with their reset
- *                 countdowns, as Claude Code last reported them.
- *   sessions      every Claude Code session the hooks have seen: status,
- *                 context tokens, age and what it is doing or last said.
+ *   agent tabs    one per agent in AgentHub (Claude, Antigravity), each with
+ *                 a mark when it waits on you or works; the rest below is the
+ *                 selected agent's.
+ *   plan usage    the agent's plan limits with their reset countdowns, as its
+ *                 status line last reported them.
+ *   sessions      every session its hooks have seen: status, context tokens,
+ *                 age and what it is doing or last said.
  *
- * Up/Down or j/k pick a session, Enter jumps to its terminal, x or Delete
- * drops it from the list.
+ * Left/Right, h/l or Ctrl+H/Ctrl+L switch agent (Tab too); Up/Down, j/k or
+ * Ctrl+J/Ctrl+K pick a session, Enter jumps to its terminal, x or Delete drops
+ * it from the list. It opens on the agent that needs you, else one that works,
+ * else the one you last looked at.
  */
 PillSurface {
     id: root
@@ -30,12 +35,29 @@ PillSurface {
 
     implicitHeight: mainCol.implicitHeight
 
+    readonly property var sources: AgentHub.sources
+    property int tab: 0
+    readonly property var src: sources[Math.min(tab, sources.length - 1)]
+
     property int index: 0
-    readonly property var list: Claude.sessions
+    readonly property var list: src.sessions
     onListChanged: index = Math.max(0, Math.min(index, list.length - 1))
+
+    /** The agent that needs you, else one that works, else the current tab. */
+    function busiestTab() {
+        for (var i = 0; i < sources.length; i++)
+            if (sources[i].needsYou)
+                return i;
+        if (!sources[tab].running)
+            for (var j = 0; j < sources.length; j++)
+                if (sources[j].working > 0)
+                    return j;
+        return tab;
+    }
 
     onOpenChanged: {
         if (open) {
+            tab = busiestTab();
             index = 0;
             Qt.callLater(root.forceActiveFocus);
         }
@@ -46,24 +68,37 @@ PillSurface {
             index = Math.max(0, Math.min(list.length - 1, index + dir));
     }
 
+    /** Next or previous agent, wrapping round. */
+    function switchTab(dir) {
+        tab = (tab + dir + sources.length) % sources.length;
+        index = 0;
+    }
+
     function jump() {
         if (index < list.length) {
-            Claude.focus(list[index].id);
+            AgentHub.focus(list[index]);
             root.requestClose();
         }
     }
 
     Keys.onUpPressed: move(-1)
     Keys.onDownPressed: move(1)
+    Keys.onLeftPressed: switchTab(-1)
+    Keys.onRightPressed: switchTab(1)
+    Keys.onTabPressed: switchTab(1)
+    Keys.onBacktabPressed: switchTab(-1)
     Keys.onReturnPressed: jump()
     Keys.onEnterPressed: jump()
-    Keys.onDeletePressed: if (index < list.length) Claude.forget(list[index].id)
+    Keys.onDeletePressed: if (index < list.length) AgentHub.forget(list[index])
     Keys.onPressed: (e) => {
         if (e.key === Qt.Key_J || e.key === Qt.Key_K) {
             move(e.key === Qt.Key_J ? 1 : -1);
             e.accepted = true;
+        } else if (e.key === Qt.Key_H || e.key === Qt.Key_L) {
+            switchTab(e.key === Qt.Key_L ? 1 : -1);
+            e.accepted = true;
         } else if (e.key === Qt.Key_X && index < list.length) {
-            Claude.forget(list[index].id);
+            AgentHub.forget(list[index]);
             e.accepted = true;
         }
     }
@@ -126,7 +161,7 @@ PillSurface {
             id: ulabel
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            width: 48 * root.s
+            width: 62 * root.s
             text: urow.label
             color: Theme.textSubtle
             font.family: Theme.font
@@ -140,7 +175,7 @@ PillSurface {
             anchors.verticalCenter: parent.verticalCenter
             width: 62 * root.s
             horizontalAlignment: Text.AlignRight
-            text: !urow.win ? "" : urow.win.resetsAt > 0 ? "↻ " + Claude.span(urow.win.resetsAt - Claude.now) : "reset"
+            text: !urow.win ? "" : urow.win.resetsAt > 0 ? "↻ " + AgentHub.span(urow.win.resetsAt - AgentHub.now) : "reset"
             color: Theme.textFaint
             font.family: Theme.font
             font.pixelSize: 9.5 * root.s
@@ -191,12 +226,11 @@ PillSurface {
         width: parent ? parent.width : 0
         height: sessionList.rowH
 
+        /** The selection itself is the sliding accent highlight under the list. */
         Rectangle {
             anchors.fill: parent
             radius: 10 * root.s
-            color: srow.selected ? Theme.frameBg : (rowHover.hovered ? Qt.alpha(Theme.text, 0.03) : "transparent")
-            border.width: srow.selected ? 1 : 0
-            border.color: Theme.frameBorder
+            color: !srow.selected && rowHover.hovered ? Qt.alpha(Theme.text, 0.03) : "transparent"
             Behavior on color { ColorAnimation { duration: Motion.fast } }
         }
 
@@ -215,17 +249,22 @@ PillSurface {
             width: 16 * root.s
             height: 16 * root.s
 
-            Icon {
+            /** On the accent highlight the agent's colour gets a disc to stand on. */
+            Rectangle {
                 anchors.centerIn: parent
-                size: 16 * root.s
+                visible: srow.ss.status === "working" && srow.selected
+                width: 20 * root.s
+                height: width
+                radius: width / 2
+                color: Theme.onAccent
+            }
+            AgentRing {
+                anchors.centerIn: parent
+                size: 15 * root.s
+                thickness: 2 * root.s
                 visible: srow.ss.status === "working"
-                text: Icons.circleNotch
-                color: Theme.accent
-                RotationAnimation on rotation {
-                    running: srow.ss.status === "working" && root.open
-                    loops: Animation.Infinite
-                    from: 0; to: 360; duration: 1100
-                }
+                spinning: visible && root.open
+                colors: [AgentHub.source(srow.ss.agent).color]
             }
             Icon {
                 anchors.centerIn: parent
@@ -235,7 +274,7 @@ PillSurface {
                     : srow.ss.status === "question" ? Icons.question
                     : srow.ss.status === "done" ? Icons.checkCircle
                     : Icons.terminal
-                color: srow.hot ? Theme.accent : Theme.textSubtle
+                color: srow.selected ? Theme.onAccent : srow.hot ? Theme.accent : Theme.textSubtle
                 SequentialAnimation on opacity {
                     running: srow.hot && root.open
                     loops: Animation.Infinite
@@ -254,15 +293,15 @@ PillSurface {
             width: chipText.implicitWidth + 12 * root.s
             height: 16 * root.s
             radius: height / 2
-            color: srow.hot ? Qt.alpha(Theme.accent, 0.16) : Theme.frameBg
+            color: srow.selected ? Qt.alpha(Theme.onAccent, 0.14) : srow.hot ? Qt.alpha(Theme.accent, 0.16) : Theme.frameBg
             border.width: 1
-            border.color: srow.hot ? Qt.alpha(Theme.accent, 0.45) : Theme.frameBorder
+            border.color: srow.selected ? Qt.alpha(Theme.onAccent, 0.35) : srow.hot ? Qt.alpha(Theme.accent, 0.45) : Theme.frameBorder
 
             Text {
                 id: chipText
                 anchors.centerIn: parent
-                text: Claude.statusLabel(srow.ss) + (srow.ss.agents > 0 ? " · " + srow.ss.agents + " sub" : "")
-                color: srow.hot ? Theme.accent : srow.live ? Theme.text : Theme.textDim
+                text: AgentHub.statusLabel(srow.ss) + (srow.ss.agents > 0 ? " · " + srow.ss.agents + " sub" : "")
+                color: srow.selected ? Theme.onAccent : srow.hot ? Theme.accent : srow.live ? Theme.text : Theme.textDim
                 font.family: Theme.font
                 font.pixelSize: 9 * root.s
                 font.weight: Font.DemiBold
@@ -274,8 +313,8 @@ PillSurface {
             x: srow.textLeft
             y: 7 * root.s
             width: chip.x - x - 10 * root.s
-            text: Claude.title(srow.ss)
-            color: Theme.textBright
+            text: AgentHub.title(srow.ss)
+            color: srow.selected ? Theme.onAccent : Theme.textBright
             font.family: Theme.font
             font.pixelSize: 11.5 * root.s
             font.weight: Font.DemiBold
@@ -291,8 +330,8 @@ PillSurface {
             anchors.topMargin: 4 * root.s
             width: parent.width - x - srow.inset
             readonly property bool tool: srow.live && /^(Bash|Edit|Write|Read|Grep|Glob|MultiEdit|Fetch|Search|MCP|Agent) /.test(text)
-            text: Claude.detail(srow.ss) || "—"
-            color: srow.hot ? Theme.text : Theme.textSubtle
+            text: AgentHub.detail(srow.ss) || "—"
+            color: srow.selected ? Qt.alpha(Theme.onAccent, 0.85) : srow.hot ? Theme.text : Theme.textSubtle
             font.family: tool ? "monospace" : Theme.font
             font.pixelSize: (tool ? 9.5 : 10.5) * root.s
             elide: Text.ElideRight
@@ -310,22 +349,24 @@ PillSurface {
 
             Meta {
                 visible: (srow.ss.ctx || 0) > 0
-                text: "ctx " + (typeof srow.ss.ctxPct === "number" ? Math.round(srow.ss.ctxPct) + "% · " : "") + Claude.tokens(srow.ss.ctx)
-                color: (srow.ss.ctxPct || 0) >= 80 ? Theme.accent : Theme.textDim
+                text: "ctx " + (typeof srow.ss.ctxPct === "number" ? Math.round(srow.ss.ctxPct) + "% · " : "") + AgentHub.tokens(srow.ss.ctx)
+                color: srow.selected ? Qt.alpha(Theme.onAccent, 0.7) : (srow.ss.ctxPct || 0) >= 80 ? Theme.accent : Theme.textDim
             }
             Meta {
                 visible: (srow.ss.out || 0) > 0
-                text: Claude.tokens(srow.ss.out) + " out"
+                text: AgentHub.tokens(srow.ss.out) + " out"
+                color: srow.selected ? Qt.alpha(Theme.onAccent, 0.7) : Theme.textDim
             }
             Meta {
                 visible: (srow.ss.added || 0) + (srow.ss.removed || 0) > 0
                 text: "+" + (srow.ss.added || 0) + " −" + (srow.ss.removed || 0)
+                color: srow.selected ? Qt.alpha(Theme.onAccent, 0.7) : Theme.textDim
             }
             Meta {
                 /** Running sessions count up from their start; the rest show how long ago. */
-                text: srow.live ? Claude.span(Claude.now - (srow.ss.started || Claude.now))
-                    : Claude.span(Claude.now - (srow.ss.updated || Claude.now)) + " ago"
-                color: Theme.textFaint
+                text: srow.live ? AgentHub.span(AgentHub.now - (srow.ss.started || AgentHub.now))
+                    : AgentHub.span(AgentHub.now - (srow.ss.updated || AgentHub.now)) + " ago"
+                color: srow.selected ? Qt.alpha(Theme.onAccent, 0.6) : Theme.textFaint
             }
         }
 
@@ -335,8 +376,8 @@ PillSurface {
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 7 * root.s
             width: Math.max(0, meta.x - x - 12 * root.s)
-            text: Claude.place(srow.ss)
-            color: Theme.textFaint
+            text: AgentHub.place(srow.ss)
+            color: srow.selected ? Qt.alpha(Theme.onAccent, 0.6) : Theme.textFaint
             font.family: Theme.font
             font.pixelSize: 9 * root.s
             elide: Text.ElideRight
@@ -383,10 +424,10 @@ PillSurface {
             Label {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                text: Claude.needsYou ? Claude.attention.length + " waiting"
-                    : Claude.running > 0 ? Claude.running + " running"
+                text: AgentHub.needsYou ? AgentHub.attention.length + " waiting"
+                    : AgentHub.running > 0 ? AgentHub.running + " running"
                     : "idle"
-                color: Claude.needsYou ? Theme.accent : Theme.textDim
+                color: AgentHub.needsYou ? Theme.accent : Theme.textDim
                 font.pixelSize: 9 * root.s
                 font.weight: Font.Bold
             }
@@ -536,6 +577,121 @@ PillSurface {
 
         Hair { visible: media.has }
 
+        // ─── Agent tabs ──────────────────────────────────────────────────────
+        Item {
+            id: tabs
+            width: parent.width
+            height: 28 * root.s
+
+            readonly property real gap: 4 * root.s
+            readonly property real tabW: (width - 2 * gap - (root.sources.length - 1) * gap) / root.sources.length
+
+            Rectangle {
+                anchors.fill: parent
+                radius: height / 2
+                color: Theme.frameBg
+                border.width: 1
+                border.color: Theme.frameBorder
+            }
+
+            ElasticHighlight {
+                tx: tabs.gap + root.tab * (tabs.tabW + tabs.gap)
+                ty: tabs.gap
+                tw: tabs.tabW
+                th: tabs.height - 2 * tabs.gap
+                radius: 14 * root.s
+            }
+
+            Repeater {
+                model: root.sources
+
+                Item {
+                    id: tabItem
+                    required property var modelData
+                    required property int index
+                    readonly property var src: modelData
+                    readonly property bool selected: root.tab === index
+
+                    x: tabs.gap + index * (tabs.tabW + tabs.gap)
+                    y: tabs.gap
+                    width: tabs.tabW
+                    height: tabs.height - 2 * tabs.gap
+
+                    Row {
+                        anchors.centerIn: parent
+                        spacing: 6 * root.s
+
+                        /** Waiting on you: pulsing dot; working: spinner; else nothing. */
+                        Item {
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: tabItem.src.running > 0
+                            width: 10 * root.s
+                            height: 10 * root.s
+
+                            Rectangle {
+                                anchors.centerIn: parent
+                                visible: tabItem.src.needsYou
+                                width: 7 * root.s
+                                height: width
+                                radius: width / 2
+                                color: tabItem.selected ? Theme.onAccent : Theme.accent
+                                SequentialAnimation on opacity {
+                                    running: tabItem.src.needsYou && root.open
+                                    loops: Animation.Infinite
+                                    NumberAnimation { from: 1; to: 0.35; duration: 800; easing.type: Easing.InOutSine }
+                                    NumberAnimation { from: 0.35; to: 1; duration: 800; easing.type: Easing.InOutSine }
+                                }
+                            }
+                            Rectangle {
+                                anchors.centerIn: parent
+                                visible: !tabItem.src.needsYou && tabItem.selected
+                                width: 14 * root.s
+                                height: width
+                                radius: width / 2
+                                color: Theme.onAccent
+                            }
+                            AgentRing {
+                                anchors.centerIn: parent
+                                visible: !tabItem.src.needsYou
+                                size: 10 * root.s
+                                thickness: 1.6 * root.s
+                                colors: [tabItem.src.color]
+                                spinning: visible && tabItem.src.working > 0 && root.open
+                            }
+                        }
+
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: tabItem.src.label
+                            color: tabItem.selected ? Theme.onAccent : tabHover.hovered ? Theme.text : Theme.textSubtle
+                            font.family: Theme.font
+                            font.pixelSize: 11 * root.s
+                            font.weight: Font.DemiBold
+                            Behavior on color { ColorAnimation { duration: Motion.fast } }
+                        }
+
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: tabItem.src.sessions.length > 0
+                            text: tabItem.src.sessions.length
+                            color: tabItem.selected ? Qt.alpha(Theme.onAccent, 0.75) : Theme.textFaint
+                            font.family: Theme.font
+                            font.pixelSize: 9.5 * root.s
+                            font.weight: Font.DemiBold
+                            font.features: { "tnum": 1 }
+                        }
+                    }
+
+                    HoverHandler { id: tabHover }
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: { root.tab = tabItem.index; root.index = 0; }
+                    }
+                }
+            }
+        }
+
         // ─── Plan usage ──────────────────────────────────────────────────────
         Column {
             width: parent.width
@@ -548,27 +704,33 @@ PillSurface {
                 Label {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Plan usage"
+                    text: "Plan usage" + (root.src.usage.plan ? "  ·  " + root.src.usage.plan : "")
                 }
                 Text {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
-                    readonly property double age: Claude.now - (Claude.usage.updated || 0)
-                    visible: Claude.hasUsage
-                    text: age < 90000 ? "live" : "updated " + Claude.span(age) + " ago"
+                    readonly property double age: AgentHub.now - (root.src.usage.updated || 0)
+                    visible: root.src.hasUsage
+                    text: age < 90000 ? "live" : "updated " + AgentHub.span(age) + " ago"
                     color: age < 90000 ? Theme.accentDim : Theme.textFaint
                     font.family: Theme.font
                     font.pixelSize: 9 * root.s
                 }
             }
 
-            UsageRow { visible: Claude.hasUsage; label: "5 hours"; win: Claude.fiveHour }
-            UsageRow { visible: Claude.hasUsage; label: "Weekly"; win: Claude.sevenDay }
+            Repeater {
+                model: root.src.plan
+                UsageRow {
+                    required property var modelData
+                    label: modelData.label
+                    win: modelData
+                }
+            }
 
             Text {
-                visible: !Claude.hasUsage
+                visible: !root.src.hasUsage
                 width: parent.width
-                text: "Shows up once a Claude Code session reports its limits."
+                text: root.src.usageHint
                 color: Theme.textFaint
                 font.family: Theme.font
                 font.pixelSize: 10 * root.s
@@ -592,7 +754,7 @@ PillSurface {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 visible: root.list.length > 0
-                text: "↵ jump   x forget"
+                text: "↵ jump   x forget   ←→ agent"
                 color: Theme.textFaint
                 font.family: Theme.font
                 font.pixelSize: 9 * root.s
@@ -612,13 +774,25 @@ PillSurface {
             currentIndex: root.index
             highlightFollowsCurrentItem: false
             onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)
+
+            ElasticHighlight {
+                parent: sessionList.contentItem
+                z: -1
+                tx: 0
+                ty: root.index * (sessionList.rowH + sessionList.spacing)
+                tw: sessionList.width
+                th: sessionList.rowH
+                radius: 10 * root.s
+                shown: root.list.length > 0
+            }
+
             delegate: SessionRow {}
         }
 
         Text {
             visible: root.list.length === 0
             width: parent.width
-            text: "No Claude Code sessions. Start one with claude in a terminal."
+            text: "No " + root.src.label + " sessions. Start one with " + root.src.command + " in a terminal."
             color: Theme.textFaint
             font.family: Theme.font
             font.pixelSize: 10 * root.s

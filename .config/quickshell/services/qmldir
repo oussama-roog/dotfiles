@@ -1,5 +1,6 @@
+singleton AgentHub AgentHub.qml
+AgentSource AgentSource.qml
 singleton Battery Battery.qml
-singleton Claude Claude.qml
 singleton Cliphist Cliphist.qml
 singleton Flags Flags.qml
 singleton Icons Icons.qml
@@ -8,6 +9,7 @@ singleton NiriSpaces NiriSpaces.qml
 singleton Notifs Notifs.qml
 singleton Players Players.qml
 singleton Sysmon Sysmon.qml
+singleton Taskwarrior Taskwarrior.qml
 singleton Theme Theme.qml
 singleton Themes Themes.qml
 singleton Walls Walls.qml

@@ -33,6 +33,7 @@
     unstable.opencode
     unstable.claude-code
     unstable.antigravity-ide
+    unstable.antigravity-cli
     # spotify
     # discord
     # zathura
@@ -62,6 +63,7 @@
     wireplumber
 
     bibata-cursors
+    adw-gtk3 # GTK3 theme that theme-switcher recolours
     base16-schemes
 
     grim
@@ -77,8 +79,8 @@
     maim
     xclip
     xdotool
-    xorg.setxkbmap
-    xorg.xset
+    setxkbmap
+    xset
     arandr
 
     # nvim dependencies

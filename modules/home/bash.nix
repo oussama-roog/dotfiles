@@ -19,7 +19,7 @@
       dbl = "dblab";
 
       # NixOS management (uses hostConfig for correct host name)
-      nxs = "sudo nixos-rebuild switch --flake ~/dotfiles#${hostConfig.hostName}";
+      nxs = "sudo nixos-rebuild switch --flake ~/dotfiles#${hostConfig.hostName} --impure";
       nxu = "sudo nix flake update --flake ~/dotfiles";
       nxg = "sudo nix-collect-garbage -d";
       nxo = "sudo nix-store --optimise";
@@ -47,10 +47,16 @@
         source $(fzf-share)/key-bindings.bash
         source $(fzf-share)/completion.bash
       fi
+    ''
+    + lib.optionalString hostConfig.isVM ''
+      export NODE_EXTRA_CA_CERTS="/etc/ssl/certs/ca-certificates.crt"
     '';
 
     profileExtra = ''
       export PATH=${config.home.homeDirectory}/.local/bin:$PATH
+    ''
+    + lib.optionalString hostConfig.isVM ''
+      export NODE_EXTRA_CA_CERTS="/etc/ssl/certs/ca-certificates.crt"
     '';
   };
 

@@ -11,7 +11,7 @@ if [[ -n "$chosen" ]]; then
     if [[ "$XDG_SESSION_TYPE" == "x11" ]]; then
         # X11: use feh
         if command -v feh &>/dev/null; then
-            feh --bg-fill "$chosen"
+            feh --no-xinerama --bg-fill "$chosen"
             notify-send "Wallpaper Changed" "$(basename "$chosen")"
         else
             notify-send "Error" "feh not found"

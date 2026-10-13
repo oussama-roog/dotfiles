@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
 
 web_data=(
-    "Perplexity" "https://www.perplexity.ai/"
     "Gemini" "https://gemini.google.com/app"
     "Claude" "https://claude.ai/new"
-    "ChatGPT" "https://chatgpt.com/?temporary-chat=true"
     "DeepSeek" "https://chat.deepseek.com/"
+    "ChatGPT" "https://chatgpt.com/?temporary-chat=true"
+    "Perplexity" "https://www.perplexity.ai/"
     "Youtube" "https://youtube.com/"
     "X" "https://x.com/"
     "Reddit" "https://reddit.com/"
     "keep" "https://keep.google.com/"
     "Gmail" "https://mail.google.com/"
+    "Pra" "https://pra.satim.dz/console"
+    "Satim Mail" "https://mail.satim.dz/"
 )
 
 # Build arrays from the data

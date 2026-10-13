@@ -18,6 +18,7 @@ import "../widgets"
  *   :       niri keybinds read from config.kdl; Enter runs the bind
  *   .       emoji, from Unicode's emoji-test.txt (the unicode-emoji package,
  *           linked into ~/.local/share by home-manager); Enter copies
+ *   +       add a Taskwarrior task (`+ renew cert due:fri +work`); Enter adds
  *
  * Every mode turns into the same row shape — { title, sub, glyph | emoji |
  * entry, run } — so one list and one delegate draw them all.
@@ -48,7 +49,8 @@ PillSurface {
         "=": { name: "calc", icon: Icons.equals, hint: "Calculate" },
         ">": { name: "actions", icon: Icons.actions, hint: "Run an action" },
         ":": { name: "binds", icon: Icons.keyboard, hint: "Search keybinds" },
-        ".": { name: "emoji", icon: Icons.smiley, hint: "Search emoji" }
+        ".": { name: "emoji", icon: Icons.smiley, hint: "Search emoji" },
+        "+": { name: "task", icon: Icons.plus, hint: "Add a task" }
     })
     readonly property var modeInfo: modes[query.charAt(0)] || null
     readonly property string mode: modeInfo ? modeInfo.name : "apps"
@@ -69,13 +71,14 @@ PillSurface {
         case "actions": return rank(actionItems, term, a => [a.title, a.sub], () => 0);
         case "binds": return rank(bindItems, term, b => [b.title, b.sub], () => 0);
         case "emoji": return term.length ? rank(emojiItems, term, e => [e.title, e.sub], () => 0).slice(0, 80) : emojiItems.slice(0, 80);
+        case "task": return taskItems;
         }
         return rank(allEntries, term, e => [e.name, e.genericName].concat(e.keywords || []), e => usage[e.id] || 0)
             .map(e => ({ entry: e, title: e.name, sub: secondaryOf(e) }));
     }
 
     readonly property string counter: mode === "apps" ? results.length + " / " + allEntries.length
-        : mode === "calc" ? "" : String(results.length)
+        : mode === "calc" || mode === "task" ? "" : String(results.length)
 
     /** 0 = first field starts with q, 1 = a field contains q, 2 = subsequence, 99 = no match. */
     function score(fields, q) {
@@ -233,14 +236,24 @@ PillSurface {
         { title: "Screenshot", sub: "region, saved and copied", glyph: Icons.camera, run: () => Quickshell.execDetached([Quickshell.env("HOME") + "/dotfiles/scripts/screenshot.sh"]) },
         { title: "Clipboard history", sub: "Mod+V", glyph: Icons.clipboardText, run: () => openSurface("clipboard") },
         { title: "Notifications", sub: "Mod+N", glyph: Icons.bell, run: () => openSurface("notifications") },
-        { title: "Agents", sub: "Claude sessions and plan usage · Mod+A", glyph: Icons.sparkle, run: () => openSurface("claude") },
+        { title: "Agents", sub: "Claude and Antigravity sessions, plan usage · Mod+A", glyph: Icons.sparkle, run: () => openSurface("agents") },
+        { title: "Tasks", sub: "Taskwarrior · Mod+T", glyph: Icons.listChecks, run: () => openSurface("tasks") },
         { title: "Web apps", sub: "Mod+W", glyph: Icons.globe, run: () => openSurface("web") },
-        { title: "Themes", sub: "Mod+T", glyph: Icons.palette, run: () => openSurface("themes") },
+        { title: "Themes", sub: "Mod+Shift+T", glyph: Icons.palette, run: () => openSurface("themes") },
         { title: "Random theme", sub: "base16", glyph: Icons.shuffle, run: () => Quickshell.execDetached([Quickshell.env("HOME") + "/dotfiles/scripts/theme-switcher.sh", "random"]) },
         { title: "Wallpapers", sub: "Mod+Shift+W", glyph: Icons.image, run: () => openSurface("wallpaper") },
         { title: Flags.dnd ? "Turn off do not disturb" : "Turn on do not disturb", sub: "notifications", glyph: Flags.dnd ? Icons.bell : Icons.bellSlash, run: () => Flags.dnd = !Flags.dnd },
         { title: "Reload shell", sub: "quickshell", glyph: Icons.reload, run: () => Quickshell.reload(true) }
     ]
+
+    // ─── + task ──────────────────────────────────────────────────────────────
+    /** The raw text (term is lowercased), handed to `task add` as typed. */
+    readonly property var taskItems: {
+        var text = query.slice(1).trim();
+        return text.length
+            ? [{ title: "Add task “" + text + "”", sub: "Taskwarrior  ·  due:fri  +tag  project:x  pri:H", glyph: Icons.listChecks, run: () => Taskwarrior.add(text) }]
+            : [];
+    }
 
     // ─── : niri binds ────────────────────────────────────────────────────────
     property var bindItems: []

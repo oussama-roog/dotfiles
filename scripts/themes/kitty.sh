@@ -29,3 +29,8 @@ color14 #${colors[base0C]}
 color15 #${colors[base05]}
 EOF
 }
+
+reload_kitty() {
+    # The nix wrapper renames the process to .kitty-wrapped
+    pkill -USR1 -x '(\.kitty-wrapped|kitty)' 2>/dev/null || true
+}

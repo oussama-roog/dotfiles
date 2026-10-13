@@ -45,3 +45,10 @@ home-manager-result
 
 # Reference shells cloned for ideas
 template/
+
+# Certificates
+certs/
+
+# Python cache
+__pycache__/
+*.pyc

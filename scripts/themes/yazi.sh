@@ -56,8 +56,8 @@ title_error = { fg = "#${colors[base08]}" }
 
 [filetype]
 rules = [
-        { name = "*/", fg = "#${colors[base0D]}" },
-        { name = "*", fg = "#${colors[base05]}" }
+        { url = "*/", fg = "#${colors[base0D]}" },
+        { url = "*", fg = "#${colors[base05]}" }
 ]
 
 EOF

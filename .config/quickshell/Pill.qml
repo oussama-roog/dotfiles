@@ -52,7 +52,7 @@ Item {
     /** Side columns share one width so the stats stay dead centre. */
     readonly property real restSideW: Math.max(ws.implicitWidth, clockRow.implicitWidth)
     readonly property real restW: 2 * restSideW + stats.implicitWidth + 2 * restGap + 2 * restPad
-    /** Shared width of the list surfaces (launcher, clipboard, web, themes, notifications, claude). */
+    /** Shared width of the list surfaces (launcher, clipboard, web, themes, notifications, agents). */
     readonly property real listW: 460 * s
 
     /**
@@ -68,7 +68,8 @@ Item {
         power:         () => Qt.size(340 * s, 106 * s),
         web:           () => Qt.size(listW, web.implicitHeight + 29 * s),
         notifications: () => Qt.size(listW, notifications.implicitHeight + 26 * s),
-        claude:        () => Qt.size(listW, agents.implicitHeight + 26 * s)
+        agents:        () => Qt.size(listW, agents.implicitHeight + 26 * s),
+        tasks:         () => Qt.size(920 * s, 540 * s)
     })
 
     readonly property string mode: surfaceOpen && surfaces[surface] !== undefined ? surface
@@ -134,6 +135,19 @@ Item {
         anchors.fill: parent
         s: pill.s
         radius: pill.morphRadius
+    }
+
+    /** A task is started: a thin accent bar along the bottom of the resting notch. */
+    Rectangle {
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: parent.width * 0.8
+        height: 2.5 * pill.s
+        radius: height / 2
+        color: Theme.accent
+        opacity: Taskwarrior.working && pill.mode === "rest" ? Math.pow(pill.morphCloseness, 1.5) : 0
+        visible: opacity > 0.01
+        Behavior on opacity { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard } }
     }
 
     /** One CPU/RAM readout: dim glyph, tabular value; turns hot when `hot`. */
@@ -258,7 +272,8 @@ Item {
     Power         { host: pill; name: "power" }
     Web           { id: web; host: pill; name: "web" }
     Notifications { id: notifications; host: pill; name: "notifications" }
-    Agents        { id: agents; host: pill; name: "claude" }
+    Agents        { id: agents; host: pill; name: "agents" }
+    Tasks         { host: pill; name: "tasks" }
 
     Osd {
         id: osd

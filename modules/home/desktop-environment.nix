@@ -87,6 +87,7 @@
         lazygit = "lazygit";
         dunst = "dunst";
         zed = "zed";
+        vicinae = "vicinae";
       };
     in
     builtins.mapAttrs
