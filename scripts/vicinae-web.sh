@@ -43,6 +43,6 @@ if [[ -n "$selection" ]]; then
         niri msg action focus-window --id "$window_id"
     else
         # Window doesn't exist, open new one
-        chromium --app="$url"
+        brave --app="$url"
     fi
 fi

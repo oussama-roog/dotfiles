@@ -37,5 +37,8 @@
 
   environment.variables.EDITOR = "nvim";
 
+  # Battery / power state over D-Bus (quickshell's battery reads it)
+  services.upower.enable = true;
+
   system.stateVersion = "26.05";
 }

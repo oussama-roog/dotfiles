@@ -119,7 +119,7 @@ window-rule {
 }
 
 window-rule {
-    match app-id=r#"^chrome-.*-Default$"#
+    match app-id=r#"^brave-.*-Default$"#
     default-column-width { proportion 0.35; }
 }
 

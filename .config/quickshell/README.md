@@ -25,7 +25,7 @@ Toast.qml           one-line notification shown in NotifPill
 surfaces/           what opens inside the pill (one file each)
   PillSurface.qml     base: open/close + fade, shared by all surfaces
   Launcher.qml        apps
-  Web.qml             web apps (focus window or open chromium --app)
+  Web.qml             web apps (focus window or open brave --app)
   Clipboard.qml       cliphist history
   ThemePicker.qml     base16 themes (runs scripts/theme-switcher.sh)
   Wallpaper.qml       wallpaper strip (~/dotfiles/wallpapers, awww)

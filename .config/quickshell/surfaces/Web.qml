@@ -7,7 +7,7 @@ import "../widgets"
 
 /**
  * Web-app launcher surface: search over a fixed list of sites. Enter or a click
- * focuses the site's existing niri window, or opens it in Chromium --app mode.
+ * focuses the site's existing niri window, or opens it in Brave --app mode.
  */
 PillSurface {
     id: root
@@ -54,7 +54,7 @@ PillSurface {
         Quickshell.execDetached(["bash", "-c",
             "domain=$(echo \"$1\" | sed -E 's|https?://||; s|/.*||'); "
             + "wid=$(niri msg -j windows | jq -r --arg d \"$domain\" '.[] | select(.app_id | contains($d)) | .id' | head -n1); "
-            + "if [ -n \"$wid\" ]; then niri msg action focus-window --id \"$wid\"; else chromium --app=\"$1\"; fi",
+            + "if [ -n \"$wid\" ]; then niri msg action focus-window --id \"$wid\"; else brave --app=\"$1\"; fi",
             "_", results[selectedIndex].url]);
         root.requestClose();
     }
