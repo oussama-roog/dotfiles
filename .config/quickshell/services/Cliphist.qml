@@ -14,9 +14,15 @@ import Quickshell.Io
  * list lands, so no clipboard event is ever silently dropped; the watcher
  * respawns through a cooldown timer if wl-paste dies.
  *
- * Entries are plain objects: { id, preview, isImage, label, sizeLabel, thumb }
- * where label/sizeLabel split cliphist's binary descriptor ("png 1920×1080" /
- * "245 KiB") and thumb is the cached preview png (empty for text).
+ * Entries are plain objects: { id, preview, isImage, kind, label, sizeLabel,
+ * thumb } where kind is "image", "link", "color" or "text", label/sizeLabel
+ * split cliphist's binary descriptor ("png 1920×1080" / "245 KiB") and thumb is
+ * the cached preview png (empty for text).
+ *
+ * `show(entry)` loads the selected entry in full for the preview pane: the whole
+ * text (capped at 64 KiB) into `shownText`, or the image decoded once into the
+ * cache into `shownImage`. Selection can move faster than cliphist decodes; the
+ * newest request wins and replays when the running one lands.
  */
 Singleton {
     id: root
@@ -26,6 +32,83 @@ Singleton {
     property bool pending: false
 
     readonly property string thumbDir: (Quickshell.env("XDG_CACHE_HOME") || (Quickshell.env("HOME") + "/.cache")) + "/quickshell/cliphist-thumbs/"
+    readonly property string fullDir: thumbDir + "full/"
+
+    /** Kind of a text entry, from its one-line preview. */
+    function kindOf(text) {
+        var t = text.trim();
+        if (/^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(t))
+            return "color";
+        if (/^(https?|ftp|file):\/\/\S+$/i.test(t))
+            return "link";
+        return "text";
+    }
+
+    // ─── Full preview of the selected entry ──────────────────────────────────
+    property string shownId: ""
+    property string shownText: ""
+    property bool shownTruncated: false
+    property string shownImage: ""
+    property bool shownLoading: false
+    property var wanted: null
+    readonly property int shownCap: 65536
+
+    function show(entry) {
+        wanted = entry || null;
+        if (!entry) {
+            shownId = "";
+            shownText = "";
+            shownImage = "";
+            return;
+        }
+        if (String(entry.id) === shownId && !shownLoading)
+            return;
+        showDebounce.restart();
+    }
+
+    function loadWanted() {
+        var e = wanted;
+        if (!e || showProc.running || !/^\d+$/.test(String(e.id)))
+            return;
+        shownLoading = true;
+        showProc.target = e;
+        showProc.command = e.isImage
+            ? ["sh", "-c", "mkdir -p \"$2\"; f=\"$2$1\"; [ -s \"$f\" ] || cliphist decode \"$1\" > \"$f\"; printf '%s' \"$f\"", "_", String(e.id), fullDir]
+            : ["sh", "-c", "printf '%s' \"$1\" | cliphist decode | head -c \"$2\"", "_", String(e.id), String(shownCap + 1)];
+        showProc.running = true;
+    }
+
+    Timer {
+        id: showDebounce
+        interval: 40
+        onTriggered: root.loadWanted()
+    }
+
+    Process {
+        id: showProc
+        property var target: null
+        stdout: StdioCollector {
+            onStreamFinished: {
+                var e = showProc.target;
+                if (e.isImage) {
+                    root.shownText = "";
+                    root.shownTruncated = false;
+                    root.shownImage = this.text.length ? "file://" + this.text : "";
+                } else {
+                    var t = this.text;
+                    root.shownTruncated = t.length > root.shownCap;
+                    root.shownText = root.shownTruncated ? t.substring(0, root.shownCap) : t;
+                    root.shownImage = "";
+                }
+                root.shownId = String(e.id);
+            }
+        }
+        onExited: {
+            root.shownLoading = false;
+            if (root.wanted && String(root.wanted.id) !== root.shownId)
+                root.loadWanted();
+        }
+    }
 
     function refresh() {
         if (thumbProc.running || listProc.running || delProc.running || delQueue.length) {
@@ -119,7 +202,8 @@ Singleton {
         command: ["sh", "-c",
             "mkdir -p \"$1\"; ids=$(cliphist list | awk -F'\\t' '/^[0-9]+\\t\\[\\[ binary data .*(png|jpg|jpeg|gif|bmp|webp)/ { print $1 }'); "
             + "for id in $ids; do t=\"$1$id.png\"; [ -f \"$t\" ] || cliphist decode \"$id\" | ffmpeg -loglevel quiet -i - -vf scale=256:-1 -frames:v 1 -y \"$t\"; done; "
-            + "for f in \"$1\"*.png; do [ -e \"$f\" ] || continue; n=${f##*/}; echo \"$ids\" | grep -qx \"${n%.png}\" || rm -f \"$f\"; done",
+            + "for f in \"$1\"*.png; do [ -e \"$f\" ] || continue; n=${f##*/}; echo \"$ids\" | grep -qx \"${n%.png}\" || rm -f \"$f\"; done; "
+            + "for f in \"$1\"full/*; do [ -e \"$f\" ] || continue; echo \"$ids\" | grep -qx \"${f##*/}\" || rm -f \"$f\"; done",
             "_", root.thumbDir]
         onExited: listProc.running = true
     }
@@ -156,6 +240,7 @@ Singleton {
                         id: id,
                         preview: preview,
                         isImage: isImage,
+                        kind: isImage ? "image" : root.kindOf(preview),
                         label: label,
                         sizeLabel: sizeLabel,
                         thumb: isImage ? root.thumbDir + id + ".png" : ""

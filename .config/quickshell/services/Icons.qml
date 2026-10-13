@@ -56,6 +56,10 @@ Singleton {
     readonly property string actions: "\uea84"
     readonly property string reload: "\ue036"
 
+    // Clipboard kinds
+    readonly property string link: "\ue2e2"
+    readonly property string textLines: "\ue484"
+
     // Agents
     readonly property string checkCircle: "\ue184"
     readonly property string warning: "\ue4e2"

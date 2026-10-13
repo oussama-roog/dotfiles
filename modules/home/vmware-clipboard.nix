@@ -22,13 +22,19 @@ let
         exit 0
       fi
 
-      # Wayland -> X11 (host)
+      # Wayland -> X11 (host), text only
       wl-paste --type text --watch "$0" to-x &
 
-      # X11 (host) -> Wayland
+      # X11 (host) -> Wayland. Text only: images stay inside the VM. vmware-user
+      # re-announces the host clipboard on focus changes, so only push when the
+      # X text actually changed; otherwise a re-announce would replace a
+      # screenshot (or anything else non-text) on the Wayland side.
+      last=$(timeout 1 xclip -o -selection clipboard 2>/dev/null || true)
       while clipnotify; do
         cur=$(timeout 1 xclip -o -selection clipboard 2>/dev/null) || continue
         [ -n "$cur" ] || continue
+        [ "$cur" != "$last" ] || continue
+        last=$cur
         wl=$(timeout 1 wl-paste -n --type text 2>/dev/null || true)
         if [ "$cur" != "$wl" ]; then
           printf '%s' "$cur" | wl-copy

@@ -83,6 +83,7 @@ spawn-at-startup "quickshell"
 spawn-at-startup "awww-daemon"
 spawn-sh-at-startup "[[ -f ~/.cache/current_wallpaper ]] && awww img \"$(cat ~/.cache/current_wallpaper)\" || awww img ~/dotfiles/wallpapers/wall.png"
 spawn-at-startup "wl-paste" "--type" "text" "--watch" "cliphist" "store"
+spawn-at-startup "wl-paste" "--type" "image" "--watch" "cliphist" "store"
 
 hotkey-overlay {
     skip-at-startup
@@ -90,7 +91,7 @@ hotkey-overlay {
 
 prefer-no-csd
 
-screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
+screenshot-path "~/Pictures/screenshots/screenshot_%Y%m%d_%H%M%S.png"
 
 animations {
     slowdown 1.0
@@ -145,7 +146,7 @@ binds {
     Mod+Q { close-window; }
     Mod+X { quit; }
 
-    Print { spawn "~/dotfiles/scripts/screenshot.sh"; }
+    Print repeat=false { spawn "~/dotfiles/scripts/screenshot.sh"; }
 
     XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"; }
     XF86AudioLowerVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"; }

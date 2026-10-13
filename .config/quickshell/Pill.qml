@@ -54,7 +54,7 @@ Item {
      */
     readonly property var surfaces: ({
         launcher:      () => Qt.size(listW, 332 * s),
-        clipboard:     () => Qt.size(listW, 332 * s),
+        clipboard:     () => Qt.size(860 * s, 420 * s),
         themes:        () => Qt.size(listW, 360 * s),
         wallpaper:     () => Qt.size(1000 * s, 222 * s),
         power:         () => Qt.size(340 * s, 106 * s),
